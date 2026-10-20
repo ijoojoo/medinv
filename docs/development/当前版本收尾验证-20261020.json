@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-20T15:51:26.102107+08:00",
+  "recorded_at": "2026-10-20T16:15:02.683343+08:00",
   "scope": "N01/N02 runtime and targeted verification; N03 local delivery baseline",
   "version": {
     "med": "b0044",
@@ -57,7 +57,7 @@
     "skipped": 0
   },
   "delivery_and_contract": {
-    "tests": 13,
+    "tests": 14,
     "failures": 0,
     "errors": 0,
     "skipped": 0
@@ -93,11 +93,11 @@
   "images": {
     "core": {
       "tag": "medinv-core:0.25.0",
-      "id": "sha256:95a4e52f4ad1d55f21bcc674782000943760474e540f10164c80d84cd5f21570"
+      "id": "sha256:dc25d0137a3e485a11de6880801a2b71f3a197db966b36ec24fb80e7656d41fa"
     },
     "web": {
       "tag": "medinv-web:0.25.0",
-      "id": "sha256:373878c86fa9253db4459076ec64132167888d53a5d3e7b67cc06c9f4df1d5e7"
+      "id": "sha256:9981ae963a18ea4fe2840a1741f7ecdf4668eb2b049fe7b885c32caf54193876"
     }
   },
   "visual_review": [
@@ -106,7 +106,9 @@
   ],
   "issues_resolved": [
     "Container smoke check and CI used 0.24.0 image and hardcoded 120-path expectation; now follow delivery metadata and contract.",
-    "Delivered OpenAPI snapshot had 158 paths and omitted document columns, purchase review options and purchase workflow; refreshed to 161 paths and added full schema snapshot regression."
+    "Delivered OpenAPI snapshot had 158 paths and omitted document columns, purchase review options and purchase workflow; refreshed to 161 paths and added full schema snapshot regression.",
+    "Release file selection included type-check caches and generated documentation fragments; shared filtering now excludes these and private env files. Actual ZIP generation regression checks payload, manifest and checksums.",
+    "Running web container had an earlier frontend bundle. Updated local application containers using trial start without migration; final core/web image IDs and installed file contents match delivery. Repeated all 26 selected frontend checks against updated containers."
   ],
   "initial_failure": "First updated container smoke run rejected stale API snapshot; final run passed after snapshot refresh. This is not a successful first-run claim.",
   "warnings": [
@@ -118,7 +120,8 @@
     "No database migration or application behavior change in this increment.",
     "No cross-machine deployment or latest-version full restore drill.",
     "Remote CI and remote publishing not executed.",
-    "Browser scenarios create labeled verification records through the existing local demo environment."
+    "Browser scenarios create labeled verification records through the existing local demo environment.",
+    "trial check validates local image tags and manifest; running-container identity requires a separate comparison, performed in this verification."
   ],
   "artifacts": {
     "artifacts/stage-a-20261020/backend.xml": {
@@ -126,24 +129,67 @@
       "sha256": "33106fba3613d162f9dbbe1d07138ecb9e2c21d9b58a0db386a4b7feb2023aaa"
     },
     "artifacts/stage-a-20261020/delivery.xml": {
-      "bytes": 2028,
-      "sha256": "bfb6a706b88822865191622e611a46a76ecb143ecfb3b39abad69c22e1bbae8a"
+      "bytes": 2176,
+      "sha256": "31ac00ed89980c145b6117430fb11f501c003b1b7982695fb0e46d71693d7d18"
     },
     "artifacts/stage-a-20261020/browser.json": {
-      "bytes": 33285,
-      "sha256": "5d7ea44c41e3ca445285aa4537dbe5cb365e993c491b432c0b0fd86c9f272b9a"
+      "bytes": 33219,
+      "sha256": "2351008a2db1bb10a12ff4fc987ff3ea68c09c97280fe48415e1161bb63cd836"
     },
     "artifacts/stage-a-20261020/container.log": {
       "bytes": 807,
-      "sha256": "82e6a6027128d8295965e46b5c57f2abf63a1018cae571b2b43790f52f28b589"
+      "sha256": "58078fbf8b9fd7cbe7021ca37396c9e442bda2e011cede65e1e862df838635d3"
     },
     "artifacts/stage-a-20261020/runtime-check.json": {
-      "bytes": 611,
-      "sha256": "d4322c9a38a366f4976e45176a1a6cc47f33c3b116047e78ab39e7535223faf5"
+      "bytes": 613,
+      "sha256": "52e7705dda1dd78b224ede9c0a3cc83f08db5043b35e8d0fc948779add507600"
     },
     "artifacts/stage-a-20261020/runtime-status.json": {
-      "bytes": 642,
-      "sha256": "fffe37008f2b01bade6bfc9d3015d42607f7975b2850de6ce7f8ed9ae045df7f"
+      "bytes": 644,
+      "sha256": "7176efcdf4899c49c87594c30b4b8fc28e3324cce865b98f7d02830448b2573b"
+    },
+    "artifacts/stage-a-20261020/rebuild-images.json": {
+      "bytes": 430,
+      "sha256": "5c6338047dad46b7754c974b37e90a1287514e5a5345d3008d818cb0681c3b6e"
+    },
+    "artifacts/stage-a-20261020/running-content.json": {
+      "bytes": 569,
+      "sha256": "3e68699a2e5083855876d356f7d31e5190d3468d845bd2481dac0399d83bb517"
+    },
+    "artifacts/stage-a-20261020/runtime-start.log": {
+      "bytes": 788,
+      "sha256": "861064b998e7cfd682c0c57f9af83f43c6f6feca17552fcf921e42b226d3b005"
+    }
+  },
+  "initial_package_audit": "First candidate package was rejected during source-to-Git audit for local cache and documentation build fragments. Retained under local artifacts; regenerated after fixing release selection.",
+  "image_rebuild_verification": {
+    "core": {
+      "old_config_candidates": 1,
+      "same_runtime_layers": true,
+      "same_runtime_config": true,
+      "current_id": "sha256:dc25d0137a3e485a11de6880801a2b71f3a197db966b36ec24fb80e7656d41fa"
+    },
+    "web": {
+      "old_config_candidates": 1,
+      "same_runtime_layers": true,
+      "same_runtime_config": true,
+      "current_id": "sha256:9981ae963a18ea4fe2840a1741f7ecdf4668eb2b049fe7b885c32caf54193876"
+    }
+  },
+  "running_content_verification": {
+    "core": {
+      "files": 157,
+      "mismatches": [],
+      "running_image": "sha256:dc25d0137a3e485a11de6880801a2b71f3a197db966b36ec24fb80e7656d41fa",
+      "release_image": "sha256:dc25d0137a3e485a11de6880801a2b71f3a197db966b36ec24fb80e7656d41fa",
+      "image_id_match": true
+    },
+    "web": {
+      "files": 35,
+      "mismatches": [],
+      "running_image": "sha256:9981ae963a18ea4fe2840a1741f7ecdf4668eb2b049fe7b885c32caf54193876",
+      "release_image": "sha256:9981ae963a18ea4fe2840a1741f7ecdf4668eb2b049fe7b885c32caf54193876",
+      "image_id_match": true
     }
   }
 }

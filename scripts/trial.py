@@ -193,6 +193,30 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def is_delivery_file(path):
+    """Keep local caches, credentials and document intermediates out of releases."""
+    parts = path.relative_to(ROOT).parts
+    excluded_directories = {
+        "__pycache__",
+        ".mypy_cache",
+        ".ruff_cache",
+        ".pytest_cache",
+        ".cache",
+        ".git",
+        ".vs",
+        ".venv",
+        "node_modules",
+    }
+    return (
+        path.is_file()
+        and not excluded_directories.intersection(parts[:-1])
+        and not (parts[0] == "docs" and "build" in parts[:-1])
+        and path.suffix not in {".pyc", ".pyo"}
+        and path.name != ".env"
+        and not path.name.startswith(".env.")
+    )
+
+
 def source_files():
     directories = (
         "backend/src",
@@ -221,7 +245,7 @@ def source_files():
         files.extend(
             p
             for p in (ROOT / folder).rglob("*")
-            if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc"
+            if is_delivery_file(p)
         )
     if not (ROOT / "apps/admin-web/dist/index.html").is_file():
         raise TrialError("缺少管理端构建文件，请先执行 build。")
@@ -431,11 +455,7 @@ def package(output):
             selected.update(
                 p
                 for p in (ROOT / folder).rglob("*")
-                if p.is_file()
-                and "__pycache__" not in p.parts
-                and p.name != ".env"
-                and not p.name.startswith(".env.")
-                and p.suffix != ".pyc"
+                if is_delivery_file(p)
             )
         selected.add(ROOT / "deploy/.env.example")
         selected.update(
@@ -450,7 +470,9 @@ def package(output):
         selected.update((ROOT / "apps/admin-web").glob("tsconfig*.json"))
         # Include the existing initialization documentation, not any local artifacts.
         selected.add(ROOT / "README.md")
-        selected.update((ROOT / "docs").rglob("*.md"))
+        selected.update(
+            p for p in (ROOT / "docs").rglob("*.md") if is_delivery_file(p)
+        )
         if any(
             p.is_symlink() or not p.resolve().is_relative_to(ROOT) for p in selected
         ):

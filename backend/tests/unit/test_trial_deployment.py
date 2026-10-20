@@ -3,6 +3,7 @@
 import base64
 import importlib.util
 import json
+import zipfile
 from pathlib import Path
 from secrets import token_bytes, token_urlsafe
 
@@ -109,6 +110,90 @@ def test_rebuilding_an_unpacked_delivery_replaces_its_active_manifest(workspace,
     assert release["files"] == {"example.py": trial.digest(source)}
     assert release["images"]["core"]["id"] == "sha256:new"
     assert not (root / ".cache/trial/release.json").exists()
+
+
+def test_package_contains_runnable_sources_without_local_caches_or_secrets(
+    workspace, monkeypatch
+):
+    root, values = workspace
+    included = {
+        ".dockerignore",
+        "deploy/Dockerfile",
+        "deploy/Dockerfile.web",
+        "deploy/Dockerfile.web.dockerignore",
+        "deploy/requirements.lock.txt",
+        "deploy/compose.yaml",
+        "deploy/compose.trial.yaml",
+        "deploy/.env.example",
+        "apps/admin-web/package.json",
+        "apps/admin-web/pnpm-lock.yaml",
+        "apps/admin-web/index.html",
+        "apps/admin-web/vite.config.ts",
+        "apps/admin-web/tsconfig.json",
+        "apps/admin-web/src/main.ts",
+        "apps/admin-web/dist/index.html",
+        "apps/admin-web/dist/assets/main.js",
+        "scripts/trial.py",
+        "backend/src/medinv/main.py",
+        "backend/migrations/business/versions/example.py",
+        "backend/pyproject.toml",
+        "backend/uv.lock",
+        "backend/alembic-business.ini",
+        "backend/alembic-control.ini",
+        "contracts/openapi/example.json",
+        "docs/development/guide.md",
+        "README.md",
+    }
+    excluded = {
+        "backend/src/.mypy_cache/3.14/cache.db",
+        "backend/src/medinv/__pycache__/main.pyc",
+        "backend/src/medinv/main.pyo",
+        "backend/src/.env.local",
+        "apps/admin-web/src/node_modules/example/index.js",
+        "deploy/trial/.env.local",
+        "scripts/.pytest_cache/README.md",
+        "scripts/.ruff_cache/results",
+        "scripts/.venv/pyvenv.cfg",
+        "contracts/.git/config",
+        "docs/.vs/state.md",
+        "docs/.cache/state.md",
+        "docs/build/combined.md",
+        "docs/technical/build/chapter.md",
+        "docs/technical-python/build/chapter.md",
+    }
+    for name in included | excluded:
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("local-only-marker" if name in excluded else name, encoding="utf-8")
+
+    def run(_label, command):
+        if command[:3] == ["docker", "image", "save"]:
+            Path(command[command.index("-o") + 1]).write_bytes(b"mock application images")
+        return "sha256:expected\n"
+
+    monkeypatch.setattr(trial.shutil, "which", lambda _: "pnpm")
+    monkeypatch.setattr(trial, "run", run)
+    trial.build()
+    # A type-check run after build must neither invalidate nor enter the delivery.
+    (root / "backend/src/.mypy_cache/3.14/cache.db").write_text("new cache", encoding="utf-8")
+    output = root / "output/trial.zip"
+    trial.package(output)
+    with zipfile.ZipFile(output) as bundle:
+        names = set(bundle.namelist())
+        assert names == included | {"deploy/trial/compatibility.json", "release.json", "images.tar"}
+        release = json.loads(bundle.read("release.json"))
+        assert not excluded.intersection(release["files"])
+        for name, expected in release["files"].items():
+            assert trial.hashlib.sha256(bundle.read(name)).hexdigest() == expected
+        assert trial.hashlib.sha256(bundle.read("images.tar")).hexdigest() == release[
+            "images_archive_sha256"
+        ]
+        for name in names:
+            content = bundle.read(name)
+            assert b"local-only-marker" not in content
+            assert all(value.encode() not in content for value in values.values())
+    checksum = output.with_suffix(".zip.sha256").read_text(encoding="utf-8").split()[0]
+    assert checksum == trial.digest(output)
 
 
 def test_schema_mismatch_never_starts_application_containers(workspace, monkeypatch):
