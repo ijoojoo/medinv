@@ -1,0 +1,45 @@
+name: medinv-dev
+services:
+  postgres:
+    image: postgres:18@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336
+    ports:
+      - "127.0.0.1:55432:5432"
+    environment:
+      CONTROL_AUTH_PASSWORD: ${CONTROL_AUTH_PASSWORD:?required}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Create deploy/.env first}
+      MED_RUNTIME_PASSWORD: ${MED_RUNTIME_PASSWORD:?required}
+      MED_MIGRATOR_PASSWORD: ${MED_MIGRATOR_PASSWORD:?required}
+      CONTROL_RUNTIME_PASSWORD: ${CONTROL_RUNTIME_PASSWORD:?required}
+      CONTROL_MIGRATOR_PASSWORD: ${CONTROL_MIGRATOR_PASSWORD:?required}
+    volumes:
+      - medinv_pg:/var/lib/postgresql
+      - ./postgres/init.sh:/docker-entrypoint-initdb.d/10-medinv.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d med_business"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  keycloak:
+    image: ${KEYCLOAK_IMAGE:-quay.io/keycloak/keycloak:26.8.0@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc}
+    command: ["start-dev", "--import-realm"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: local-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?required}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/med_identity
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?required}
+      KC_HOSTNAME: http://127.0.0.1:5173/identity
+      KC_HTTP_RELATIVE_PATH: /identity
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ../.cache/keycloak:/opt/keycloak/data/import:ro
+      - ./keycloak/themes/medinv:/opt/keycloak/themes/medinv:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+volumes:
+  medinv_pg:

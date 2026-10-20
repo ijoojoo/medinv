@@ -1,0 +1,34 @@
+{
+  "name": "medinv-admin-web",
+  "version": "0.25.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "build": "vue-tsc --noEmit && vite build",
+    "test:e2e": "playwright test",
+    "test:mainline": "playwright test tests/mainline.spec.ts",
+    "test:opening": "playwright test tests/enterprise-opening.spec.ts",
+    "test:handoff": "playwright test tests/job-handoff.spec.ts",
+    "test:recovery": "playwright test tests/command-recovery.spec.ts",
+    "test:return-jobs": "playwright test tests/return-jobs.spec.ts",
+    "format:check": "prettier --check src tests *.ts *.json index.html",
+    "test:inventory-jobs": "playwright test tests/inventory-jobs.spec.ts",
+    "test:continuous": "playwright test tests/continuous-operations.spec.ts",
+    "test:mixed-packaging": "playwright test tests/mixed-packaging.spec.ts"
+  },
+  "dependencies": {
+    "element-plus": "2.14.7",
+    "vue": "3.5.43"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "^24.0.0",
+    "@vitejs/plugin-vue": "6.0.9",
+    "prettier": "3.9.9",
+    "typescript": "5.9.3",
+    "vite": "8.3.4",
+    "vue-tsc": "3.3.12"
+  }
+}

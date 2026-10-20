@@ -1,0 +1,134 @@
+{
+  "edition": "Python 1.0",
+  "date": "2026-10-09",
+  "main_document_pages": 35,
+  "chapters": 25,
+  "scope": "Technical design and reference artifacts; not a deployed application",
+  "files": [
+    {
+      "path": "assets/technical-architecture.png",
+      "bytes": 207290,
+      "sha256": "35a9cf95a9c60ef2555c4bc7261e4772fdbc0528a6bb0f4c46a4d1644b054e2c"
+    },
+    {
+      "path": "contracts/core-openapi.json",
+      "bytes": 73615,
+      "sha256": "5188695935496ba9e59aaf52981632cb90dd6e8f5aa116d2a30841b6515e36e3"
+    },
+    {
+      "path": "contracts/domain-event.schema.json",
+      "bytes": 4211,
+      "sha256": "28508c8cd353b2d19c4295001d39e458ee3be3cb628b74062c1832ec05b29795"
+    },
+    {
+      "path": "contracts/examples/allocation-request.json",
+      "bytes": 337,
+      "sha256": "aaff666c5aae5ceede94bfa9b860d21f8e43b90cdae5208365c9b4e4bb970f18"
+    },
+    {
+      "path": "contracts/examples/inventory-posted-event.json",
+      "bytes": 815,
+      "sha256": "a012c61a1152f13286befde1fc572b210819e7f349d65468dd90b71fc17d762a"
+    },
+    {
+      "path": "contracts/examples/manual-cash-request.json",
+      "bytes": 195,
+      "sha256": "ab1884ab776b7797e327d991e1e0189265412d68a3d0de6a952204d1cdb03068"
+    },
+    {
+      "path": "contracts/examples/posting-response.json",
+      "bytes": 403,
+      "sha256": "f634bd694cc122e8f1e902852972819d895bc633b526e62b270cecc75a02decf"
+    },
+    {
+      "path": "contracts/examples/receipt-post-request.json",
+      "bytes": 156,
+      "sha256": "13a55b238a36182acf90dcab39b81d8824fc866d7fd495498493aab4b35d1459"
+    },
+    {
+      "path": "contracts/examples/reserve-request.json",
+      "bytes": 487,
+      "sha256": "646c9519ae4079576f93bb8da3c28bcc059b191e61a349c7623fb0e3a0a2cf8d"
+    },
+    {
+      "path": "contracts/examples/retail-complete-request.json",
+      "bytes": 162,
+      "sha256": "c3c9de9c4c2eafae8941e941059cbe37ea4f12c730bd7ad72c781839fe6ae2ed"
+    },
+    {
+      "path": "database/core-reference.sql",
+      "bytes": 28852,
+      "sha256": "49810538e07369941bae6184c11f50bd77f0654df0c1f0ff3c451bf3746bb839"
+    },
+    {
+      "path": "examples/python/decimal_values.py",
+      "bytes": 2272,
+      "sha256": "25e410785fe17a74d8bdcf51bb74e6882538eb77760b2f3548e3a6e5ce5abd85"
+    },
+    {
+      "path": "examples/python/tenant_uow.py",
+      "bytes": 2545,
+      "sha256": "e5780a7a9abcd14393b8b50ed9f53b622cbc77d121c54048feffeef925e42361"
+    },
+    {
+      "path": "Python开发规范.md",
+      "bytes": 5460,
+      "sha256": "4d045482da43de6519934a38c1f9daee4c3f3a2b21b4044cc6d9e715e8a70864"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3192,
+      "sha256": "de27d5c886760adc9664b89671dc278e5934c8b0718d381ffaca57fce0b48771"
+    },
+    {
+      "path": "开发任务清单.md",
+      "bytes": 3292,
+      "sha256": "7ab787aaa84c58ae323730e86ca35d44df77ab523acb7cea14351f8e34739948"
+    },
+    {
+      "path": "性能压测方案.md",
+      "bytes": 8883,
+      "sha256": "7441cf5d1062a3089376c9592d72b52f3bbe9f6079a819747b1e8009dfd830b9"
+    },
+    {
+      "path": "接口登记表.md",
+      "bytes": 10491,
+      "sha256": "78aa742cf98a5cd58e950b95753ceb30fd431b512ca58231d41f29799b1d86c0"
+    },
+    {
+      "path": "数据字典.md",
+      "bytes": 51764,
+      "sha256": "3889bc189dfa3022b4a0669fa02bfcb867527f7f23cffa15c5e3b2c4e5330d30"
+    },
+    {
+      "path": "测试矩阵.md",
+      "bytes": 15800,
+      "sha256": "da8ae301272e31db1c58114c6748edf600abe04db780efab253b6eaa413eab48"
+    },
+    {
+      "path": "版本切换说明.md",
+      "bytes": 2834,
+      "sha256": "a9be4539c4b47a429519e05829e96110f02bdb336437871c26946b6f3308e47b"
+    },
+    {
+      "path": "药械进销存SaaS Python技术设计文档.docx",
+      "bytes": 307046,
+      "sha256": "801253c2cda0586c8268c105d7262fcda7e53d63be665069c93d28fadad14448"
+    },
+    {
+      "path": "药械进销存SaaS Python技术设计文档.md",
+      "bytes": 90363,
+      "sha256": "0d5a4ecb2ef6ba3fa982deef593c69b067e2401c60db8952dc3a974dbdc7cde1"
+    },
+    {
+      "path": "部署与运行手册.md",
+      "bytes": 9574,
+      "sha256": "df03fe58f43150c2c4c7b1fba56b7ceaf98538540e5db9255ef68d3a15caf0c9"
+    },
+    {
+      "path": "验证范围.md",
+      "bytes": 2522,
+      "sha256": "ea682f126ef8bfc0df9bf60e447b28cb6a3f837a2f120866df883615920bf2b4"
+    }
+  ]
+}

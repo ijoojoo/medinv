@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-17",
+  "version": "0.24.0",
+  "scope": "新商品首次销售、双商品分次到货验收、拒收补货、三批发货、逐笔结算",
+  "run": "e94e3f94-4f77-448a-89b4-93012fb1838a",
+  "tenant_name": "分批履约企业-e94e3f94",
+  "tenant_id": "ba500c4a-07f9-5704-af6d-66b1aa4d7f1d",
+  "entity_id": "3661ae64-ad92-5644-9599-3812a772bf59",
+  "change": "批发允许已审核合格新品在无采购和库存控制记录时先建需求；已有冻结、实际分配与零售准入继续拦截",
+  "database": {
+    "business": "b0026",
+    "control": "c0016",
+    "new_migrations": 0
+  },
+  "api_paths": 120,
+  "queue_stages": 32,
+  "new_permissions": 0,
+  "backend": {
+    "new_tests": 10,
+    "targeted_passed": 143,
+    "targeted_failed": 0,
+    "full_suite_rerun": false,
+    "initial_new_tests": "9通过、1项误将种子库存计为新增库存；修正为前后基线及新商品范围",
+    "command_error": "首次因结算测试文件名错误未执行测试",
+    "reports": [
+      "artifacts/backend-partial-fulfillment.xml",
+      "artifacts/backend-partial-fulfillment-final.xml",
+      "artifacts/backend-first-sales.xml",
+      "artifacts/backend-first-sales-regression.xml"
+    ]
+  },
+  "browser": {
+    "final_passed": 6,
+    "final_failed": 0,
+    "automatic_retries": 0,
+    "full_suite_rerun": false,
+    "initial_failure": "已审核新品无采购记录，建销售单返回SKU_BLOCKED",
+    "fixed_first_run": "异步按可售量填入后立即读取值，修改为等待期望值",
+    "coverage": "六岗位正常业务接口，页面新商品销售建单、按单补货、原单往返与三次分配；另回归原补货、过期建议、只读、共享库存、多包装、销售改单",
+    "reports": [
+      "artifacts/browser-partial-fulfillment-initial.json",
+      "artifacts/browser-partial-fulfillment-fixed.json",
+      "artifacts/browser-partial-fulfillment-regression.json"
+    ]
+  },
+  "reconciliation": {
+    "reader": "med_runtime; tenant RLS; read-only repeatable-read",
+    "actors": 6,
+    "linked_purchases": 2,
+    "receipts": 3,
+    "inbound_postings": 4,
+    "shipments": 3,
+    "drug_received_shipped": "10盒",
+    "device_received_shipped": "8支",
+    "device_rejected_returned": "1支",
+    "stock_ledger_entries": 12,
+    "cost_ledger_entries": 12,
+    "stock_final": "0",
+    "cost_final": "0",
+    "reserved_final": "0",
+    "blocked_final": "0",
+    "ar_gross": "440.70",
+    "ar_items": 3,
+    "ap_gross": "293.80",
+    "ap_items": 4,
+    "ar_ap_outstanding": "0",
+    "credit_exposure_receivable": "0",
+    "pending_work": 0,
+    "virtual_cash_record_net_change": "146.90",
+    "proof": "artifacts/partial-fulfillment-reconciliation.json",
+    "database_proof": "artifacts/partial-fulfillment-db.json",
+    "screenshot": "artifacts/partial-fulfillment-ledger.png",
+    "screenshot_reviewed": true
+  },
+  "checks": [
+    "Ruff及格式",
+    "mypy strict 114源文件",
+    "新场景严格TypeScript及Prettier",
+    "前端类型检查与构建",
+    "配置与源文件/镜像指纹一致",
+    "六个原服务运行及入口就绪"
+  ],
+  "images": {
+    "core": "sha256:aefe1268f92171729535b92ccea315569bf6b25ef307ef171feff7617833caa5",
+    "web": "sha256:71ffa5e29c54d1a58c852f06dbddca8961ff04194d8dfcf4a687ae31d2c51b25"
+  },
+  "limitations": [
+    "虚拟OTC与普通器械，不涵盖处方、医保或特殊品种",
+    "补货抵扣仅针对本销售单关联采购，不能代替全企业需求计划",
+    "并非所有环节逐页人工点击；其余环节使用对应岗位正常接口",
+    "开发试用环境，未跑全量测试或生产压测"
+  ],
+  "package": {
+    "package": "medinv-trial-0.24-20261017-partial.zip",
+    "bytes": 101204539,
+    "sha256": "a09f39fc1fdc3cab90edcb1899becdbbe40120b2ee4b2f5356f007641db908be",
+    "entries": 378,
+    "manifest_checked": true,
+    "image_archive_checked": true,
+    "docs_and_verifier_match": true,
+    "private_configuration_absent": true
+  }
+}

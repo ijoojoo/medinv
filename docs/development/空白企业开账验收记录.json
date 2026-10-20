@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-17",
+  "version": "0.24.0",
+  "scope": "七岗位空白企业开账、双批次首次出库、零库存仓采购、首笔往来结清及期初待办",
+  "tenant_name": "试用开账企业-412d3c55",
+  "tenant_id": "c686ca81-0e47-57ba-b254-589076f572b1",
+  "entity_id": "c04cee3a-0b0c-547a-a9a8-e64944009883",
+  "run": "412d3c55-3a10-4d56-a153-a90a0c031a15",
+  "database": {
+    "business": "b0026",
+    "control": "c0016",
+    "new_migrations": 0
+  },
+  "api_paths": 120,
+  "queue_stages": 32,
+  "new_queue_stages": [
+    "opening_review",
+    "opening_post"
+  ],
+  "permissions": "期初读取沿用inventory.read；制单、审核、启用继续使用原权限及独立人员约束",
+  "backend": {
+    "new_tests": 7,
+    "targeted_final_passed": 94,
+    "targeted_final_failed": 0,
+    "full_suite_rerun": false,
+    "initial_run": "49通过、1项旧权限预期失败；有inventory.read时现在允许读取期初待办，更新断言并继续检查采购待办403",
+    "reports": [
+      "artifacts/backend-opening-queue.xml",
+      "artifacts/backend-opening-queue-final.xml"
+    ]
+  },
+  "browser": {
+    "regression_passed": 13,
+    "regression_failed": 1,
+    "opening_rerun_passed": 1,
+    "opening_rerun_failed": 0,
+    "distinct_scenarios_with_pass": 14,
+    "single_green_batch": false,
+    "automatic_retries": 0,
+    "full_suite_rerun": false,
+    "coverage": "正式岗位接口准备及交易，页面CSV导入、期初待办交接、现金收银与交付；相关回归包含连续营业、提交恢复、库存岗位、退货、调拨、盘点及只读和企业切换",
+    "fixes": [
+      "新开账脚本改用仓库下拉框的实际可访问名称定位",
+      "按批号核对FEFO分配数量，不要求发货详情按效期排序",
+      "旧场景待办种类改为32类，含全部环节的下拉框为33项",
+      "独立核对脚本通过销售订单关联发货单所属主体"
+    ],
+    "reports": [
+      "artifacts/browser-opening-20261017.json",
+      "artifacts/browser-opening-final-20261017.json",
+      "artifacts/browser-opening-regression-20261017.json",
+      "artifacts/browser-opening-complete-20261017.json"
+    ]
+  },
+  "reconciliation": {
+    "reader": "med_runtime，RLS，read-only repeatable-read",
+    "actors": 7,
+    "opening_warehouse_qty": "4",
+    "purchase_warehouse_qty": "2",
+    "total_qty": "6",
+    "reserved_qty": "0",
+    "cost_amount": "83.01",
+    "stock_ledger_entries": 6,
+    "cost_ledger_entries": 6,
+    "ar_outstanding": "0",
+    "ap_outstanding": "0",
+    "pending_work": 0,
+    "virtual_cash_record_net_change": "94.00",
+    "proof": "artifacts/enterprise-opening-reconciliation.json",
+    "database_proof": "artifacts/enterprise-opening-db.json",
+    "screenshot": "artifacts/enterprise-opening-ledger.png",
+    "screenshot_reviewed": true
+  },
+  "checks": [
+    "后端Ruff及格式",
+    "mypy strict 114个源文件",
+    "新核对脚本Ruff及格式",
+    "六份变更浏览器场景严格TypeScript",
+    "前端类型检查与静态构建",
+    "镜像及源文件指纹一致",
+    "b0026/c0016及原环境六个服务运行"
+  ],
+  "images": {
+    "core": "sha256:77d5f2155bddee08be4fd26e7caaf251fc46541aaa08696f6296298a3a02e50c",
+    "web": "sha256:500aa22659203f001e67daedfccc0b46e6ca55e89b7dbc9081684e12e7e47b14"
+  },
+  "limitations": [
+    "虚拟普通器械场景，不代表真实企业资料迁移或全部药品品类验收",
+    "期初每仓一次、最多200行，不含历史应收应付与总账",
+    "普通款项核销尚不在工作台待办中",
+    "开发试用环境，不是生产上线或全量测试声明"
+  ],
+  "package": {
+    "package": "medinv-trial-0.24-20261017-opening.zip",
+    "bytes": 101189096,
+    "sha256": "20f0dc97ea73e9c40b8ff1feb86562a81ed4bc4088fb95e55072e702dc4d136a",
+    "entries": 374
+  }
+}

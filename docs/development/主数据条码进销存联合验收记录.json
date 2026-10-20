@@ -1,0 +1,80 @@
+{
+  "completed_at": "2026-10-19T16:45:28.399Z",
+  "run": "7b8c71a1",
+  "scenario": "虚拟器械主数据至采购入库、条码销售出库",
+  "entity_id": "2e81d438-c9bf-5d64-bb2b-999d8d3091c3",
+  "warehouse_id": "11c9a776-f496-58d2-bb44-dd9392976713",
+  "product_id": "7e833c6c-adf3-4d9f-a265-8d676e33637d",
+  "sku_id": "59d82047-6673-4dd6-a526-fe2c93d3dbb0",
+  "product_name": "主线联合验收器械-7b8c71a1",
+  "packaging_id": "dfc270d7-cfce-49f6-84e4-fd256d2f77f7",
+  "package": "1箱=6盒",
+  "party_id": "7bd0a968-8d96-48f6-9484-b948101042c6",
+  "purchase": {
+    "id": "7cb76655-335a-46f3-8c01-a224d70090ab",
+    "number": "PO-7CB76655335A46F38C01A224D70090AB",
+    "posting_id": "e38f29be-b8db-4f09-83e9-5599ea97caca",
+    "quantity": "15",
+    "gross": "169.50"
+  },
+  "sale": {
+    "id": "022094d1-1555-4dcc-a50b-c20eb2ac1e8b",
+    "number": "SO-022094D115554DCCA50BC20EB2AC1E8B",
+    "posting_id": "bdce0305-9cce-4bd1-982f-4d3c642905ff",
+    "quantity": "8",
+    "gross": "108.48"
+  },
+  "checkpoints": [
+    {
+      "stage": "建档完成",
+      "on_hand": "0",
+      "reserved": "0",
+      "base_unit": "盒"
+    },
+    {
+      "stage": "采购已保存未入库",
+      "on_hand": "0",
+      "reserved": "0",
+      "base_unit": "盒"
+    },
+    {
+      "stage": "登记到货未验收",
+      "on_hand": "0",
+      "reserved": "0",
+      "base_unit": "盒"
+    },
+    {
+      "stage": "验收合格待入库",
+      "on_hand": "0",
+      "reserved": "0",
+      "base_unit": "盒"
+    },
+    {
+      "stage": "采购合格入库",
+      "on_hand": "15",
+      "reserved": "0",
+      "base_unit": "盒"
+    },
+    {
+      "stage": "发货批次已分配",
+      "on_hand": "15",
+      "reserved": "8",
+      "base_unit": "盒"
+    },
+    {
+      "stage": "销售出库完成",
+      "on_hand": "7",
+      "reserved": "0",
+      "base_unit": "盒"
+    }
+  ],
+  "reconciliation": {
+    "on_hand": "7",
+    "reserved": "0",
+    "inventory_cost": "70.00",
+    "payable": "169.50",
+    "receivable": "108.48",
+    "ledger_rows": 4
+  },
+  "scope": "建档、开单及收发货通过页面；资质、包装、往来单位准备与结果核对使用正常业务接口。未变更零售界面或创建企业、仓库。"
+}

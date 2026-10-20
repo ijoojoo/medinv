@@ -1,0 +1,126 @@
+{
+  "recorded_at": "2026-10-16T20:27:49.183576+08:00",
+  "increment": "0.24 operator provisioning and empty-enterprise opening through first procurement, retail and wholesale",
+  "business_migration": "b0026",
+  "control_migration": "c0015",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 26,
+  "new_migrations": [
+    "c0015"
+  ],
+  "new_permissions": false,
+  "new_dependencies": false,
+  "new_public_api": false,
+  "backend_tests": 587,
+  "backend_groups": {
+    "architecture": 2,
+    "contracts": 1,
+    "integration": 522,
+    "unit": 62
+  },
+  "new_backend_tests": 14,
+  "full_backend_suite_this_run": true,
+  "backend_warnings": [
+    "Existing Starlette TestClient httpx deprecation; suite passed"
+  ],
+  "browser_tests": 11,
+  "new_browser_tests": 1,
+  "browser_regression_tests": 10,
+  "browser_scope": [
+    "enterprise-opening.spec.ts",
+    "workspace.spec.ts",
+    "openings.spec.ts",
+    "mainline.spec.ts"
+  ],
+  "full_browser_suite_this_run": false,
+  "final_failures": 0,
+  "final_skipped": 0,
+  "final_flaky": 0,
+  "counts_note": "587 is one final full backend run. 1 new browser scenario has 5 checkpoints, plus 10 related regressions; preliminary runs and historical results are not added.",
+  "preliminary_fix": "New browser test initially used getByLabel for the opening warehouse select. Matched the established combobox-role locator; final scenario passed without retries. No product UI change was needed.",
+  "python_lint_and_format": "passed; 199 backend files; new platform CLI separately checked",
+  "python_types": "mypy strict passed; 113 source files",
+  "frontend_types": "affected new opening and workspace tests checked with strict TypeScript; Vue source checked by vue-tsc",
+  "frontend_build": "Vite passed",
+  "frontend_format": "passed",
+  "provisioning_proof": [
+    "Known principals only; exactly one initial OWNER and a distinct opening reviewer; unknown identity or invalid plan performs no provisioning write.",
+    "Only scope, warehouse, location and audit are created in business database; no demo products, parties, inventory or cost data.",
+    "PENDING tenants and memberships are inactive. Business transaction and final control activation commit independently; original manifest resumes after interruptions at three positions.",
+    "Business audit failure rolls back business initialization; final activation failure rolls back control activation; retry creates no duplicate business audit.",
+    "Same request concurrent calls serialize and return the same resource IDs. Changed manifest or pending snapshot mismatch is rejected.",
+    "Completed replay does not reactivate later-disabled enterprises or memberships. Ordinary control runtime cannot assume provisioning role; live table grants to auth/runtime/PUBLIC are empty.",
+    "Control provisioning records have immutable plans and completed state; c0015 does not alter existing member permissions."
+  ],
+  "scenario_tenant": "试用开账企业-37200f8f",
+  "scenario_tenant_id": "c2655e8a-868e-5beb-84af-51c37c6c602f",
+  "reconciliation_checkpoints": 5,
+  "business_proof": [
+    "new tenant, no demo stock copied",
+    "cross-tenant and stale-context fences",
+    "independent qualification and opening review",
+    "CSV opening to real first retail",
+    "first purchase and wholesale",
+    "idempotent provisioning after business starts"
+  ],
+  "final_stock_qty": "7",
+  "final_cost_amount": "73.01",
+  "final_ar_outstanding": "40.00",
+  "final_ap_outstanding": "26.00",
+  "boundaries": [
+    "Operator-only local CLI uses existing mapped identities and privileged control credentials; no public signup page, production identity enrollment or password changes.",
+    "Bootstrap creates one entity and one physical warehouse/location. Different request IDs are separate requests; legal-name/credit-code deduplication is not implemented.",
+    "Two-database process uses inactive staging and resumable activation, not distributed atomicity.",
+    "Initial inventory only; historical AR/AP, general ledger and bank opening balances are outside scope.",
+    "New test enterprise is retained in local development. Qualifications and device are test fixtures. Opening and retail use real browser forms; product/party review, procurement and wholesale use actual HTTP business commands.",
+    "AR 40 and AP 26 deliberately remain unsettled at the last first-transaction checkpoint; all related work items are complete.",
+    "Backup archive listing was verified; no restore drill was performed this turn."
+  ],
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:8694c357784d7b9a096474c000cc2305e4e4f3d906ac34f88952f858f4ac3203",
+  "container_smoke": "passed: UID 10001, both databases ready, 120 API paths and bounded expiry scan",
+  "local_services": "core/auth/admin returned 200; expiry worker started at 20:24 local",
+  "next_three_steps": [
+    "Run purchasing, warehousing, quality, sales and cashier work under distinct roles and resolve handoff blockers.",
+    "Verify concurrent fulfillment, stock shortage, repeat submission and interrupted-business recovery without compromising inventory or money consistency.",
+    "Assemble a reproducible first trial package covering deployment, provisioning, backup restore, opening reconciliation and business acceptance."
+  ],
+  "baseline_records": {
+    "docs/development/主线连续试用验证.json": "d144da92e17917b01c85c1d7b31b5208e1d18811b6cf82059d11fcc90d9c0f57"
+  },
+  "backup": {
+    "path": "artifacts/backups/before-c0015-control.dump",
+    "bytes": 2553555,
+    "sha256": "ae9c85d400b2340d564e79ed5716e7e93c18d38aac0a82093ddae637ad3b37ff"
+  },
+  "result_sha256": {
+    "artifacts/backend-enterprise-opening.xml": "8a0e6a602ce57a6ce6ffa14fe4f8eed63f37cdd0ad15af3621754be28c10c169",
+    "artifacts/browser-enterprise-opening.json": "edb14e69e8bb44ad824d7ab3ff5865681db56d7a098f1f8d84145adc3dbbe8c2",
+    "artifacts/browser-enterprise-opening-regression.json": "8c6c3d02170b1838e329fbc9a5c37fc2d838d990e9d270cc63120c935be8344e",
+    "artifacts/enterprise-opening-reconciliation.json": "43bb711f66e6718bad725457b16097189d43c4adf1c20fb24a7b6119e5ee1355",
+    "artifacts/enterprise-opening-manifest.json": "f7de99a90b448f804265fa64f7ca92fa599ca56368249449ad57820fe7ada0fb",
+    "artifacts/container-enterprise-opening.log": "a9e0c0fe7d389f47f3624fe000224dae7757884f93fb33b8f783e74eb5c23aef"
+  },
+  "inspected_screenshots": {
+    "artifacts/enterprise-opening-ledger.png": "aeb93415c47b4bce18dcee56e4b4ecb0922497ccfa4f01c5fa490e577fd97e06"
+  },
+  "unchanged_api_contract": {
+    "contracts/openapi/implemented-core-openapi.json": "c1c8b5e31190af21cfa11fc24839992c91bb8940f02c67537a6020b907fa94e0"
+  },
+  "source_sha256": {
+    "backend/src/medinv/platform/tenancy/provisioning.py": "039156bb669c6efbd27e9cb9ae431aff1e3921b3228211eb2c48fbe33aadf7c1",
+    "backend/migrations/control/versions/0015_enterprise_provisioning.py": "5caf799c017348eb7de9c0f7853775d92863467a6f5d3cfb87ce7bbe08281ca4",
+    "backend/tests/integration/test_provisioning.py": "d563f9240a87f668aed2a5d09dfe41dda057e7f8027497b9c196f2837191c434",
+    "scripts/provision_enterprise.py": "eedd72a8dd1a74a46e7adb0e22e214412931285928e4d546fcd0baf5fb0e813f",
+    "apps/admin-web/tests/enterprise-opening.spec.ts": "c2c028cf06dd6303a6b3b6935375a4ef8a0712607de823dfb0a69cec693b9a96",
+    "apps/admin-web/tests/workspace.spec.ts": "ce016915fb19e8e9ea380008088f7bb23df0b3448795ce3a93ab84901854cb4c",
+    "apps/admin-web/package.json": "b9c6101dffe2bb33bfebeadfceea671b9536ea3bb310bffea9228e250e83befc",
+    "docs/examples/enterprise-provisioning.example.json": "df2ed963f16630f4a26098a5f094fab153932d163b0d571f290a6f5df9f84219",
+    "docs/adr/0024-企业开通与两库恢复.md": "01f89f01f482c0dc73dd111888fecd7ef6aa1cc59185ce0e2f57b5fac41a3b61",
+    "docs/development/企业开通与开账.md": "73ee51bb7ffe0116dfa10f6f5e0d285bd82984a3b82560eb4f00b25030a0c96f",
+    "docs/development/开发进度.md": "1224684707f4f483e935635a919380013a849354d2084a21804b633169f35faf",
+    "README.md": "4457ef396f65d5632e0e7d84bc04a0ec728bbbfaa55b46dbec6410fc5d4a5024"
+  }
+}

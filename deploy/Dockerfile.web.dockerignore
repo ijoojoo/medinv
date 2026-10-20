@@ -1,0 +1,8 @@
+**
+!deploy/
+!deploy/trial/
+!deploy/trial/nginx.conf
+!apps/
+!apps/admin-web/
+!apps/admin-web/dist/
+!apps/admin-web/dist/**

@@ -1,0 +1,20 @@
+{
+  "request_id": "00000000-0000-4000-8000-000000000001",
+  "tenant_name": "待替换企业名称",
+  "entity_name": "待替换经营主体名称",
+  "credit_code": "待替换主体信用代码",
+  "warehouse_code": "MAIN",
+  "warehouse_name": "中心仓库",
+  "location_code": "A1",
+  "reason": "核对企业及首批成员后开通",
+  "members": [
+    {
+      "principal_id": "00000000-0000-4000-8000-000000000002",
+      "role_codes": ["OWNER"]
+    },
+    {
+      "principal_id": "00000000-0000-4000-8000-000000000003",
+      "role_codes": ["QUALITY"]
+    }
+  ]
+}

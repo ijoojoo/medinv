@@ -1,0 +1,2598 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "药械进销存 SaaS 核心命令接口",
+    "version": "1.0.0",
+    "description": "技术设计契约；服务尚未实现。核心切片，其他接口见接口登记表。数字金额使用字符串；租户来自可信会话。 Python版技术实现配套，业务接口v1保持兼容；FastAPI代码生成的契约须与此文件进行语义差异校验。"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.invalid",
+      "description": "文档占位地址 不是真实服务"
+    }
+  ],
+  "security": [
+    {
+      "SessionCookie": []
+    }
+  ],
+  "paths": {
+    "/api/v1/context": {
+      "get": {
+        "operationId": "getContext",
+        "summary": "读取可信租户上下文",
+        "tags": [
+          "context"
+        ],
+        "x-permission": "authenticated",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "operationId": "listProducts",
+        "summary": "分页查询可见商品",
+        "tags": [
+          "products"
+        ],
+        "x-permission": "product.read",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/availability": {
+      "get": {
+        "operationId": "getAvailability",
+        "summary": "查询可分配库存快照",
+        "tags": [
+          "inventory"
+        ],
+        "x-permission": "inventory.read",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "warehouse_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sku_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/receipts/{id}/post": {
+      "post": {
+        "operationId": "postReceipt",
+        "summary": "过账已批准验收子批次",
+        "tags": [
+          "receipts"
+        ],
+        "x-permission": "receipt.post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostingResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostReceiptRequest"
+              }
+            }
+          }
+        },
+        "x-business-errors": [
+          "CREDENTIAL_INVALID",
+          "LOT_IDENTITY_CONFLICT",
+          "ALREADY_POSTED",
+          "VERSION_CONFLICT"
+        ]
+      }
+    },
+    "/api/v1/reservations": {
+      "post": {
+        "operationId": "reserveStock",
+        "summary": "为业务行全量原子预占",
+        "tags": [
+          "reservations"
+        ],
+        "x-permission": "inventory.reserve",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReserveRequest"
+              }
+            }
+          }
+        },
+        "x-business-errors": [
+          "INSUFFICIENT_STOCK",
+          "QUALITY_BLOCKED",
+          "LOT_EXPIRED",
+          "RX_REVIEW_REQUIRED"
+        ]
+      }
+    },
+    "/api/v1/reservations/{id}/release": {
+      "post": {
+        "operationId": "releaseReservation",
+        "summary": "释放未消耗预占余量",
+        "tags": [
+          "reservations"
+        ],
+        "x-permission": "inventory.release",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseRequest"
+              }
+            }
+          }
+        },
+        "x-business-errors": [
+          "PAYMENT_PROTECTED",
+          "VERSION_CONFLICT"
+        ]
+      }
+    },
+    "/api/v1/shipments/{id}/post": {
+      "post": {
+        "operationId": "postShipment",
+        "summary": "复核后发货过账",
+        "tags": [
+          "shipments"
+        ],
+        "x-permission": "shipment.post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostingResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostRequest"
+              }
+            }
+          }
+        },
+        "x-business-errors": [
+          "QUALITY_BLOCKED",
+          "LOT_EXPIRED",
+          "CREDENTIAL_INVALID",
+          "CREDIT_LIMIT_EXCEEDED"
+        ]
+      }
+    },
+    "/api/v1/retail-sales/{id}/payment-confirmations": {
+      "post": {
+        "operationId": "confirmRetailPayment",
+        "summary": "记录已发生的人工收款事实",
+        "tags": [
+          "retail-sales"
+        ],
+        "x-permission": "retail.payment_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmPaymentRequest"
+              }
+            }
+          }
+        },
+        "x-business-errors": [
+          "DUPLICATE_PAYMENT_REFERENCE",
+          "PAYMENT_AMOUNT_MISMATCH"
+        ]
+      }
+    },
+    "/api/v1/retail-sales/{id}/complete": {
+      "post": {
+        "operationId": "completeRetailSale",
+        "summary": "完成已收款零售销售和库存过账",
+        "tags": [
+          "retail-sales"
+        ],
+        "x-permission": "retail.complete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostingResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteRetailRequest"
+              }
+            }
+          }
+        },
+        "x-business-errors": [
+          "RX_REVIEW_REQUIRED",
+          "RX_QUANTITY_EXCEEDED",
+          "QUALITY_BLOCKED",
+          "PAYMENT_NOT_CONFIRMED"
+        ]
+      }
+    },
+    "/api/v1/settlements/allocations": {
+      "post": {
+        "operationId": "allocateCash",
+        "summary": "原子核销同一收付款的多笔义务",
+        "tags": [
+          "settlements"
+        ],
+        "x-permission": "finance.allocate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllocationResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocateRequest"
+              }
+            }
+          }
+        },
+        "x-business-errors": [
+          "OVER_ALLOCATION",
+          "COUNTERPARTY_MISMATCH",
+          "VERSION_CONFLICT"
+        ]
+      }
+    },
+    "/api/v1/operations/{client_operation_id}": {
+      "get": {
+        "operationId": "getOperation",
+        "summary": "查询客户端操作已登记结果",
+        "tags": [
+          "operations"
+        ],
+        "x-permission": "operation.read",
+        "parameters": [
+          {
+            "name": "client_operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/ContextGeneration"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；同键重试返回原业务结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或协议头错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "权限或CSRF失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不可见或不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "业务状态 版本 库存或幂等冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "资料或字段校验失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "临时不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "MED_SESSION",
+        "description": "BFF服务端OIDC会话 HttpOnly Secure SameSite=Lax"
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128
+        },
+        "description": "同命令重试保持不变；相同键不同内容返回409"
+      },
+      "ContextGeneration": {
+        "name": "X-Context-Generation",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "description": "正整数版本字符串"
+        },
+        "description": "必须匹配当前会话代次；切租户后旧代次请求拒绝"
+      },
+      "CsrfToken": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "description": "Cookie认证写请求必需"
+      }
+    },
+    "schemas": {
+      "FieldError": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "path",
+          "code",
+          "message"
+        ]
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "field_errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "error",
+          "request_id"
+        ]
+      },
+      "Context": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "context_generation": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "permission_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "entity_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "minItems": 0,
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "tenant_id",
+          "subject_id",
+          "context_generation",
+          "permission_version",
+          "entity_ids",
+          "permissions"
+        ]
+      },
+      "ProductSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "DRUG",
+              "DEVICE"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "category",
+          "version"
+        ]
+      },
+      "ProductPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSummary"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      },
+      "AvailabilityItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "balance_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lot_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "warehouse_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "on_hand": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,13})(\\.[0-9]{1,6})?$",
+            "description": "基本单位数量十进制字符串；业务要求大于0时另行校验"
+          },
+          "reserved": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,13})(\\.[0-9]{1,6})?$",
+            "description": "基本单位数量十进制字符串；业务要求大于0时另行校验"
+          },
+          "blocked": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,13})(\\.[0-9]{1,6})?$",
+            "description": "基本单位数量十进制字符串；业务要求大于0时另行校验"
+          },
+          "available": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,13})(\\.[0-9]{1,6})?$",
+            "description": "基本单位数量十进制字符串；业务要求大于0时另行校验"
+          },
+          "eligible": {
+            "type": "boolean"
+          },
+          "ineligibility_codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          }
+        },
+        "required": [
+          "balance_id",
+          "sku_id",
+          "lot_id",
+          "warehouse_id",
+          "on_hand",
+          "reserved",
+          "blocked",
+          "available",
+          "eligible",
+          "ineligibility_codes",
+          "version"
+        ]
+      },
+      "Availability": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailabilityItem"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "items",
+          "data_as_of"
+        ],
+        "description": "只提供查询快照 不构成库存预占承诺"
+      },
+      "PostReceiptRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "inspection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "posting_segment_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "expected_version",
+          "inspection_id",
+          "posting_segment_id"
+        ],
+        "description": "segment必须是已批准未过账验收子批次；服务端从子批次读取数量金额和码，不接受自由delta",
+        "examples": [
+          {
+            "expected_version": "3",
+            "inspection_id": "00000000-0000-4000-8000-000000000007",
+            "posting_segment_id": "00000000-0000-4000-8000-000000000008"
+          }
+        ]
+      },
+      "PostRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          }
+        },
+        "required": [
+          "expected_version"
+        ]
+      },
+      "PostingResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "posted_document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "posting_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "new_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "ledger_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "event_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "posted_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "posted_document_id",
+          "posting_id",
+          "new_version",
+          "ledger_ids",
+          "event_id",
+          "posted_at"
+        ]
+      },
+      "ReservationLineRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source_line_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "base_qty": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,13})(\\.[0-9]{1,6})?$",
+            "description": "基本单位数量十进制字符串；业务要求大于0时另行校验"
+          }
+        },
+        "required": [
+          "source_line_id",
+          "sku_id",
+          "base_qty"
+        ],
+        "description": "base_qty必须大于0且匹配SKU精度"
+      },
+      "ReserveRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "warehouse_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "SALES_ORDER",
+              "RETAIL_SALE",
+              "PURCHASE_RETURN"
+            ]
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_source_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservationLineRequest"
+            },
+            "minItems": 1,
+            "maxItems": 50
+          }
+        },
+        "required": [
+          "client_operation_id",
+          "entity_id",
+          "warehouse_id",
+          "source_type",
+          "source_id",
+          "expected_source_version",
+          "lines"
+        ],
+        "description": "P0本次请求全量成功或整体失败；有效期由服务器策略决定",
+        "examples": [
+          {
+            "client_operation_id": "00000000-0000-4000-8000-000000000001",
+            "entity_id": "00000000-0000-4000-8000-000000000002",
+            "warehouse_id": "00000000-0000-4000-8000-000000000003",
+            "source_type": "SALES_ORDER",
+            "source_id": "00000000-0000-4000-8000-000000000004",
+            "expected_source_version": "2",
+            "lines": [
+              {
+                "source_line_id": "00000000-0000-4000-8000-000000000005",
+                "sku_id": "00000000-0000-4000-8000-000000000006",
+                "base_qty": "8"
+              }
+            ]
+          }
+        ]
+      },
+      "ReservationAllocation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_line_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "balance_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "base_qty": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,13})(\\.[0-9]{1,6})?$",
+            "description": "基本单位数量十进制字符串；业务要求大于0时另行校验"
+          }
+        },
+        "required": [
+          "id",
+          "source_line_id",
+          "balance_id",
+          "base_qty"
+        ]
+      },
+      "ReservationResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reservation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CONSUMED",
+              "RELEASED",
+              "INVALIDATED"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservationAllocation"
+            },
+            "minItems": 1,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "reservation_id",
+          "version",
+          "state",
+          "expires_at",
+          "allocations"
+        ]
+      },
+      "ReleaseRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "expected_version",
+          "reason"
+        ],
+        "description": "释放全部未消耗余量；已付款保护单必须走恢复或退款命令"
+      },
+      "StateResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "new_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "new_version"
+        ]
+      },
+      "ConfirmPaymentRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "EXTERNAL_MANUAL"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})\\.[0-9]{2}$",
+            "description": "人民币金额字符串 精确到分"
+          },
+          "cash_tendered": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})\\.[0-9]{2}$",
+            "description": "人民币金额字符串 精确到分"
+          },
+          "cash_change": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})\\.[0-9]{2}$",
+            "description": "人民币金额字符串 精确到分"
+          },
+          "external_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "evidence_attachment_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 0,
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "client_operation_id",
+          "expected_version",
+          "method",
+          "amount"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "method": {
+                  "const": "EXTERNAL_MANUAL"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "external_reference"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "method": {
+                  "const": "CASH"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "cash_tendered",
+                "cash_change"
+              ]
+            }
+          }
+        ],
+        "description": "登记已在现实发生的人工确认收款；amount为净额且必须大于0。P0不调用外部支付。现金实收减找零须等于amount。 P0本命令一次确认整笔销售净应收，amount必须等于尚未确认的整笔净应收；暂不开放分次混合收款。",
+        "examples": [
+          {
+            "client_operation_id": "00000000-0000-4000-8000-000000000009",
+            "expected_version": "4",
+            "method": "CASH",
+            "amount": "28.50",
+            "cash_tendered": "30.00",
+            "cash_change": "1.50"
+          }
+        ]
+      },
+      "PaymentResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sale_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "new_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "payment_state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED"
+            ]
+          },
+          "sale_state": {
+            "type": "string",
+            "enum": [
+              "PAID_PENDING_POST"
+            ]
+          },
+          "confirmation_source": {
+            "type": "string",
+            "enum": [
+              "MANUAL"
+            ]
+          }
+        },
+        "required": [
+          "payment_id",
+          "sale_id",
+          "new_version",
+          "payment_state",
+          "sale_state",
+          "confirmation_source"
+        ]
+      },
+      "CompleteRetailRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "reservation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payment_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 1
+          }
+        },
+        "required": [
+          "expected_version",
+          "reservation_id",
+          "payment_ids"
+        ],
+        "description": "重验药师审核、累计用量、库存和付款；失败保留已确认收款并进入恢复",
+        "examples": [
+          {
+            "expected_version": "5",
+            "reservation_id": "00000000-0000-4000-8000-000000000010",
+            "payment_ids": [
+              "00000000-0000-4000-8000-000000000011"
+            ]
+          }
+        ]
+      },
+      "AllocationLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "settlement_item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_item_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})\\.[0-9]{2}$",
+            "description": "人民币金额字符串 精确到分"
+          }
+        },
+        "required": [
+          "settlement_item_id",
+          "expected_item_version",
+          "amount"
+        ]
+      },
+      "AllocateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cash_document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_cash_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AllocationLine"
+            },
+            "minItems": 1,
+            "maxItems": 50
+          }
+        },
+        "required": [
+          "client_operation_id",
+          "cash_document_id",
+          "expected_cash_version",
+          "allocations"
+        ],
+        "description": "同主体往来币种；所有分配全量原子提交，金额必须大于0",
+        "examples": [
+          {
+            "client_operation_id": "00000000-0000-4000-8000-000000000012",
+            "cash_document_id": "00000000-0000-4000-8000-000000000013",
+            "expected_cash_version": "1",
+            "allocations": [
+              {
+                "settlement_item_id": "00000000-0000-4000-8000-000000000014",
+                "expected_item_version": "2",
+                "amount": "100.00"
+              }
+            ]
+          }
+        ]
+      },
+      "AllocationResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "allocation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "cash_document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "new_cash_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "正整数版本字符串"
+          },
+          "remaining_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})\\.[0-9]{2}$",
+            "description": "人民币金额字符串 精确到分"
+          }
+        },
+        "required": [
+          "allocation_ids",
+          "cash_document_id",
+          "new_cash_version",
+          "remaining_amount"
+        ]
+      },
+      "OperationResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resource_type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "resource_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "RECORDED",
+              "COMPLETED",
+              "REQUIRES_ACTION"
+            ]
+          },
+          "result_url": {
+            "type": "string",
+            "pattern": "^/api/v1/"
+          },
+          "data_as_of": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "client_operation_id",
+          "resource_type",
+          "resource_id",
+          "state",
+          "result_url",
+          "data_as_of"
+        ],
+        "description": "仅返回当前租户及权限可见操作；未知操作返回404，不代表现实中必然未收款"
+      },
+      "ContextResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ]
+      },
+      "ProductPageResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ProductPage"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ]
+      },
+      "AvailabilityResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Availability"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ]
+      },
+      "PostingResultResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PostingResult"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ],
+        "examples": [
+          {
+            "data": {
+              "posted_document_id": "00000000-0000-4000-8000-000000000015",
+              "posting_id": "00000000-0000-4000-8000-000000000016",
+              "new_version": "6",
+              "ledger_ids": [
+                "00000000-0000-4000-8000-000000000017"
+              ],
+              "event_id": "00000000-0000-4000-8000-000000000018",
+              "posted_at": "2026-10-08T08:00:00Z"
+            },
+            "request_id": "00000000-0000-4000-8000-000000000019"
+          }
+        ]
+      },
+      "ReservationResultResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ReservationResult"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ]
+      },
+      "StateResultResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/StateResult"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ]
+      },
+      "PaymentResultResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PaymentResult"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ]
+      },
+      "AllocationResultResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AllocationResult"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ]
+      },
+      "OperationResultResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/OperationResult"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "data",
+          "request_id"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "recorded_at": "2026-10-16T18:12:06.937370+08:00",
+  "increment": "0.24 follow-up: warehouse transfer review, dispatch and receipt work queue with direct original-document launch",
+  "business_migration": "b0026",
+  "control_migration": "c0014",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 23,
+  "new_transfer_work_stages": 3,
+  "new_migrations": false,
+  "new_dependencies": false,
+  "new_permissions": false,
+  "backend_tests": 89,
+  "backend_integration_tests": 89,
+  "new_backend_transfer_queue_cases": 10,
+  "backend_scope": [
+    "test_transfer_queue.py",
+    "test_work_queue.py",
+    "test_return_queue.py",
+    "test_transfers.py",
+    "test_transfer_losses.py",
+    "test_api.py"
+  ],
+  "backend_counts_note": "10 new cases included in 89 targeted checks. Previous full and targeted results are historical and not added.",
+  "real_oidc_browser_tests": 12,
+  "new_browser_tests": 2,
+  "browser_regression_tests": 10,
+  "browser_scope": [
+    "transfer-queue.spec.ts",
+    "transfers.spec.ts",
+    "transfer-losses.spec.ts",
+    "work-queue.spec.ts",
+    "return-queue.spec.ts"
+  ],
+  "failures": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "full_backend_suite_this_run": false,
+  "full_browser_suite_this_run": false,
+  "python_lint_and_format": "passed; 195 Python files",
+  "python_types": "mypy strict passed; 112 source files",
+  "frontend_format": "passed",
+  "frontend_build": "vue-tsc and Vite passed",
+  "business_proof": [
+    "Owner/quality use the work queue to independently review and dispatch 10 units, receive 8 qualified units, then 2 quarantined units. One pending receipt remains after the first receipt and disappears when transit reaches zero.",
+    "Final destination stock: 8 available and 2 isolated; transit stock 0; two receipt records. Original payable remains CNY 130, no new receivable.",
+    "Transfer work exposes source-to-destination warehouse route; text search accepts either warehouse name or the document number. Read-only member can open the exact original transfer, cannot receive, and direct unauthorized command returns 403.",
+    "Failed queue query clears old rows, retry restores them, ordinary return-to-list navigation works, and enterprise switch clears the old transfer launch and filters.",
+    "Backend covers review/dispatch/partial or quarantined receipt, cancelled/rejected transfers, failed dispatch preserving work, loss requests awaiting review/post, partial posted loss leaving physical receipt work, final loss closure, read-only auditing, search, permissions, entity/tenant fences and HTTP no-store.",
+    "Regression covers original transfer creation and receipt, original loss posting and cancellation after late arrival, procurement/sales/retail work queue, return work queue and enterprise switch."
+  ],
+  "verification_adjustments": [
+    "Initial new UI assertion expected quality_status from availability response; corrected to the existing eligible field used by the established inventory API. Final two new tests passed without retries."
+  ],
+  "boundaries": [
+    "Only original transfer stages DRAFT, APPROVED, IN_TRANSIT/PART_RECEIVED are listed. Draft/approved loss applications do not themselves reduce transit or create separate work items.",
+    "After late goods arrive and close the parent transfer, old unposted loss applications still require review/cancellation in the original document; no automatic loss cancellation or posting.",
+    "Pending dispatch does not reserve stock or guarantee fulfillment. Existing warehouse, stock, lot/quality, count-freeze, permission, version and idempotency checks remain authoritative.",
+    "Pending receipt means unresolved transit, including shortages to resolve through original loss handling. Only actual qualified receipt contributes available stock; quarantine receipt clears transit without becoming saleable.",
+    "Queue is read-only: no stock/cost/AR/AP/audit/outbox write. No new report, notification, AI or third-party integration; stock counts are next."
+  ],
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:d50bb7ffa702636357ad2ebdb77f03fe458a4265704b7ef894fdeb4a38ca4a5a",
+  "container_smoke": "passed: UID 10001, both databases ready, 120 API paths and bounded expiry scan",
+  "local_services": "Core/auth/admin returned 200; updated core running; expiry worker resumed after tests at 18:11 local",
+  "next_three_steps": [
+    "Connect stock count entry, independent review and posting work to original documents.",
+    "Run continuous multi-role procurement, wholesale/retail, returns, transfers and counts with quantity, cost and AR/AP reconciliation.",
+    "Prepare enterprise trial workflow for master data, opening balances, roles and opening checks; prioritize blocking defects."
+  ],
+  "baseline_records": {
+    "docs/development/业务待办验证.json": "10ee3723dc9ba8fb4f65a42aa340ca00b56ba3d283194cff8084fd1b6fe9e987",
+    "docs/development/退货待办验证.json": "b75ac4e35e9c29e6ed5b31d8a4f2b1490b3b42f390e46c77fa51d3f2ce6ab8c6"
+  },
+  "result_sha256": {
+    "artifacts/backend-transfer-queue.xml": "fce25064cb50989776ba754e2a001c793ca045b6304bfc6286cacab3067c50c8",
+    "artifacts/browser-transfer-queue.json": "3eba5c2e83d0ac1348f95741215b83950cbcf3674b41ffbf77d9fb7e52c9e515",
+    "artifacts/browser-transfer-queue-regression.json": "1123afdea65a6a1767d81e22c20375e9020821bec94a35ae9a50f0c0d87a28e4",
+    "artifacts/container-transfer-queue.log": "45c3023030091fc81a1f7d08d1b3e547e795843f68023d77fb291f259d6a9286"
+  },
+  "inspected_screenshots": {
+    "artifacts/transfer-queue-partial.png": "54f14063d58eda7ad1d60457f57e809eff1dba79298023c69798e78638a653ff"
+  },
+  "source_sha256": {
+    "backend/src/medinv/modules/workspace/application/queue.py": "43f67720e0e299acd209b841e3b8ad2563ff265fe55778cb56922aa27d4e3398",
+    "backend/tests/integration/test_transfer_queue.py": "a9b38fce201f6c09cbdc1b679a46edcab4ca2a3ab38e402bd2e687093e903bca",
+    "apps/admin-web/src/workQueue.ts": "69cd1dd8c3e4707088360374ce2cf7f3fab501bdaaad1dbca3f61ed4279aa942",
+    "apps/admin-web/src/WorkQueue.vue": "5ccc871ec47d34c62df0bae1ac3b3f40e22443f14d804829fae8a313aa974d28",
+    "apps/admin-web/src/TransfersPage.vue": "e4193193460a8fff93442df4b5decc90e16f74738def092cee95c1719684e7be",
+    "apps/admin-web/src/App.vue": "e2b6272dc316e85749cbc680ef456f987099db734fa55511afd2ff5dd45c7da3",
+    "apps/admin-web/tests/transfer-queue.spec.ts": "4233c743362b9caa50cfd3c1df3c97ace40f03a1128726b234b3149ca9809f8d",
+    "apps/admin-web/tests/work-queue.spec.ts": "59d663ac36b16c75995bc2e1df5bcbf9aa65a02405fb59b4e265d4c179eee343",
+    "apps/admin-web/tests/return-queue.spec.ts": "f850b35f9c01a544c2d2da804f32f9956a000d0bcc2dc29b14e03e2d314ae1dc",
+    "contracts/openapi/implemented-core-openapi.json": "a2e5504a0360ee6a514af264bc65a91c342a754548e7642479b4e36cb9f5ea70",
+    "docs/development/业务待办操作指引.md": "e3fedd46f44a87a5550233d53141d67704eee4f57d1d5b17a43cde1ac229d370",
+    "docs/development/开发进度.md": "41bfbd58ec117c063a6e38b2abd76091a019f4534978caca39bd2e70fba5a077",
+    "README.md": "24ccb38e2f0a6820b283623676f05057be0525e7d4e918949860d9c89f0577e8"
+  }
+}

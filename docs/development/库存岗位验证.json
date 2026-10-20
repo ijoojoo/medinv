@@ -1,0 +1,416 @@
+{
+  "recorded_at": "2026-10-16T22:17:35.651909+08:00",
+  "increment": "0.24 inventory job handoff and loss/quality work queue",
+  "business_migration": "b0026",
+  "control_migration": "c0016",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 30,
+  "new_work_kinds": [
+    "transfer_loss_review",
+    "transfer_loss_post",
+    "quality_review",
+    "quality_post"
+  ],
+  "new_migrations": false,
+  "new_permissions": false,
+  "new_dependencies": false,
+  "new_http_paths": false,
+  "backend_tests": 617,
+  "new_backend_tests": 11,
+  "targeted_backend_tests": 46,
+  "full_backend_suite_this_run": true,
+  "backend_categories": {
+    "architecture": 2,
+    "contracts": 1,
+    "integration": 552,
+    "unit": 62
+  },
+  "backend_warning": "Existing Starlette TestClient httpx deprecation",
+  "new_browser_tests": 1,
+  "browser_regression_tests": 17,
+  "browser_unique_scenarios_passed": 18,
+  "full_browser_suite_this_run": false,
+  "browser_runs": {
+    "browser-inventory-jobs.json": {
+      "startTime": "2026-10-16T14:14:36.852Z",
+      "duration": 48125.271,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "browser-inventory-jobs-regression.json": {
+      "startTime": "2026-10-16T14:10:42.948Z",
+      "duration": 206730.041,
+      "expected": 17,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "browser_scope": [
+    "inventory-jobs",
+    "count-queue",
+    "counts",
+    "mainline",
+    "quality",
+    "return-queue",
+    "transfer-losses",
+    "transfer-queue",
+    "work-queue"
+  ],
+  "preliminary_changes": [
+    "Corrected the new scenario isolation-stock assertion to use the existing QUALITY_NOT_QUALIFIED eligibility code; availability does not expose quality_status.",
+    "Added a wait for the selected loss detail before capturing its screenshot; repeated the new scenario after inspecting the initial loading screenshot.",
+    "Formatted package.json after adding the test command."
+  ],
+  "proof_of_behavior": [
+    "Four read-only stages retain tenant/entity and module read permission checks.",
+    "Loss item identifies both the parent transfer and exact loss; pending loss survives full delayed receipt and remains cancellable.",
+    "Quality approval does not change stock; original posting performs release or write-off.",
+    "Warehouse/quality actors retain separation; viewer cannot mutate through UI or direct HTTP.",
+    "Count freeze applies across warehouses through approval; posting releases it and permits a cashier reservation, subsequently cancelled before payment.",
+    "Scenario quantity/cost reconcile to 7 and 80.528, source warehouse 1 and destination 6, no remaining work or transit; AP stays 130 and AR stays 0."
+  ],
+  "scenario": {
+    "recorded_at": "2026-10-16T14:15:23.787Z",
+    "tenant_name": "库存协作企业-358b8d9a",
+    "tenant_id": "c9e1206a-31a2-5f24-8c28-cbbad916ad9b",
+    "entity_id": "2a52ab3f-af92-542e-9d21-36018b709f99",
+    "documents": [
+      {
+        "type": "transfer",
+        "id": "de978595-1bbb-4713-8bdf-6dec0c33f4bf",
+        "number": "TR-DE9785951BBB47138BDF6DEC0C33F4BF",
+        "state": "DRAFT",
+        "version": "1"
+      },
+      {
+        "type": "loss",
+        "id": "7c96489b-ccb5-4ae8-94ec-768abebae87a",
+        "number": "TRL-7C96489BCCB54AE894EC768ABEBAE87A"
+      },
+      {
+        "type": "RELEASE",
+        "id": "4b749ffe-55f7-4278-b396-24bf192d7f03",
+        "number": "QD-4B749FFE55F74278B39624BF192D7F03"
+      },
+      {
+        "type": "WRITE_OFF",
+        "id": "6c2536f5-717e-41a1-8359-ec6f18aed318",
+        "number": "QD-6C2536F5717E41A18359EC6F18AED318"
+      },
+      {
+        "type": "transfer",
+        "id": "613fc119-e71f-4fdd-95c9-f6c462736b74",
+        "number": "TR-613FC119E71F4FDD95C9F6C462736B74",
+        "state": "DRAFT",
+        "version": "1"
+      },
+      {
+        "type": "loss",
+        "id": "a49111d9-2263-4864-b565-a757597750f9",
+        "number": "TRL-A49111D922634864B565A757597750F9"
+      },
+      {
+        "type": "count",
+        "id": "e1ef67f1-0563-4026-b389-e90e18a04121",
+        "number": "SC-E1EF67F105634026B389E90E18A04121",
+        "state": "COUNTING",
+        "version": "1"
+      }
+    ],
+    "checkpoints": [
+      {
+        "label": "采购入库",
+        "qty": "10",
+        "cost": "115.04"
+      },
+      {
+        "label": "调拨发出仍为自有库存",
+        "qty": "10",
+        "cost": "115.04"
+      },
+      {
+        "label": "实收7件、核销短少1件",
+        "qty": "9",
+        "cost": "103.536"
+      },
+      {
+        "label": "放行只改变质量状态",
+        "qty": "9",
+        "cost": "103.536"
+      },
+      {
+        "label": "报损扣减实物和成本",
+        "qty": "8",
+        "cost": "92.032"
+      },
+      {
+        "label": "迟到货物与遗留损失结清",
+        "qty": "8",
+        "cost": "92.032"
+      },
+      {
+        "label": "盘亏1件结单后解除冻结",
+        "qty": "7",
+        "cost": "80.528"
+      }
+    ],
+    "final_qty": "7",
+    "final_cost": "80.528",
+    "warehouse_a": "1",
+    "warehouse_b": "6",
+    "final_ar": "0",
+    "final_ap": "130",
+    "pending_work": 0,
+    "actors": {
+      "owner": {
+        "principal_id": "f1871731-6e10-5ae6-900b-0e5013c7c69b",
+        "role": "OWNER"
+      },
+      "quality": {
+        "principal_id": "00801e17-c524-5d0b-94ec-4f6de756e6f9",
+        "role": "QUALITY"
+      },
+      "warehouse": {
+        "principal_id": "573bdb3b-371e-51e7-b842-2a64593455c5",
+        "role": "WAREHOUSE"
+      },
+      "cashier": {
+        "principal_id": "d062b640-7157-532d-980e-b670427953bc",
+        "role": "CASHIER"
+      },
+      "viewer": {
+        "principal_id": "64d8c162-ebea-58e2-956b-cb5a6630ca41",
+        "role": "VIEWER"
+      }
+    },
+    "checks": [
+      "original warehouse/quality work item handoff",
+      "partial qualified and quarantine receipts",
+      "loss after late full receipt remains visible",
+      "independent release and write-off",
+      "count freeze crosses warehouses until posting",
+      "cashier can sell after posting",
+      "viewer cannot approve",
+      "no settlement changes"
+    ]
+  },
+  "python_lint_and_format": "passed; 205 backend files",
+  "python_types": "mypy strict passed, 114 source files",
+  "frontend_types": "strict TypeScript for new scenario and vue-tsc passed",
+  "frontend_format": "passed",
+  "frontend_build": "passed",
+  "visual_check": [
+    "inventory-jobs-loss.png inspected after detail loaded",
+    "inventory-jobs-ledger.png inspected"
+  ],
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:871a260cbe52b799291d7ec1bef46a4db81a9d9a225c00c3ab6a8b708adb57e6",
+  "container_smoke": "passed; UID 10001, both databases, 120 API paths, bounded expiry scan",
+  "local_health": {
+    "core": 200,
+    "auth": 200,
+    "admin": 200
+  },
+  "core_service_restarted": true,
+  "expiry_worker_restored": true,
+  "boundaries": [
+    "Development validation release, not production acceptance.",
+    "Work queues read existing applications; do not auto-create, auto-cancel, auto-post, or assign people.",
+    "Read scopes remain tenant/entity/module, without warehouse or price-field secrecy.",
+    "No additional concurrent workload benchmark or production-capacity acceptance.",
+    "No change to cross-entity transfers, loss recovery, carrier claims or posted adjustment reversal.",
+    "Prior return-detail first-run timeouts were not established as fixed; this run is not a root-cause resolution claim."
+  ],
+  "evidence": [
+    {
+      "path": "backend/src/medinv/modules/workspace/application/queue.py",
+      "bytes": 16415,
+      "sha256": "01d750a6e264019f5dedc76926e447dce199aaa9848af36abe04b179ee4b1a73"
+    },
+    {
+      "path": "backend/tests/integration/test_inventory_job_queue.py",
+      "bytes": 7524,
+      "sha256": "b46ba07d5a92bcd56e75d9e12ffc0ec93a1423e6972b821587a3e1be6bc520c9"
+    },
+    {
+      "path": "backend/tests/integration/test_transfer_queue.py",
+      "bytes": 6207,
+      "sha256": "57edcb457d285f3aaedae912b3aa73feec92753ddfd6bd253f1921b5225843d8"
+    },
+    {
+      "path": "apps/admin-web/src/workQueue.ts",
+      "bytes": 503,
+      "sha256": "d4fa72afa615099647645ba45d0788884cbf89cbe0c2b1837d188bb3b0f118a1"
+    },
+    {
+      "path": "apps/admin-web/src/WorkQueue.vue",
+      "bytes": 6871,
+      "sha256": "d725dbc0bfad6dfd53ea00ce4377380c4f2099f48adcacb13f5877bb765fcdcb"
+    },
+    {
+      "path": "apps/admin-web/src/QualityPage.vue",
+      "bytes": 11007,
+      "sha256": "a43a54cb97845e6a512531827300f3c386bd8a914e7903a2d158630aede5073a"
+    },
+    {
+      "path": "apps/admin-web/src/TransfersPage.vue",
+      "bytes": 13104,
+      "sha256": "9d2bbf5039565d6ba726a6ddcf84a3cc5674b4766c0f76c2b12292b8ed8709f8"
+    },
+    {
+      "path": "apps/admin-web/src/TransferDetail.vue",
+      "bytes": 11239,
+      "sha256": "d34e76cbaa3f8023e530df80c94ed0b366c80f7e4d45ed85bff19e133a77327d"
+    },
+    {
+      "path": "apps/admin-web/src/TransferLossPanel.vue",
+      "bytes": 12156,
+      "sha256": "5ef66dd4d4eee11d3889befd86cc2e72e6fd4e5c80960778793b17d7cb72151f"
+    },
+    {
+      "path": "apps/admin-web/src/App.vue",
+      "bytes": 32146,
+      "sha256": "16bf59b949ad70ece902682e35512423dcd9be08913ee37aecc137e4d20a335d"
+    },
+    {
+      "path": "apps/admin-web/tests/inventory-jobs.spec.ts",
+      "bytes": 22796,
+      "sha256": "7e6a99c547849215e82cea7e462b0f05fa94e43a2a02af5aa03ac0e945b99f99"
+    },
+    {
+      "path": "apps/admin-web/tests/count-queue.spec.ts",
+      "bytes": 11385,
+      "sha256": "e63e0ccc25bcb2943d3c6b37ae3c9de50932b8a8758214a2b205cda4c7545f1a"
+    },
+    {
+      "path": "apps/admin-web/tests/return-queue.spec.ts",
+      "bytes": 13716,
+      "sha256": "8b16ad08440d60f157269fee0e83c4fbe426c31928d79545a993c7ad3fd84346"
+    },
+    {
+      "path": "apps/admin-web/tests/transfer-queue.spec.ts",
+      "bytes": 10610,
+      "sha256": "a8ecce75b131710841448ed65b2b44bddfa498eb9af5241e52beca371f2fd8ea"
+    },
+    {
+      "path": "apps/admin-web/tests/work-queue.spec.ts",
+      "bytes": 15687,
+      "sha256": "62cf09307a34fc48b91a79b420c59da664a14803e542a80daf7874e77fa4f252"
+    },
+    {
+      "path": "apps/admin-web/package.json",
+      "bytes": 1080,
+      "sha256": "4409d7b165b931e00b12ccbca2fd5fe0e55996ab48ada2cf091ade1a19769941"
+    },
+    {
+      "path": "contracts/openapi/implemented-core-openapi.json",
+      "bytes": 657735,
+      "sha256": "292bb4961d03b1833ddd6558127701861c9b651c671572f6ec10643c9bb44401"
+    },
+    {
+      "path": "artifacts/backend-inventory-jobs-targeted.xml",
+      "bytes": 7286,
+      "sha256": "5a520fb561e07fe1b801b698a3534c4b5b7a77d3166d7c226285a069206cf9eb"
+    },
+    {
+      "path": "artifacts/backend-inventory-jobs.xml",
+      "bytes": 90364,
+      "sha256": "dc95d5b814ccc78cb059135cecc56bed7813df9476e23254d50dfc7d91b559d8"
+    },
+    {
+      "path": "artifacts/browser-inventory-jobs.json",
+      "bytes": 4541,
+      "sha256": "17fd1c3a66a2d5ae2b912a7fa252039017c322a1927b7e1c4c49bcd048ad7860"
+    },
+    {
+      "path": "artifacts/browser-inventory-jobs-regression.json",
+      "bytes": 24335,
+      "sha256": "974e2094ae74418a83708d2b5a1f6218f121aefb1bf9a98e6d134ba7581ebf03"
+    },
+    {
+      "path": "artifacts/inventory-jobs-manifest.json",
+      "bytes": 968,
+      "sha256": "d8275986da0446c569c767db720ac92c04bca266a72afd2beec3fbe3956e9c3a"
+    },
+    {
+      "path": "artifacts/inventory-jobs-reconciliation.json",
+      "bytes": 3179,
+      "sha256": "5a195f35e7e37d507d297904d8ab8688e27963ccd68ce5acd8a639738d6e24f1"
+    },
+    {
+      "path": "artifacts/inventory-jobs-loss.png",
+      "bytes": 145022,
+      "sha256": "0b297c0ab55a20430c878c54a7b829a1ff351a2ced7b3e1e949b1d372dfcf7ca"
+    },
+    {
+      "path": "artifacts/inventory-jobs-ledger.png",
+      "bytes": 202065,
+      "sha256": "65dda63f95d47869e545b8adc15fccc9812d4e84fc02f1b55e897793b780a985"
+    },
+    {
+      "path": "artifacts/container-inventory-jobs-build.log",
+      "bytes": 2082,
+      "sha256": "246869439e07d398ce6566946b74ee04b5f78315a8972774144b2e0f1437da53"
+    },
+    {
+      "path": "artifacts/container-inventory-jobs.log",
+      "bytes": 801,
+      "sha256": "1f5a8ed07f591cd107f61873cedd3f195db0bc94d0750ce3ff3ff6ff35ba937c"
+    },
+    {
+      "path": "artifacts/mainline-trial-reconciliation.json",
+      "bytes": 14494,
+      "sha256": "f465f55c7811d03391aa089ee73bf72447188147e7f6497b1755b2ca07f42d3a"
+    },
+    {
+      "path": "artifacts/mainline-trial-db.json",
+      "bytes": 2357,
+      "sha256": "6f6eb8f0776938f686569a24104ba78c4bb0cd8f8493c275f02473ae50d420b4"
+    },
+    {
+      "path": "docs/adr/0028-库存差异待办与岗位衔接.md",
+      "bytes": 1935,
+      "sha256": "f659476a8854eac6f7aa5231cb203402a21c76a3fc9c7c11fd72d02fec75de20"
+    },
+    {
+      "path": "docs/development/库存岗位交接.md",
+      "bytes": 4227,
+      "sha256": "26a70cf1480363f923efa92e500f0c43da3ad18bc5a7e343e2c73a6b20b6e510"
+    },
+    {
+      "path": "docs/development/业务待办操作指引.md",
+      "bytes": 13197,
+      "sha256": "47a422818626bbebe7d35ee87db26770b63d670b0ba7274b7bbc59d882484ba9"
+    },
+    {
+      "path": "docs/development/岗位分工与业务交接.md",
+      "bytes": 7760,
+      "sha256": "8fd3f26c16c14ffed570bbc2d15acefd50c775fc96226cd8a4aba58330b2d6e4"
+    },
+    {
+      "path": "docs/development/在途损失操作指引.md",
+      "bytes": 4153,
+      "sha256": "86b98bb8f1873143504340e0c955bba5dd9b25cbbf9a0b92e75eaec168ca0cd9"
+    },
+    {
+      "path": "docs/development/开发进度.md",
+      "bytes": 45824,
+      "sha256": "01f17392702d5ad8b7e8026ebff38c6dff68a559d2d4b112c4496724bd4799b9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 34578,
+      "sha256": "806f17d7a101a357f8c1333137a71fc985fc9c490173349c5667d830b66ba548"
+    }
+  ],
+  "next_three_steps": [
+    "同一企业采购批零、退货、库存、往来及异常恢复连续跨岗试用",
+    "首期试用部署与备份恢复验证",
+    "空白企业开账及首批交易验收"
+  ]
+}

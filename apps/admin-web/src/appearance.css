@@ -1,0 +1,450 @@
+/* Colored chrome and neutral work surfaces share the selected accent palette. */
+:root {
+  --ui-accent: #245fce;
+  --ui-accent-hover: #174ba9;
+  --ui-soft: #eef4ff;
+  --ui-tint: #f7faff;
+  --ui-accent-line: #b9cff3;
+  --ui-text: #22344a;
+  --ui-muted: #52667b;
+  --ui-border: #dce4ee;
+  --ui-bg: #f3f6fa;
+  --ui-row-hover: #f6f9fe;
+  --ui-header: #fff;
+  --ui-header-end: #fff;
+  --ui-header-text: var(--ui-text);
+  --ui-header-hover: var(--ui-tint);
+  --ui-header-selected: var(--ui-soft);
+  --ui-shadow: 0 2px 8px #19335306;
+  --el-color-primary: var(--ui-accent);
+  --el-color-primary-dark-2: var(--ui-accent-hover);
+  --el-color-primary-light-3: color-mix(in srgb, var(--ui-accent) 70%, white);
+  --el-color-primary-light-5: color-mix(in srgb, var(--ui-accent) 50%, white);
+  --el-color-primary-light-7: var(--ui-accent-line);
+  --el-color-primary-light-8: color-mix(in srgb, var(--ui-accent) 14%, white);
+  --el-color-primary-light-9: var(--ui-soft);
+  --el-text-color-primary: var(--ui-text);
+  --el-text-color-regular: var(--ui-muted);
+  --el-border-color: var(--ui-border);
+  --el-fill-color-light: var(--ui-tint);
+  color: var(--ui-text);
+  background: var(--ui-bg);
+}
+
+:root[data-theme="teal"] {
+  --ui-accent: #087968;
+  --ui-text: #243c34;
+  --ui-muted: #627269;
+  --ui-border: #dce6df;
+  --ui-bg: #edf3f0;
+  --ui-accent-hover: #05645e;
+  --ui-soft: #e6f3ec;
+  --ui-tint: #f5fbf9;
+  --ui-accent-line: #a7d9cf;
+  --ui-row-hover: #f5fbf8;
+  --ui-header: #fff;
+  --ui-header-end: #fff;
+}
+:root[data-theme="violet"] {
+  --ui-accent: #7054b8;
+  --ui-accent-hover: #563c98;
+  --ui-soft: #f2effb;
+  --ui-tint: #faf8fe;
+  --ui-accent-line: #d2c6ed;
+  --ui-row-hover: #faf8fd;
+  --ui-header: #fff;
+  --ui-header-end: #fff;
+}
+.theme-select {
+  height: 30px;
+  width: 84px;
+  padding: 3px 6px;
+  border: 1px solid #ffffff40;
+  border-radius: 5px;
+  background: #ffffff12;
+  color: var(--ui-header-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.theme-select:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+.theme-select:hover {
+  background: var(--ui-header-hover);
+}
+.theme-select option {
+  color: var(--ui-text);
+  background: white;
+}
+.el-table {
+  --el-table-header-bg-color: var(--ui-tint);
+  --el-table-row-hover-bg-color: var(--ui-soft);
+}
+.app-shell .business-form label,
+.app-shell .business-toolbar label {
+  color: var(--ui-muted);
+}
+.app-shell .business-form input,
+.app-shell .business-form select,
+.app-shell .business-form textarea {
+  color: var(--ui-text);
+}
+.workspace-shortcuts button:hover {
+  color: var(--ui-accent);
+  background: var(--ui-soft);
+  border-color: var(--ui-accent-line);
+}
+
+/* Keep the existing retail workspace and the entry grid's density rules local. */
+.workspace-chrome,
+.work-tabs,
+.app-shell:not([data-module="retail"]) main {
+  font-family: "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.app-shell:not([data-module="retail"]) .module-content {
+  --line: var(--ui-border);
+  --surface: #fff;
+  --muted: var(--ui-muted);
+  color: var(--ui-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.app-shell:not([data-module="retail"]) .module-content .panel {
+  border-color: var(--ui-border);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: var(--ui-shadow);
+}
+.app-shell:not([data-module="retail"]) .module-content :is(h2, h3) {
+  color: var(--ui-text);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.app-shell:not([data-module="retail"]) .module-content .panel-heading {
+  margin-bottom: 16px;
+}
+.app-shell:not([data-module="retail"]) .module-content .panel-heading h3 {
+  font-size: 17px;
+}
+.app-shell:not([data-module="retail"]) .module-content .business-toolbar {
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.app-shell:not([data-module="retail"])
+  .module-content
+  :is(.business-form, .business-toolbar)
+  label {
+  gap: 6px;
+  color: #4b5e73;
+}
+.app-shell:not([data-module="retail"])
+  .module-content
+  :is(.business-form, .business-toolbar)
+  :is(input, select, textarea) {
+  border-color: var(--ui-border);
+  padding: 8px 10px;
+  color: var(--ui-text);
+  accent-color: var(--ui-accent);
+}
+.app-shell:not([data-module="retail"])
+  .module-content
+  :is(.business-form, .business-toolbar)
+  :is(input, select, textarea):focus {
+  outline: 2px solid var(--ui-accent-line);
+  outline-offset: 1px;
+  border-color: var(--ui-accent);
+}
+.app-shell:not([data-module="retail"])
+  .module-content
+  :is(input, textarea)::placeholder {
+  color: #79899b;
+}
+.app-shell:not([data-module="retail"])
+  .module-content
+  :is(.form-note, .cell-sub, .facts dt) {
+  color: var(--ui-muted);
+}
+.app-shell:not([data-module="retail"]) .module-content .facts dd {
+  color: var(--ui-text);
+}
+.app-shell:not([data-module="retail"]) .module-content .el-table {
+  --el-table-border-color: #e7edf4;
+  --el-table-text-color: var(--ui-text);
+}
+.app-shell:not([data-module="retail"])
+  .module-content
+  .el-table
+  th.el-table__cell {
+  background: var(--ui-tint) !important;
+  color: #465c76;
+  font-size: 13px;
+  height: 42px;
+}
+.app-shell:not([data-module="retail"])
+  .module-content
+  .el-table
+  td.el-table__cell {
+  font-size: 13px;
+}
+.app-shell:not([data-module="retail"]) .module-content .el-table .cell-sub {
+  display: block;
+}
+.app-shell:not([data-module="retail"]) .module-content .pager {
+  padding-top: 14px;
+  margin-top: 16px;
+  border-top: 1px solid var(--ui-border);
+}
+.app-shell:not([data-module="retail"]) .module-content .form-actions {
+  margin-top: 18px;
+}
+.workspace-shortcuts {
+  border-color: var(--ui-border);
+  box-shadow: var(--ui-shadow);
+}
+.workspace-shortcuts > span {
+  color: var(--ui-muted);
+}
+.workspace-shortcuts button {
+  color: var(--ui-text);
+  border-color: var(--ui-border);
+  font-weight: 500;
+}
+.workspace-shortcuts button > span:first-child {
+  color: var(--ui-accent);
+}
+@media (max-width: 720px) {
+  .app-shell:not([data-module="retail"]) .module-content .panel {
+    padding: 14px;
+  }
+}
+@media (max-width: 720px) {
+  .theme-select {
+    width: 76px;
+  }
+  .workspace-masthead .wordmark .brand-mark {
+    display: none;
+  }
+  .workspace-masthead .account .el-select {
+    width: 112px;
+  }
+}
+
+/* Shared shell, input sizing, and bounded overlay layers. Element overlays use its own z-index allocator above navigation. */
+:root {
+  --ui-header-height: 56px;
+  --ui-tabs-height: 42px;
+  --ui-control-height: 36px;
+  --ui-layer-chrome: 100;
+  --ui-layer-navigation: 200;
+  --ui-danger: #b3261e;
+  --ui-warning: #855b08;
+  --ui-success: #166534;
+  --el-color-success: var(--ui-success);
+  --el-color-warning: var(--ui-warning);
+  --el-color-danger: var(--ui-danger);
+  --el-color-error: var(--ui-danger);
+  --el-color-info: #52667b;
+  --ui-space-1: 4px;
+  --ui-space-2: 8px;
+  --ui-space-3: 12px;
+  --ui-space-4: 16px;
+  --ui-space-6: 24px;
+  --el-component-size: var(--ui-control-height);
+  --el-border-radius-base: 6px;
+}
+.app-shell .el-tag,
+.el-dialog .el-tag {
+  font-size: 12px;
+}
+html,
+body,
+#app {
+  height: 100%;
+}
+.app-shell {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--ui-bg);
+}
+.workspace-chrome {
+  flex: none;
+  z-index: var(--ui-layer-chrome);
+  border-bottom: 1px solid var(--ui-border);
+  box-shadow: none;
+}
+.workspace-masthead {
+  height: var(--ui-header-height);
+  min-height: var(--ui-header-height);
+  gap: 16px;
+}
+.workspace-masthead .brand-mark {
+  background: var(--ui-accent);
+  color: white;
+}
+.workspace-masthead .wordmark strong {
+  color: var(--ui-accent);
+}
+.workspace-masthead .account .el-select__wrapper,
+.theme-select {
+  background: var(--ui-tint);
+  box-shadow: 0 0 0 1px var(--ui-border) inset;
+  border: 0;
+  min-height: var(--ui-control-height);
+}
+.workspace-masthead .account .el-select__wrapper:hover,
+.workspace-masthead .account .el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--ui-accent) inset;
+}
+.workspace-masthead .account .el-select__caret {
+  color: var(--ui-muted);
+}
+.workspace-masthead .account .avatar {
+  background: var(--ui-soft);
+  border-color: var(--ui-border);
+}
+.theme-select:focus-visible,
+.workspace-masthead .logout:focus-visible {
+  outline-color: var(--ui-accent);
+}
+.work-tabs {
+  flex: none;
+  height: var(--ui-tabs-height);
+  background: var(--ui-bg);
+}
+.editor-tab {
+  max-width: 280px;
+  min-width: 0;
+}
+.editor-tab > button:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+.editor-tab > button:last-child:not(:first-child) {
+  flex: none;
+  color: var(--ui-muted);
+  width: 32px;
+}
+.main-shell {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.main-shell > main {
+  padding: 16px;
+}
+.app-shell:not([data-module="retail"]) .module-content .panel {
+  border-radius: 8px;
+  padding: 16px;
+}
+.app-shell:not([data-module="retail"]) .module-content .panel-heading h3,
+.business-page-title {
+  font-size: 20px;
+  margin: 0;
+  line-height: 1.4;
+}
+.business-toolbar .business-page-title {
+  margin-right: auto;
+}
+.app-shell:not([data-module="retail"])
+  .business-form
+  :is(input:not([type="checkbox"]):not([type="radio"]), select) {
+  min-height: var(--ui-control-height);
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.app-shell:not([data-module="retail"])
+  .module-content
+  .el-table
+  th.el-table__cell {
+  color: var(--ui-text);
+}
+.master-workspace {
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  min-height: calc(
+    100dvh - var(--ui-header-height) - var(--ui-tabs-height) - 32px
+  );
+}
+.master-sidebar {
+  top: 0;
+}
+.master-fixed-slot .date-control {
+  height: 36px;
+}
+.master-workspace
+  :is(.master-tabs button.active, .master-tree-label.selected, .master-link) {
+  color: var(--ui-accent);
+}
+.master-workspace .master-tabs button.active {
+  border-color: var(--ui-accent);
+  background: var(--ui-soft);
+}
+.master-workspace
+  :is(
+    .master-side-note,
+    .master-side-heading span,
+    .master-feedback,
+    .master-issue-strip,
+    .master-footer small,
+    .master-pagination
+  ) {
+  color: var(--ui-muted);
+}
+.master-workspace
+  :is(.master-sidebar, .master-main, .master-tabs, .master-footer) {
+  border-color: var(--ui-border);
+}
+.master-workspace :is(.master-footer, .master-issue-strip) {
+  background: var(--ui-tint);
+}
+.date-control + small {
+  margin-top: 18px;
+}
+.el-dialog
+  .business-form
+  :is(input:not([type="checkbox"]):not([type="radio"]), select) {
+  min-height: var(--ui-control-height);
+  height: var(--ui-control-height);
+  padding-top: 6px;
+  padding-bottom: 6px;
+  color: var(--ui-text);
+  border-color: var(--ui-border);
+}
+@media (max-width: 720px) {
+  .workspace-masthead {
+    height: auto;
+    gap: 0 8px;
+  }
+  .workspace-masthead .account {
+    flex-wrap: wrap;
+    min-width: 0;
+    flex: 1;
+    padding: 4px 0;
+  }
+  .workspace-masthead .account .el-select {
+    width: 115px;
+  }
+  .theme-select {
+    width: 72px;
+  }
+  .main-shell > main {
+    padding: 12px;
+  }
+}
+@media (pointer: coarse) {
+  .work-tabs button,
+  .module-navigation button,
+  .module-popup button {
+    min-height: 44px;
+  }
+  .work-tabs {
+    height: 48px;
+  }
+}

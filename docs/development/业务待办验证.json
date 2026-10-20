@@ -1,0 +1,91 @@
+{
+  "recorded_at": "2026-10-16T17:04:00.620969+08:00",
+  "increment": "0.24 follow-up: operational work queue for purchase, wholesale and retail original-document workflows",
+  "backend_tests": 26,
+  "backend_scope": [
+    "test_work_queue.py: 14 PostgreSQL business/security cases",
+    "test_api.py: 12 API contract/auth cases"
+  ],
+  "real_oidc_browser_tests": 10,
+  "browser_scope": [
+    "work-queue.spec.ts: 3 two-role workflows and tenant/viewer checks",
+    "workspace.spec.ts: 7 authentication, context and permission regressions"
+  ],
+  "failures": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "python_lint_and_format": "passed; 190 Python files",
+  "python_types": "mypy strict passed; 111 source files",
+  "frontend_format": "passed",
+  "frontend_build": "vue-tsc and Vite passed",
+  "business_proof": [
+    "Original purchase draft opened from queue; maker review blocked; independent review, receipt of 4 units, independent inspection and posting. Stock 10 to 14, AP CNY 130 plus 52, finished work disappears.",
+    "Wholesale picking resumed on existing shipment; filtered queue moves to independent verification, and clears after verification/posting.",
+    "Paid retail sale resumed without collecting cash again; existing payment count stays one; delivery clears pending work.",
+    "Viewer uses a separate authenticated browser session; original document has no receive/close actions; foreign entity rejected; switching enterprise clears saved filters."
+  ],
+  "fixes_during_verification": [
+    "Fixed original purchase entry opening before warehouse/location choices loaded.",
+    "Made tenant switch test target the exact enterprise option; tested viewer with isolated login session and waited for the actual document before asserting permissions.",
+    "Protected picked/verified wholesale reservations do not show expiry warnings from their original deadline; covered by two backend cases."
+  ],
+  "boundaries": [
+    "12 stage types; module read permissions, entity scope and RLS preserved; no new write command or posting.",
+    "Closed remainder or fully received purchase still shows pending inspection, posting and rejected goods handback. Each unposted inspection segment is separate.",
+    "Read-only union query, oldest-first stable tie-break, 50 rows per page; literal bound search and no-store response.",
+    "Work queue is not a guarantee of inventory availability, qualification, credit or permission to execute the next action.",
+    "Return to queue preserves applied filters; enterprise/context change clears filters and original document selection.",
+    "Returns, transfers, counts and quality dispositions keep existing separate pages; not yet part of this queue.",
+    "No reports, AI, integration, dependency or database migration added."
+  ],
+  "api_paths": 119,
+  "business_migration": "b0025",
+  "control_migration": "c0014",
+  "business_rls_tables": 75,
+  "full_backend_suite_this_run": false,
+  "full_browser_suite_this_run": false,
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:850d95f29ac436492a208b30b3e1f38e2f98f4f35088fe527ce639517fdd7bd4",
+  "container_smoke": "passed: UID 10001, both databases ready, 119 API paths, one bounded expiry scan",
+  "local_services": "Core/auth/admin returned 200; core restarted with final backend code; expiry worker resumed after tests",
+  "next_three_steps": [
+    "Connect sales shortages to supplier-confirmed purchase replenishment, then resume original sales fulfillment after receipt.",
+    "Connect unfinished returns, transfers and stock counts to their original operational workflows.",
+    "Run multi-role end-to-end enterprise trials, reconcile stock/cost and receivables/payables, resolve business blockers before trial deployment."
+  ],
+  "baseline_records": {
+    "docs/development/验证记录.json": "605378b16e4edf0b0d9fd2b3ef6bd7c8fc2870f4ccb96004e6c858969870ee2d",
+    "docs/development/站内登录验证.json": "22d9de188f3e75854ef75434f865e7e6357e9eae4ab4d5763f4a9ee925e442f0",
+    "docs/development/期初导入验证.json": "7d6f741d87f5c0bd87372b92c3a1451a718e224074fdc5569ccf6c4d37c7ff55",
+    "docs/development/销售库存联动验证.json": "c4a33b4cfa9528864499d86dc2629b5c1caf1b6ca73b1f4b7662a0075a394e45"
+  },
+  "result_sha256": {
+    "artifacts/backend-work-queue.xml": "b34b349461b99ee48086f8cef8083b6506f450619ae98f0609454a04f8e0eed8",
+    "artifacts/browser-work-queue.json": "8159b564a7a550ba1e60a8ac63245659b86a6b422c134ecada720d775d77cfc2",
+    "artifacts/container-work-queue.log": "297e64b24e5c859adbd6f0370e29cc6bb02d5b6bfd2254a8ab03e84a776ed602"
+  },
+  "inspected_screenshots": {
+    "artifacts/work-queue-purchase.png": "0a9af76caf032f7872310699ab4666e78e15f113e60557fb87397e073dfe132a"
+  },
+  "source_sha256": {
+    "backend/src/medinv/modules/workspace/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/src/medinv/modules/workspace/application/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/src/medinv/modules/workspace/application/queue.py": "2cbe8853af7cbba243abf414339c087a761e7dbd274f7984570084726c156bfb",
+    "backend/src/medinv/entrypoints/core_api.py": "a42bc4371e5dcd9f44c9ed7ebb92833cc57ffadf38aae9008bfc489e917d9b10",
+    "backend/tests/integration/test_work_queue.py": "f76a4f3c7655229150970bb89933f21af2453a53da24405438bb79f6c8a5c0fd",
+    "backend/tests/integration/test_api.py": "cc4e197cfe7dd891cde63e54192a9bb52261adaab2560a4d4e58ed7dd3e60d80",
+    "apps/admin-web/src/workQueue.ts": "bc2004d5e489d02608804e92c4f9dae6540a68e881395ed3cc2281fca0f48d2c",
+    "apps/admin-web/src/WorkQueue.vue": "efad7c9e31c1fa7bcbf09fdd89813e14a7ed90397eb19adbdcfb38f7bb5bc47e",
+    "apps/admin-web/src/App.vue": "239e1e3e9f1eac63fb3608cdcc0e26ce215e0ec437088362493c18b9b0fffc64",
+    "apps/admin-web/src/PurchasingPage.vue": "010ad9728ee7a1ded5a544d61a2584e1e35a6f222bc3bcf734ebc8b1e8f3e9e8",
+    "apps/admin-web/src/SalesPage.vue": "ff08139b7d887dc193c51e56012c47572522248b4946d5097a155dc52b4d67c0",
+    "apps/admin-web/src/RetailPage.vue": "8b9f7d05bbe4b89e7a5776e48a551c8b7f0570b336a7e1bba675b63b718861f6",
+    "apps/admin-web/tests/work-queue.spec.ts": "2e74794081589237212a01cdef41d5f5796d2e81fff9066d61d4913f29f28792",
+    "contracts/openapi/implemented-core-openapi.json": "722d2dd0bc634a6e494735d312b0a0c0146c43e032256bb01030a56abc50b642",
+    "scripts/smoke_container.py": "8397a6fa9bb12d524e9fb87cb70f8ab4afe26bcc98cc2e9000d6b105febfc10d",
+    "docs/development/业务待办操作指引.md": "d10aa93eae3d85e9c0e951b31a17fe017d0703baabadba53f697e3c155f0a581",
+    "docs/development/开发进度.md": "1f393c476ede22fe201fc623041fe43458efecc38e485309e94cd106e18575b2",
+    "README.md": "64e67a12e0640e39b04292c95b449d6f63b6bb5ecb102c25de723e382c794870"
+  }
+}

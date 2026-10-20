@@ -1,0 +1,329 @@
+{
+  "recorded_at": "2026-10-16T21:45:11.739375+08:00",
+  "increment": "0.24 original purchase, wholesale and retail return job handoff",
+  "business_migration": "b0026",
+  "control_migration": "c0016",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 26,
+  "new_permissions": [
+    "returns.purchase.write",
+    "returns.sales.write",
+    "returns.retail.write",
+    "returns.custody"
+  ],
+  "new_business_tables": false,
+  "new_http_paths": false,
+  "new_dependencies": false,
+  "control_upgrade": {
+    "applied": true,
+    "backup": "artifacts/backups/before-c0016-control.dump",
+    "backup_bytes": 2959524,
+    "archive_list_verified": true,
+    "backup_restore_rehearsal_this_run": false,
+    "affected_old_sessions_revoked": true,
+    "auth_and_core_restarted": true
+  },
+  "backend_tests": 606,
+  "new_backend_tests": 10,
+  "full_backend_suite_this_run": true,
+  "backend_categories": {
+    "architecture": 2,
+    "contracts": 1,
+    "integration": 541,
+    "unit": 62
+  },
+  "backend_warning": "Existing Starlette TestClient httpx deprecation",
+  "new_browser_tests": 1,
+  "browser_regression_unique_tests": 18,
+  "browser_unique_scenarios_eventually_passed": 19,
+  "full_browser_suite_this_run": false,
+  "browser_runs": {
+    "browser-return-jobs.json": {
+      "startTime": "2026-10-16T13:34:54.720Z",
+      "duration": 47415.852,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "browser-return-jobs-regression.json": {
+      "startTime": "2026-10-16T13:35:56.385Z",
+      "duration": 256460.706,
+      "expected": 16,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "browser-return-jobs-investigation.json": {
+      "startTime": "2026-10-16T13:41:07.455Z",
+      "duration": 77770.21699999999,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "browser_regression_note": "Initial related run: 16 passed, 2 failed waiting for return details. Failure reports and screenshots retained. Read-only browser diagnostics were temporarily added without altering business requests or timeouts; mainline and retail-return files then passed 3 tests, including one already-passed viewer test. Diagnostics observed 11 return responses without errors, maximum 48 ms, and were removed. Initial timeout cause remains undetermined. No automatic retries; not a single all-green 19-test execution.",
+  "preliminary_fixes": [
+    "First c0016 development upgrade rolled back due to text[]/varchar[] overlap; explicit text[] cast corrected and upgrade applied.",
+    "New browser scenario first used an incorrect label locator for the original cash-document dropdown; corrected to its existing combobox accessible name."
+  ],
+  "proof_of_behavior": [
+    "Three job-specific applications and cancellation use persisted source/return kind; other job commands receive 403.",
+    "Authorization and entity checks precede cached command replay; cross-tenant/entity documents remain inaccessible.",
+    "Warehouse receives or hands back customer goods but cannot create return applications; own maker/receiver cannot independently review even with combined roles.",
+    "Finance reverses required original allocations before quality posting, records original-account refunds, and reallocates remaining funds.",
+    "Actual role identities retained; all scenario return work items cleared; rejected handback does not change stock or cost.",
+    "Upgrade preserves extra permissions, roles, entity scope and disabled status; combined roles increment once; affected session secrets cleared; replay does not increment again."
+  ],
+  "scenario": {
+    "tenant_name": "退货协作企业-ee4fab6c",
+    "tenant_id": "0aeec4e5-9549-549e-a7ff-c3c41d19c89b",
+    "entity_id": "673295fd-ff66-5eb3-9276-07919178aba2",
+    "final_qty": "5",
+    "final_cost": "57.52",
+    "final_ar": "0",
+    "final_ap": "0",
+    "refunds": {
+      "supplier_received": "13",
+      "customer_paid": "20",
+      "retail_paid": "20"
+    },
+    "checkpoints": [
+      {
+        "label": "原采购与两种销售已完成",
+        "qty": "4",
+        "cost": "46.016"
+      },
+      {
+        "label": "PURCHASE退货过账",
+        "qty": "3",
+        "cost": "34.512"
+      },
+      {
+        "label": "SALES退货过账",
+        "qty": "4",
+        "cost": "46.016"
+      },
+      {
+        "label": "RETAIL退货过账",
+        "qty": "5",
+        "cost": "57.52"
+      },
+      {
+        "label": "拒收交还不改变库存成本",
+        "qty": "5",
+        "cost": "57.52"
+      }
+    ]
+  },
+  "python_lint_and_format": "passed; 204 backend files",
+  "python_types": "mypy strict passed, 114 source files",
+  "frontend_types": "new test strict TypeScript and vue-tsc passed",
+  "frontend_format": "passed",
+  "frontend_build": "passed",
+  "visual_check": [
+    "return-jobs-ledger.png inspected",
+    "return-jobs-refunded.png inspected"
+  ],
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:4baba03ec66df5859edc1317784ab4f2b71019a7f0205651c69f90efaef219ac",
+  "container_smoke": "passed; UID 10001, both databases, 120 API paths, bounded expiry scan",
+  "local_health": {
+    "core": 200,
+    "auth": 200,
+    "admin": 200
+  },
+  "expiry_worker_restored": true,
+  "boundaries": [
+    "Development validation release, not production acceptance.",
+    "Operation permissions are separated; return reads are still tenant/entity scoped, without channel, individual, warehouse or price/cost-field isolation.",
+    "Existing returns.write compatibility remains. Purchase return dispatch still uses quality confirmation and posting; no separate warehouse dispatch document.",
+    "Refunds record confirmed local cash activity; no bank or platform transfer is performed.",
+    "Two first-run browser detail-loading timeouts not reproduced on diagnostic rerun; root cause remains unresolved."
+  ],
+  "evidence": [
+    {
+      "path": "backend/src/medinv/platform/auth/roles.py",
+      "bytes": 6098,
+      "sha256": "7307d5bf08cb3d94eadba79728382c2a45e5cec381387a3b322db27566a18cdc"
+    },
+    {
+      "path": "backend/src/medinv/modules/returns/application/permissions.py",
+      "bytes": 1035,
+      "sha256": "0c34996da069a801fd11eb3b5442bad70d0e761bae2483b6df1c581adcf73e2d"
+    },
+    {
+      "path": "backend/src/medinv/modules/returns/application/service.py",
+      "bytes": 19429,
+      "sha256": "cf53aed9de750ab4ca6e6cc607f1aa54e871960f3dd2e7ecf3b67c3422a7ee2f"
+    },
+    {
+      "path": "backend/src/medinv/modules/returns/application/custody.py",
+      "bytes": 4726,
+      "sha256": "820953b87da2c7963109226219100c7f7aa7a17385c1528f664e51f9286fcf88"
+    },
+    {
+      "path": "backend/migrations/control/versions/0016_return_job_permissions.py",
+      "bytes": 1424,
+      "sha256": "9e9c411d6c030de98c41e2950e6de839d1fe72179ad64c44007b572ff40be701"
+    },
+    {
+      "path": "backend/tests/integration/test_return_jobs.py",
+      "bytes": 9345,
+      "sha256": "0100992b0f1a065caf8189d08d76e1b6ee8944351e58a7017dcecd21c9b367e8"
+    },
+    {
+      "path": "backend/tests/integration/test_return_job_migration.py",
+      "bytes": 3971,
+      "sha256": "577c74333e0c2f42e3a7193767efccb08379a95eacfbb46db82601237622695b"
+    },
+    {
+      "path": "backend/tests/integration/test_auth.py",
+      "bytes": 20735,
+      "sha256": "ec23069bc204b8a85eb2a96e132528c3989a8e2339b93ac53d0f49a02ac51116"
+    },
+    {
+      "path": "apps/admin-web/src/returns.ts",
+      "bytes": 1859,
+      "sha256": "f080779055a6f6474fc2eecab8ca97aaf98316b94155e80e1a71f21b93b8b7c7"
+    },
+    {
+      "path": "apps/admin-web/src/ReturnsPage.vue",
+      "bytes": 15282,
+      "sha256": "69e41c5a1a2ebbf58879513c34553445d239a95ddea0fd3cc804aa8c47dcdc08"
+    },
+    {
+      "path": "apps/admin-web/src/ReturnDetail.vue",
+      "bytes": 14133,
+      "sha256": "fbea04496e02f47c9f586e778ef47b642fd434b36db9bfd27e1206753c615de5"
+    },
+    {
+      "path": "apps/admin-web/src/RetailDetail.vue",
+      "bytes": 14476,
+      "sha256": "3ffed6bc4ce7aa28fa01693ca47e1a93c95dd13a91c758948581bc2fe031af45"
+    },
+    {
+      "path": "apps/admin-web/tests/return-jobs.spec.ts",
+      "bytes": 22816,
+      "sha256": "9248820a32262e9b4ef00b0ea0614d951789485a4cef8af1f2abd3a1258abe14"
+    },
+    {
+      "path": "apps/admin-web/tests/mainline.spec.ts",
+      "bytes": 25832,
+      "sha256": "351eee9318a8ac471da29b13052a215242167070867084481fb791ee8c8cd892"
+    },
+    {
+      "path": "apps/admin-web/tests/retail-returns.spec.ts",
+      "bytes": 10297,
+      "sha256": "440ad4af1434cf31a24daf24ee945c497709d10ae315d6ed31bb7ae08ec1c402"
+    },
+    {
+      "path": "apps/admin-web/package.json",
+      "bytes": 1005,
+      "sha256": "f1c7944af7f6f61012812044c099d9b566ad3dcde21580a74167c0471fed5db4"
+    },
+    {
+      "path": "artifacts/backend-return-jobs.xml",
+      "bytes": 88494,
+      "sha256": "205e26a026adc528492bfaf7ebd1a3ed320999ec5f88251a1d0fc5348fb744c6"
+    },
+    {
+      "path": "artifacts/browser-return-jobs.json",
+      "bytes": 4469,
+      "sha256": "b167f7414723ffc6a1e0863da206047995904b0f2d0f9283c24d0db5a3e08f0e"
+    },
+    {
+      "path": "artifacts/browser-return-jobs-regression.json",
+      "bytes": 34422,
+      "sha256": "d63a18555c66c1053d02d5a61a51f9ddecf8e45db2cf4fbfb658739077026eba"
+    },
+    {
+      "path": "artifacts/browser-return-jobs-investigation.json",
+      "bytes": 9681,
+      "sha256": "8cc1d9b0c3398d7569efb5e23bab33662b324bef2cd2567d2ee6a23a36aba159"
+    },
+    {
+      "path": "artifacts/return-jobs-manifest.json",
+      "bytes": 1202,
+      "sha256": "96219cf8968b42d91ffc84724460c20e7ec2155a0c802d54f1ed0726df3c3ed0"
+    },
+    {
+      "path": "artifacts/return-jobs-reconciliation.json",
+      "bytes": 2864,
+      "sha256": "d0527385a17d03bd07e9129ad13cf848b1ab8a39ae71191ea549d6665f3250ac"
+    },
+    {
+      "path": "artifacts/return-jobs-ledger.png",
+      "bytes": 109443,
+      "sha256": "cb1d6ec483c2b2a424f2447a05994fc446babbbfeb2a24bd56cef0d0570f7fce"
+    },
+    {
+      "path": "artifacts/return-jobs-refunded.png",
+      "bytes": 143985,
+      "sha256": "f911c146e6de410e1bbb7bdbcc90728662b32849ae1270646b1d4f3bc348f3ae"
+    },
+    {
+      "path": "artifacts/container-return-jobs.log",
+      "bytes": 801,
+      "sha256": "791bf04c9528e90313a531cedf92963f5e51b2ddc60ff4d4d1708d7e426e5cec"
+    },
+    {
+      "path": "artifacts/backups/before-c0016-control.dump",
+      "bytes": 2959524,
+      "sha256": "dbdecf783e741d3ddd2c0311d314de4a2ba9117c979a60acf67c77776beb981c"
+    },
+    {
+      "path": "artifacts/mainline-trial-reconciliation.json",
+      "bytes": 14494,
+      "sha256": "bbfcb6581931be7fcaeae0d5dc45721c87e18e59561915d5cf85512a28292c66"
+    },
+    {
+      "path": "artifacts/mainline-trial-db.json",
+      "bytes": 2357,
+      "sha256": "bc2955b78e1e5ccb9383b3ecb79d18bdbf1882e468856f045054f7840f17fa88"
+    },
+    {
+      "path": "artifacts/browser-tests/mainline-one-lot-completes-5fbdb-r-count-and-cash-settlement/error-context.md",
+      "bytes": 15728,
+      "sha256": "039fcdf0ba0cd79b307cfec297d994d8da5fde810e7565cc61812218ead82420"
+    },
+    {
+      "path": "artifacts/browser-tests/retail-returns-retail-part-88b4e-ash-reconcile-original-sale/error-context.md",
+      "bytes": 14558,
+      "sha256": "04677efb4a34c932aa4c2b95d337d958251f1761cfac0f25840afad6ccf3b7a5"
+    },
+    {
+      "path": "docs/adr/0027-退货岗位操作权限.md",
+      "bytes": 2416,
+      "sha256": "e8437aaa130b72121cac0dffa19d5ed1e62417c8abaa2f1f540bec69ef760bc7"
+    },
+    {
+      "path": "docs/development/退货岗位交接.md",
+      "bytes": 4670,
+      "sha256": "a12e5049089913fc7a30a5b2210d2a16ec46bae49692c2336e3aad9611b7a310"
+    },
+    {
+      "path": "docs/development/岗位分工与业务交接.md",
+      "bytes": 7367,
+      "sha256": "27b9705cca76b9376e5641445e9050fda8293126c70506694e44154ff2bc53a2"
+    },
+    {
+      "path": "docs/development/开发进度.md",
+      "bytes": 41839,
+      "sha256": "b83d8147f89c5ea8793700d0e517bbba83b75e132cdd9d94282369c63e70d8b6"
+    },
+    {
+      "path": "README.md",
+      "bytes": 33449,
+      "sha256": "b09a38a6b81fcb116084f82c72c797fd60787997b2386e979d56e4b0bd64dc8c"
+    }
+  ],
+  "next_three_steps": [
+    "调拨、盘点及差异处理岗位作业",
+    "采购批零、退货、库存及往来连续跨岗试用",
+    "首期试用部署、开通、备份恢复、开账与验收包"
+  ]
+}

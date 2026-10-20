@@ -1,0 +1,111 @@
+{
+  "recorded_at": "2026-10-16T15:27:36.118103+00:00",
+  "scope": "进销存本机试用部署与原数据卷停启验证，非生产发布、非备份恢复",
+  "compatibility": {
+    "version": "0.24.0",
+    "project": "medinv-dev",
+    "public_origin": "http://127.0.0.1:5173",
+    "business_revision": "b0026",
+    "control_revision": "c0016",
+    "business_rls_tables": 75,
+    "images": {
+      "core": "medinv-core:0.24.0",
+      "web": "medinv-web:0.24.0"
+    }
+  },
+  "tools_tests": {
+    "passed": 11,
+    "full_backend_run": false
+  },
+  "browser_tests": {
+    "final_passed": 7,
+    "retries": 0,
+    "full_site_run": false,
+    "first_passed": 6,
+    "first_failed": 1,
+    "first_failure": "新增测试对缺少必填参数的待办请求错误期待401；改用无必填查询参数的身份上下文接口，未改变业务代码"
+  },
+  "checks": [
+    "Ruff and format",
+    "New browser test strict TypeScript and Prettier",
+    "Vue typecheck and production build",
+    "Nginx read-only configuration check",
+    "Real same-origin OIDC login",
+    "Seven-role continuous operations through deployed containers",
+    "All six services stopped and restarted",
+    "Repeated start retained all six container IDs",
+    "Extracted delivery image load"
+  ],
+  "restart": {
+    "same_original_documents_and_balances": true,
+    "run": "19a63ac0-c6a2-403e-b551-4c97cfb50445",
+    "stock_qty": "3",
+    "cost": "34.512",
+    "ar": "0",
+    "ap": "0",
+    "stock_ledger_entries": 14,
+    "cost_ledger_entries": 8
+  },
+  "post_restart_business": {
+    "tenant_name": "连续营业企业-2dcec137",
+    "tenant_id": "4a723cb6-f934-577d-9f45-ed5d2cca88d3",
+    "stock_qty": "3",
+    "cost": "34.512",
+    "ar": "0",
+    "ap": "0"
+  },
+  "delivery": {
+    "path": "artifacts/releases/medinv-trial-0.24-20261016.zip",
+    "sha256": "338db9bf5e7c833e937c02b9fb4079b38060179b16425007dd851e1f1afdc89f",
+    "bytes": 101162375,
+    "entries": 369,
+    "source_fingerprints_verified": 206,
+    "private_values_not_in_shipped_source": true,
+    "private_files_excluded": true,
+    "images_archive_verified": true,
+    "extracted_delivery_load_passed": true,
+    "images": {
+      "core": {
+        "tag": "medinv-core:0.24.0",
+        "id": "sha256:777c0dcbadb5bcc53fa7c56a964c0743bf8b2263e9a9dc5b8fc36130ddbe95e5"
+      },
+      "web": {
+        "tag": "medinv-web:0.24.0",
+        "id": "sha256:d075e3383d6a7fece389818d2a0eea79871fbff24c021cbdf37da115673ea923"
+      }
+    }
+  },
+  "limitations": [
+    "Fixed loopback single-host trial; Keycloak remains start-dev",
+    "Requires initialized database, identity and original secrets; infrastructure images prepared separately",
+    "Stop/start reuses original volume, not a backup restore",
+    "No unfinished-order restore drill, public HTTPS, load test or production qualification",
+    "Expiry readiness checks process state, not scan completion",
+    "Tests and local evidence remain in development workspace"
+  ],
+  "artifact_sha256": {
+    "artifacts/backend-trial-tools.xml": "f4610fab8e727762d1d616a3546f9d12881313d45fc999e26075ca3b375f5d46",
+    "artifacts/browser-trial-deployment.json": "d9e4dd0f59d521801851dd68f5313a56bd94f717d7eb06916e436ece4035cd89",
+    "artifacts/browser-trial-deployment-final.json": "11fc167ea37b86bc6d7ae4c32cef53cf4270ea295e4f1a6c973a6011a8a51c19",
+    "artifacts/trial-deployment-manifest.json": "23542fa3fe2fb9cb0a702b32ee2141638b7a96d4b6b6364173318a4e2d942b56",
+    "artifacts/trial-deployment-reconciliation.json": "ae43d05c49c0e85087b89783ea40538ea8f06bb7296c60494a9c293cd2891de8",
+    "artifacts/trial-deployment-db.json": "9588ed94d248d6c2b1faa1da3901de01ce8ab561a883f936dbb8548e795f6499",
+    "artifacts/trial-restart-input.json": "710281a3ffc93f78eb6f3f1eac492b60c6d1522605135c288f4cb668c73e9668",
+    "artifacts/trial-restart-before.json": "5f40c87417913cf91de2af55b01d971815e11190b6f3354b41ba788e70c8a8ab",
+    "artifacts/trial-restart-after.json": "70967b458b7aa8276fbd85b63f50fd8cbf2ea8d03928c4b1848bc91d9ffe763f",
+    "artifacts/trial-stopped-containers.log": "bc327dfa10dc01617433399343805235f8a9bdabc95a19b982ca64aa5571cb32",
+    "artifacts/trial-restart.log": "861064b998e7cfd682c0c57f9af83f43c6f6feca17552fcf921e42b226d3b005",
+    "artifacts/trial-preflight.log": "9d1ab8a4c22a780e8e6f3ce7395e74651b05b5f6bf78fd4191d6f10f12611973",
+    "artifacts/trial-repeat-start.json": "34a4dfaa2fff8a8e383010bb17b8c85d7559250c141e6dd796a9786fb2005b24",
+    "artifacts/trial-package-verification.json": "74638620972f72738b67ce188e961d259c33e79b0557b79f29eaf903e2a9e0de",
+    "scripts/trial.py": "5695dd742ae8c2a38a6daa0fa32ad0c390d9b4a0912f0364d383f933b1b202a9",
+    "backend/tests/unit/test_trial_deployment.py": "305f9cec11b0b050f15007ddb31e84107f09f517c6c41cffa2c6c63d25485aa7",
+    "apps/admin-web/tests/deployment.spec.ts": "283c5e6de935980eb4a45cfa613d1a686642572fd6c141fe3357022b75e06656",
+    "deploy/compose.trial.yaml": "2536193c33a3d99073333c0db3dee543210dd6970d345b69c7693dc6346f17e1",
+    "deploy/Dockerfile.web": "345575d5f4d261e847abcfdcf6b8a8683a1d55144608dd61f7df263631e5a0a5",
+    "deploy/Dockerfile.web.dockerignore": "d5d64e154162d12db852c3d587f4f397026bc71a4b5790c7ea79060eaf82cdfe",
+    "deploy/trial/nginx.conf": "ef87e7e337ce53ddbd70f0f21b671348fd37ce71103eb4f6b6bc83292d5d9f7b",
+    "deploy/trial/compatibility.json": "69fe83e03fab39a33e85852c4e198e754cf02c73af5c5b23d294842a9b7cd762",
+    ".dockerignore": "69af9ed9d032741e1e01e47265a674df7d9bba8ea9cba505704a94645d159589"
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "recorded_at": "2026-10-16T20:50:02.341033+08:00",
+  "increment": "0.24 explicit purchasing, warehouse, sales and cashier roles; seven-identity daily business handoff",
+  "business_migration": "b0026",
+  "control_migration": "c0015",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 26,
+  "new_roles": [
+    "PURCHASER",
+    "WAREHOUSE",
+    "SALES",
+    "CASHIER"
+  ],
+  "new_permissions": false,
+  "new_migrations": false,
+  "new_dependencies": false,
+  "legacy_roles_changed": false,
+  "existing_members_automatically_reassigned": false,
+  "new_role_permissions": {
+    "PURCHASER": [
+      "catalog.read",
+      "catalog.write",
+      "inventory.read",
+      "purchase.read",
+      "purchase.write",
+      "sales.read",
+      "tenant.read"
+    ],
+    "WAREHOUSE": [
+      "catalog.read",
+      "counts.read",
+      "counts.write",
+      "inventory.read",
+      "opening.write",
+      "purchase.read",
+      "purchase.receive",
+      "quality.read",
+      "quality.write",
+      "sales.pick",
+      "sales.read",
+      "tenant.read",
+      "transfers.dispatch",
+      "transfers.loss.write",
+      "transfers.read",
+      "transfers.receive",
+      "transfers.write"
+    ],
+    "SALES": [
+      "catalog.read",
+      "inventory.read",
+      "purchase.read",
+      "sales.allocate",
+      "sales.read",
+      "sales.write",
+      "tenant.read"
+    ],
+    "CASHIER": [
+      "catalog.read",
+      "inventory.read",
+      "retail.read",
+      "retail.sell",
+      "tenant.read"
+    ]
+  },
+  "backend_tests": 592,
+  "backend_groups": {
+    "architecture": 2,
+    "contracts": 1,
+    "integration": 527,
+    "unit": 62
+  },
+  "new_backend_tests": 5,
+  "full_backend_suite_this_run": true,
+  "backend_warnings": [
+    "Existing Starlette TestClient httpx deprecation; suite passed"
+  ],
+  "new_browser_tests": 1,
+  "browser_regression_tests": 9,
+  "browser_tests": 10,
+  "browser_scope": [
+    "job-handoff.spec.ts",
+    "workspace.spec.ts",
+    "enterprise-opening.spec.ts",
+    "mainline.spec.ts"
+  ],
+  "full_browser_suite_this_run": false,
+  "final_failures": 0,
+  "final_skipped": 0,
+  "final_flaky": 0,
+  "counts_note": "One final full backend suite of 592. One new seven-identity browser scenario has four balance checkpoints; nine related browser tests are separate. No historical or preliminary totals added.",
+  "preliminary_test_fix": "Two new scenario locators were corrected to the existing shipping-reference field and sales-post button labels; final scenario completed without retries.",
+  "python_lint_and_format": "passed; 199 backend files; four changed development identity scripts separately checked",
+  "python_types": "mypy strict passed, 113 source files",
+  "frontend_types": "new scenario strict TypeScript and vue-tsc passed",
+  "frontend_format": "passed",
+  "frontend_build": "passed",
+  "scenario_tenant": "试用岗位企业-e9079735",
+  "scenario_tenant_id": "3a11fa90-abd7-5728-a096-044dcad602c3",
+  "reconciliation_checkpoints": 4,
+  "final_stock_qty": "4",
+  "final_cost_amount": "46.016",
+  "final_ar_outstanding": "0",
+  "final_ap_outstanding": "0",
+  "proof": [
+    "independent real OIDC identities",
+    "purchase and warehouse handoff via work queue",
+    "quality independent review and posting",
+    "sales cannot pick; warehouse cannot verify",
+    "cashier without finance access completes cash sale",
+    "finance collects, pays and allocates",
+    "removed role revokes existing core session",
+    "New roles can be assigned by existing member administration and included in enterprise provisioning; actor permissions are validated by real core sessions.",
+    "Purchase, receiving and wholesale creation retain distinct actor IDs. Staff with wrong roles receive HTTP 403 without advancing the document.",
+    "Purchase and warehouse flows use the work queue and existing original-document forms; quality reviews and posts; cashier completes real UI cash collection and delivery; finance uses existing collection/payment/allocation forms.",
+    "Four checkpoints compare stock, precise inventory-ledger cost and AR/AP outstanding using scaled integers.",
+    "After verification the cashier role is restored for local trial; previous cashier session remains revoked and requires a fresh login.",
+    "Fixed local identity catalog now contains eight accounts; five new staff identities are not automatically given membership in legacy demo enterprises."
+  ],
+  "boundaries": [
+    "Role-based actions and entity scope; no new per-user document, warehouse, cash-account or field-level cost visibility isolation.",
+    "Shared work queue remains readable by authorized business viewers; no personal assignment or claim workflow.",
+    "New four job roles do not get the broad return-writing permission. Existing OPERATOR/QUALITY/FINANCE combination continues to handle three types of returns.",
+    "Existing QUALITY and FINANCE permissions unchanged. Owner configures cash account and customer credit before staff work.",
+    "All identities, qualifications, merchandise and cash records are local software test fixtures, not real business approval or bank transactions.",
+    "No public signup, production identity onboarding, new HTTP endpoint or new database migration delivered."
+  ],
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:ca02182b4b11ffc62cf1704925071646e5f6e6f44f97f355dc44042b44d71381",
+  "container_smoke": "passed: UID 10001, both databases, 120 API paths, bounded expiry scan",
+  "local_services": {
+    "core": 200,
+    "auth": 200,
+    "admin": 200
+  },
+  "expiry_worker": "resumed at 20:48 local; interval 15 seconds, batch 25",
+  "next_three_steps": [
+    "Verify concurrent fulfillment, shortage, duplicate submission and original-document recovery after interrupted work.",
+    "Extend necessary role handoffs for returns, transfers and stock counts.",
+    "Assemble a reproducible trial package covering deployment, provisioning, backup recovery, opening and daily acceptance."
+  ],
+  "baseline_records": {
+    "docs/development/企业开账验证.json": "12db56dc5062d9f6ae3ecf50556c6ff7170346a3f601a5f5256e8ff610ad7f2d"
+  },
+  "source_sha256": {
+    "backend/src/medinv/platform/auth/roles.py": "d780a0877b39dca18ad75ab4ff3f5be72a32fb6548664de4af4fbd695ab7bc50",
+    "backend/tests/integration/test_auth.py": "2ff5ff8053bb0674ac08d5ec0a6732e7a9499f6b62653fd12006cc3ea2fb4988",
+    "apps/admin-web/src/App.vue": "728107c51a91585c961bcd99e1bd602ae0b5f22e3d70e588160318e2192aabaf",
+    "apps/admin-web/tests/job-handoff.spec.ts": "c876391ca0bf8482fb100b86a1245b938c99e1223cf36ae4d6da4a4ab156f48b",
+    "apps/admin-web/package.json": "5861f643da4ce687dbdabb445a2a7b9aaafa7080c72b5d1badef949e2f3a895f",
+    "scripts/dev_accounts.py": "d6b3eca9a1f9f035233e9637af144df5fca99ae57fa6b0ed44ddd11a6dc13626",
+    "scripts/prepare_identity.py": "750b35638aff76d496452574ecb13e4aed53c6433741242065523811d43b3ee2",
+    "scripts/seed_demo.py": "cf68a4ea30f09f3b03e3849d8777f617a5126b34d43cde002639015859c265b9",
+    "scripts/sync_demo_identity.py": "24fc2b253495817b2760f6322515eb08c437aa9764e7cc79df33b1d29e7392a2",
+    "docs/development/岗位分工与业务交接.md": "94850111d21a7335cc3cea70533cd1a5eeda5d12db79baa68a8f4b20847ca82b",
+    "docs/adr/0025-主业务岗位角色与交接.md": "47e05a5f5e2d676cdfe4d2defcefca16bc95a3431b3b749ec3efc068415178e6",
+    "docs/development/开发进度.md": "93099efd3e6b275afedc79a130966ff09a296ea0ef13ab2cbc9fc604f22d6b9a",
+    "README.md": "878258f457f7b30d7702fd8fb2e306bc73515f860d47659ba87ceb9ef8c3cf5c"
+  },
+  "result_sha256": {
+    "artifacts/backend-job-handoff.xml": "8b9f2e4678449d4a6ebf8d24a797b0cd94b7eb22c9afb5d5a89be4a7075076fe",
+    "artifacts/browser-job-handoff.json": "896671887b8516e3a5ba7b0fa3811c22f719d8ba7268fa815c8b7d85eed6f50b",
+    "artifacts/browser-job-handoff-regression.json": "2a4d635394e77080b744c07fd55cf595c2398296b93a20f48a92e14b508fe0c7",
+    "artifacts/job-handoff-manifest.json": "689fe5e344ad776482938ecee6365b3aef1e34fb44f221e3030012a74bb9ef0c",
+    "artifacts/job-handoff-reconciliation.json": "94e30c04f2fcf44c866bea4baf64ca5336e8cb8be2966fc6d002c8543f3d5d0f",
+    "artifacts/container-job-handoff.log": "7feefbf96daeadc51dce13b5389f5e30f9c85286ef3231e5d5a02a566503b8d1"
+  },
+  "inspected_screenshots": {
+    "artifacts/job-handoff-members.png": "3ac54021539d786a1188da361913f130c4f0cdcb3600175b8f30ef217d1dce82",
+    "artifacts/job-handoff-ledger.png": "295d6cd0bee38842c16fc34d9b826e44112686206f4b47f7603c9d058b9efe8b"
+  },
+  "unchanged_contract": {
+    "contracts/openapi/implemented-core-openapi.json": "c1c8b5e31190af21cfa11fc24839992c91bb8940f02c67537a6020b907fa94e0"
+  }
+}

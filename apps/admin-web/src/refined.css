@@ -1,0 +1,188 @@
+:root,
+:root[data-theme="teal"],
+:root[data-theme="violet"] {
+  --ui-header: var(--ui-accent);
+  --ui-header-end: var(--ui-accent-hover);
+  --ui-header-text: #fff;
+  --ui-header-hover: #00000012;
+  --ui-header-selected: #0000001a;
+  --ui-sidebar-width: 184px;
+}
+.workspace-masthead .wordmark strong {
+  color: white;
+}
+.workspace-masthead .brand-mark {
+  background: white;
+  color: var(--ui-accent);
+}
+.workspace-masthead .account .el-select__wrapper {
+  background: #ffffff12;
+  box-shadow: inset 0 0 0 1px #ffffff55;
+}
+.workspace-masthead .account .el-select__wrapper:hover,
+.workspace-masthead .account .el-select__wrapper.is-focused {
+  background: #ffffff20;
+  box-shadow: inset 0 0 0 1px #ffffffaa;
+}
+.workspace-masthead .account .el-select__caret {
+  color: white;
+}
+.workspace-masthead .account .avatar {
+  background: #ffffff20;
+  border-color: #ffffff55;
+}
+.chrome-settings,
+.chrome-collapse {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ffffff55;
+  background: transparent;
+  color: white;
+  border-radius: 6px;
+  font-size: 20px;
+}
+.chrome-settings:hover,
+.chrome-collapse:hover {
+  background: #ffffff20;
+}
+.chrome-settings:focus-visible,
+.chrome-collapse:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+:root[data-layout="sidebar"][data-sidebar-collapsed="true"] {
+  --ui-sidebar-width: 68px;
+}
+:root[data-layout="sidebar"] .app-shell .business-navigation {
+  position: fixed;
+  left: 0;
+  top: var(--ui-header-height);
+  bottom: 0;
+  width: var(--ui-sidebar-width);
+  height: auto;
+  padding: 14px 10px;
+  background: var(--ui-accent);
+  overflow-y: auto;
+  flex: none;
+  border-top: 1px solid #ffffff30;
+}
+:root[data-layout="sidebar"] .app-shell .module-navigation {
+  flex-direction: column;
+  height: auto;
+  overflow: visible;
+  gap: 7px;
+}
+:root[data-layout="sidebar"] .app-shell .module-navigation button {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 16px;
+}
+:root[data-layout="sidebar"] .app-shell .module-navigation button.selected {
+  box-shadow: inset 3px 0 white;
+}
+:root[data-layout="sidebar"] .app-shell .module-symbol {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 1;
+}
+:root[data-layout="sidebar"] .app-shell .module-chevron {
+  margin-left: auto;
+  transform: rotate(-90deg);
+}
+:root[data-layout="sidebar"] .work-tabs,
+:root[data-layout="sidebar"] .main-shell {
+  margin-left: var(--ui-sidebar-width);
+  width: calc(100% - var(--ui-sidebar-width));
+}
+:root[data-layout="sidebar"] .workspace-masthead .account {
+  margin-left: auto;
+}
+:root[data-layout="sidebar"][data-sidebar-collapsed="true"]
+  .app-shell
+  .module-name,
+:root[data-layout="sidebar"][data-sidebar-collapsed="true"]
+  .app-shell
+  .module-chevron {
+  display: none;
+}
+:root[data-layout="sidebar"][data-sidebar-collapsed="true"]
+  .app-shell
+  .module-navigation
+  button {
+  padding: 0;
+  justify-content: center;
+}
+.el-autocomplete input.el-input__inner,
+.el-autocomplete input.el-input__inner:focus,
+.el-autocomplete input.el-input__inner:disabled {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+  min-height: 0 !important;
+  height: 34px !important;
+  border-radius: 0 !important;
+}
+.master-reference .el-input__wrapper {
+  box-shadow: inset 0 0 0 1px var(--ui-border);
+}
+.master-reference .el-input__wrapper.is-focus {
+  box-shadow:
+    inset 0 0 0 1px var(--ui-accent),
+    0 0 0 2px var(--ui-soft);
+}
+.master-reference .master-reference-more {
+  color: var(--ui-accent);
+  background: var(--ui-tint);
+  border-color: var(--ui-border);
+}
+.work-dashboard .work-queue {
+  margin-bottom: 0;
+}
+@media (max-width: 900px) {
+  :root[data-layout="sidebar"] {
+    --ui-sidebar-width: 68px;
+  }
+  :root[data-layout="sidebar"] .app-shell .module-name,
+  :root[data-layout="sidebar"] .app-shell .module-chevron {
+    display: none;
+  }
+  :root[data-layout="sidebar"] .app-shell .module-navigation button {
+    padding: 0;
+    justify-content: center;
+  }
+  :root[data-layout="sidebar"] .chrome-collapse {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  :root[data-layout="sidebar"] .workspace-masthead {
+    height: var(--ui-header-height);
+    flex-wrap: nowrap;
+  }
+  :root[data-layout="sidebar"] .workspace-masthead .account {
+    flex-wrap: nowrap;
+  }
+  .workspace-masthead .account .el-select {
+    width: 108px;
+  }
+  .workspace-masthead .wordmark strong {
+    font-size: 18px;
+  }
+  .chrome-settings {
+    width: 30px;
+    height: 34px;
+  }
+}

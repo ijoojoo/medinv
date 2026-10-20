@@ -1,0 +1,98 @@
+{
+  "recorded_at": "2026-10-16T17:51:24.020538+08:00",
+  "increment": "0.24 follow-up: original return document work queue for wholesale, purchasing and retail",
+  "business_migration": "b0026",
+  "control_migration": "c0014",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 20,
+  "new_return_work_stages": 8,
+  "new_migrations": false,
+  "new_dependencies": false,
+  "new_permissions": false,
+  "backend_tests": 80,
+  "backend_integration_tests": 80,
+  "new_backend_return_queue_cases": 12,
+  "backend_scope": [
+    "test_return_queue.py",
+    "test_work_queue.py",
+    "test_returns.py",
+    "test_partial_returns.py",
+    "test_retail_returns.py",
+    "test_api.py"
+  ],
+  "backend_counts_note": "12 new cases are included in the 80 targeted result. Previous 540-test full-suite result is historical, not rerun or added here.",
+  "real_oidc_browser_tests": 11,
+  "new_browser_tests": 2,
+  "browser_regression_tests": 9,
+  "browser_scope": [
+    "return-queue.spec.ts",
+    "work-queue.spec.ts",
+    "returns.spec.ts",
+    "retail-returns.spec.ts"
+  ],
+  "failures": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "full_backend_suite_this_run": false,
+  "full_browser_suite_this_run": false,
+  "python_lint_and_format": "passed; 194 Python files",
+  "python_types": "mypy strict passed; 112 source files",
+  "frontend_format": "passed",
+  "frontend_build": "vue-tsc and Vite passed",
+  "business_proof": [
+    "New original-document launch distinguishes a return application id from a source posting id; return to work queue retains filters and reloads state. Return to ordinary return list remains usable.",
+    "Owner/quality UI: retail sale 3 from stock 10, accept and post return 1, record cash refund CNY 20, then reject and physically hand back the next application for 1. Final stock 8, returned/refunded CNY 20, pending cash refund 0.",
+    "Owner/quality UI: purchase return 2 out of 10, return amount CNY 26, register supplier refund against original bank payment after reversing its allocation. Final stock 8, original payable outstanding CNY 104.",
+    "Read-only member can open the precise refund return but cannot register refunds. Returns-only context sees 7 stages; returns plus finance read sees 8; finance-only cannot query refund work.",
+    "Backend verifies wholesale flow, legacy review, cancellation, rejected custody until actual handback, zero-price retail returns, parallel pending retail refund and next physical return, original payment relationship and available balances, partial/full refunds, void reopening, allocation reversal, entity and tenant isolation.",
+    "Existing procurement/wholesale/retail work queue, repeated partial returns, original purchase/sales return launch and enterprise-switch behavior remain verified."
+  ],
+  "verification_adjustments": [
+    "Initial browser purchase-refund check used exact getByLabel on a select containing option text; corrected to its combobox accessible role/name. Final 2 new tests passed without retries."
+  ],
+  "boundaries": [
+    "Refund-check work for purchasing/wholesale signals currently available originally allocated cash plus remaining return registration capacity. It is not an amount due, debt, exclusive fund reservation or an aggregate refund obligation.",
+    "No cash task for unpaid return, unrelated same-party cash, fully allocated/exhausted original cash or zero-amount retail return. Financial reconciliation may still require original settlement screens.",
+    "Received/approved custody that may optionally be handed back stays in its normal next stage; only rejected open custody is listed as pending handback.",
+    "Queue reads never create stock, cost, AR/AP, cash, audit or outbox writes; existing original-document permissions, independent review, stock checks and idempotent commands remain authoritative.",
+    "No bank/payment execution, auto-refund, report, notification dispatch, AI or third-party integration. Transfer and count work queue remain next."
+  ],
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:f43159bdee96e78c5d8f68db96525268d23fd82cef43c63d1fd8c02edc1eafde",
+  "container_smoke": "passed: UID 10001, both databases ready, 120 API paths and bounded expiry scan",
+  "local_services": "Core/auth/admin returned 200; updated core running; expiry worker resumed after all tests at 17:50 local",
+  "next_three_steps": [
+    "Connect transfer review, dispatch and receipt work to original documents.",
+    "Connect stock-count entry, independent review and posting work to original documents.",
+    "Run continuous multi-role procurement, wholesale/retail, returns and stock operations with quantity, cost and AR/AP reconciliation; fix blocking issues."
+  ],
+  "baseline_records": {
+    "docs/development/业务待办验证.json": "10ee3723dc9ba8fb4f65a42aa340ca00b56ba3d283194cff8084fd1b6fe9e987",
+    "docs/development/销售补货验证.json": "eeb3dd85729497b82d012648e3e6aa26195b84afee26c460debddf3e6b13bf88"
+  },
+  "result_sha256": {
+    "artifacts/backend-return-queue.xml": "6489c7aec775abe6a2c372225cd7a5da0f84d7d14826e1e658684c15b3cb934a",
+    "artifacts/browser-return-queue.json": "c802c49942003ea13f1fc2510da0c90135dd4fe80efccd79123b5ba67bd328cc",
+    "artifacts/browser-return-queue-regression.json": "407895f26e7172460aed242e853831ee23bea9911cdf21ae9bd0ef6556cc0df7",
+    "artifacts/container-return-queue.log": "7a2fd476cd3173d65dd8a65513a59e3345da6ed8cc9dc9b948594d24b4ee7065"
+  },
+  "inspected_screenshots": {
+    "artifacts/return-queue-handback.png": "f523e06549b09fc5dde12ef498f48f54b107831c7558c989b181f2ce8559248e"
+  },
+  "source_sha256": {
+    "backend/src/medinv/modules/workspace/application/queue.py": "7e203e47478ace34f1863f978ce85cbcbe5b0edab789bd0bab8fed77a3263cee",
+    "backend/tests/integration/test_return_queue.py": "c0c025e628ed8d88d7d157cbcdfbe4bc683dec9930522e62798d7c336254ae74",
+    "apps/admin-web/src/workQueue.ts": "d15851be709a749f172ef636534cf866a47d4d2a1aa0653ce17c1d75a6f6b7a1",
+    "apps/admin-web/src/WorkQueue.vue": "4ec11014a8b4fb408bbac098525fc9d0c96864daaad472f20b8275f7a9f52b1b",
+    "apps/admin-web/src/ReturnsPage.vue": "288a719268f1e5803d1e998efe0f4110a541707c8f558b252e98f0bdef77590b",
+    "apps/admin-web/src/App.vue": "145a96e0e97ef5fce75762b0d5fff5e5872748c19747d5be0e6a357aac76b0c0",
+    "apps/admin-web/tests/return-queue.spec.ts": "fa17db76a16b4438f04b2920ffafad37ec7ce6e4b12852420f2f779c12e033c6",
+    "apps/admin-web/tests/work-queue.spec.ts": "59b76b0db2c9424fadff04de5e3ea851f2d7a4ff703f3e6bc31c0b89221f0bcb",
+    "contracts/openapi/implemented-core-openapi.json": "e8bf4698f48445548cd17142523533acb7e349e8e98d729a5419018e293a8e6a",
+    "docs/development/业务待办操作指引.md": "b334085d113064bb3c87bb8e8c854de2f2adfa88c6a313458a026f8220da00af",
+    "docs/development/开发进度.md": "561a115923c3dff985488c7e82415c58559f2a17be12c662d96486c7ac37ede0",
+    "README.md": "e8af55351cac0510e0ef664fa9685503a4f37719d0e729e3564ad1b54051bdf7"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "client_operation_id": "00000000-0000-4000-8000-000000000012",
+  "cash_document_id": "00000000-0000-4000-8000-000000000013",
+  "expected_cash_version": "1",
+  "allocations": [
+    {
+      "settlement_item_id": "00000000-0000-4000-8000-000000000014",
+      "expected_item_version": "2",
+      "amount": "100.00"
+    }
+  ]
+}

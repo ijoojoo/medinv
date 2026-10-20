@@ -1,0 +1,149 @@
+{
+  "recorded_at": "2026-10-20T15:51:26.102107+08:00",
+  "scope": "N01/N02 runtime and targeted verification; N03 local delivery baseline",
+  "version": {
+    "med": "b0044",
+    "control": "c0017",
+    "application": "0.25.0",
+    "business_rls_tables": 92,
+    "core_api_paths": 161
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0044",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "readiness": {
+    "web": true,
+    "core": true,
+    "auth": true,
+    "identity": true,
+    "expiry_running": true,
+    "containers_running": true
+  },
+  "backend": {
+    "tests": 160,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "delivery_and_contract": {
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "frontend": {
+    "total": 26,
+    "unexpected": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "browser_scenarios": 21,
+    "calculation_cases": 5
+  },
+  "static_checks": {
+    "backend_ruff": "passed",
+    "mypy_strict_source_files": 157,
+    "frontend_production_build": "passed",
+    "selected_browser_test_types": "passed",
+    "selected_frontend_format": "passed",
+    "delivery_script_and_contract_test_ruff": "passed"
+  },
+  "image_verification": {
+    "uid": 10001,
+    "databases": 2,
+    "api_paths": 161,
+    "api_routes_methods_and_version": "match",
+    "bounded_expiry_scan": {
+      "scanned": 0,
+      "released": 0,
+      "skipped": 0,
+      "errors": 0
+    }
+  },
+  "images": {
+    "core": {
+      "tag": "medinv-core:0.25.0",
+      "id": "sha256:95a4e52f4ad1d55f21bcc674782000943760474e540f10164c80d84cd5f21570"
+    },
+    "web": {
+      "tag": "medinv-web:0.25.0",
+      "id": "sha256:373878c86fa9253db4459076ec64132167888d53a5d3e7b67cc06c9f4df1d5e7"
+    }
+  },
+  "visual_review": [
+    "outputs/document-field-catalog/全部页签字段设置.png",
+    "outputs/document-field-catalog/销售订单全字段.png"
+  ],
+  "issues_resolved": [
+    "Container smoke check and CI used 0.24.0 image and hardcoded 120-path expectation; now follow delivery metadata and contract.",
+    "Delivered OpenAPI snapshot had 158 paths and omitted document columns, purchase review options and purchase workflow; refreshed to 161 paths and added full schema snapshot regression."
+  ],
+  "initial_failure": "First updated container smoke run rejected stale API snapshot; final run passed after snapshot refresh. This is not a successful first-run claim.",
+  "warnings": [
+    "FastAPI TestClient emitted a Starlette/httpx deprecation warning.",
+    "Vite reported a chunk larger than 500 kB; production build completed."
+  ],
+  "limits": [
+    "Targeted checks only; full backend and all-browser suites not rerun.",
+    "No database migration or application behavior change in this increment.",
+    "No cross-machine deployment or latest-version full restore drill.",
+    "Remote CI and remote publishing not executed.",
+    "Browser scenarios create labeled verification records through the existing local demo environment."
+  ],
+  "artifacts": {
+    "artifacts/stage-a-20261020/backend.xml": {
+      "bytes": 25986,
+      "sha256": "33106fba3613d162f9dbbe1d07138ecb9e2c21d9b58a0db386a4b7feb2023aaa"
+    },
+    "artifacts/stage-a-20261020/delivery.xml": {
+      "bytes": 2028,
+      "sha256": "bfb6a706b88822865191622e611a46a76ecb143ecfb3b39abad69c22e1bbae8a"
+    },
+    "artifacts/stage-a-20261020/browser.json": {
+      "bytes": 33285,
+      "sha256": "5d7ea44c41e3ca445285aa4537dbe5cb365e993c491b432c0b0fd86c9f272b9a"
+    },
+    "artifacts/stage-a-20261020/container.log": {
+      "bytes": 807,
+      "sha256": "82e6a6027128d8295965e46b5c57f2abf63a1018cae571b2b43790f52f28b589"
+    },
+    "artifacts/stage-a-20261020/runtime-check.json": {
+      "bytes": 611,
+      "sha256": "d4322c9a38a366f4976e45176a1a6cc47f33c3b116047e78ab39e7535223faf5"
+    },
+    "artifacts/stage-a-20261020/runtime-status.json": {
+      "bytes": 642,
+      "sha256": "fffe37008f2b01bade6bfc9d3015d42607f7975b2850de6ce7f8ed9ae045df7f"
+    }
+  }
+}

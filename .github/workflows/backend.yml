@@ -1,0 +1,70 @@
+name: Python backend and admin web
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.12.23"
+          python-version: "3.14.8"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.14.0"
+      - run: npm install --global pnpm@11.25.0
+      - run: uv sync --project backend --locked
+      - run: pnpm --dir apps/admin-web install --frozen-lockfile
+      - run: backend/.venv/bin/python scripts/init_dev_env.py
+      - run: docker compose --env-file deploy/.env -f deploy/compose.yaml up -d --wait postgres
+      - run: backend/.venv/bin/python scripts/prepare_identity.py
+      - run: backend/.venv/bin/python scripts/dev.py migrate
+      - run: backend/.venv/bin/python scripts/seed_demo.py
+      - run: docker compose --env-file deploy/.env -f deploy/compose.yaml up -d keycloak
+      - run: backend/.venv/bin/python scripts/dev.py check
+      - run: backend/.venv/bin/python scripts/dev.py expiry --once
+      - run: pnpm --dir apps/admin-web format:check
+      - run: pnpm --dir apps/admin-web build
+      - name: Verify exported dependency lock
+        run: |
+          uv export --project backend --locked --no-dev --no-emit-project --no-header --output-file /tmp/requirements.lock.txt > /dev/null
+          diff deploy/requirements.lock.txt /tmp/requirements.lock.txt
+      - name: Generate runtime SBOM
+        run: |
+          mkdir -p artifacts
+          uv export --project backend --locked --no-dev --format cyclonedx1.5 --output-file artifacts/dependency-sbom.cdx.json > /dev/null
+      - name: Resolve delivery image
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          config = json.loads(Path("deploy/trial/compatibility.json").read_text())
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
+              env.write("MED_CORE_IMAGE=" + config["images"]["core"] + "\n")
+          PY
+      - run: docker build -f deploy/Dockerfile -t "$MED_CORE_IMAGE" .
+      - run: backend/.venv/bin/python scripts/smoke_container.py
+      - name: Start local integration services
+        run: |
+          backend/.venv/bin/python scripts/wait_http.py http://127.0.0.1:8080/identity/realms/medinv/.well-known/openid-configuration
+          backend/.venv/bin/python scripts/sync_demo_identity.py
+          backend/.venv/bin/python scripts/dev.py serve > artifacts/core.log 2>&1 &
+          pnpm --dir apps/admin-web dev > artifacts/web.log 2>&1 &
+          backend/.venv/bin/python scripts/wait_http.py http://127.0.0.1:5173/identity/realms/medinv/.well-known/openid-configuration
+          backend/.venv/bin/python scripts/dev.py auth > artifacts/control.log 2>&1 &
+          backend/.venv/bin/python scripts/wait_http.py http://127.0.0.1:8000/health/ready
+          backend/.venv/bin/python scripts/wait_http.py http://127.0.0.1:8001/health/ready
+          backend/.venv/bin/python scripts/wait_http.py http://127.0.0.1:5173
+      - run: pnpm --dir apps/admin-web exec playwright install --with-deps chromium
+      - run: pnpm --dir apps/admin-web test:e2e
+      - if: always()
+        run: docker compose --env-file deploy/.env -f deploy/compose.yaml down

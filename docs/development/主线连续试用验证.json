@@ -1,0 +1,98 @@
+{
+  "recorded_at": "2026-10-16T18:40:40.479786+08:00",
+  "increment": "0.24 continuous mainline acceptance using one SKU/lot through procurement, wholesale, retail, all three returns, transfer, count and cash settlement",
+  "business_migration": "b0026",
+  "control_migration": "c0014",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 26,
+  "production_business_code_changed": false,
+  "new_migrations": false,
+  "new_dependencies": false,
+  "new_permissions": false,
+  "backend_tests": 573,
+  "backend_integration_tests": 508,
+  "backend_unit_tests": 62,
+  "backend_architecture_tests": 2,
+  "backend_contract_tests": 1,
+  "new_backend_tests": 0,
+  "full_backend_suite_this_run": true,
+  "full_browser_suite_this_run": false,
+  "real_oidc_browser_tests": 1,
+  "new_browser_tests": 1,
+  "browser_scope": [
+    "mainline.spec.ts"
+  ],
+  "counts_note": "One scenario with 12 reconciliation checkpoints, not 12 separate tests. Final run passed without retries; preliminary successful runs are not added. Historical test totals are not added.",
+  "failures": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "python_lint_and_format": "passed; 196 backend files; new verifier also linted and formatted",
+  "python_types": "mypy strict passed; 112 source files",
+  "frontend_types": "new mainline test checked with strict TypeScript; Vue source checked by vue-tsc",
+  "frontend_build": "Vite passed",
+  "frontend_format": "passed",
+  "business_proof": [
+    "Two authenticated roles use the real API and UI with one entity, SKU and lot. Data is created by existing business commands; no direct database writes or disabled business checks.",
+    "Purchase 10; wholesale 4; retail 2; wholesale, retail and purchase returns 1 each; transfer 3 in receipts of 2 then 1; count destination from 3 to 2; retail one more; collect AR 60 and pay AP 117, allocating both.",
+    "12 checkpoints reconcile per-warehouse quantities, reserved amounts, inventory ledger quantity, cost ledger amount and AR/AP outstanding values.",
+    "Final source 2, destination 1, transit 0, physical stock 3, shared cost pool quantity 3 and amount 34.51200000. 14 stock ledger rows and 8 cost ledger rows reconcile independently to persisted balances.",
+    "Original AR 80 less return 20 and collected/allocated 60 leaves zero. Original AP 130 less return 13 and paid/allocated 117 leaves zero.",
+    "Test account records retail receipts 40+20, retail refund 20, customer receipt 60 and supplier payment 117: net movement -17.00. All related work items are closed.",
+    "In-transit quantity blocks count creation. A destination count freezes sales of that entity/lot in both physical warehouses. Posting releases freeze and a subsequent retail sale succeeds. Replaying retail completion returns the same posting without duplicate stock or cost movement.",
+    "Independent database verifier uses med_runtime, tenant RLS and a read-only repeatable-read transaction, comparing inventory, cost pool, cost ledger, settlement items, cash records and final document states."
+  ],
+  "mainline_blockers_found": 0,
+  "scenario_run_id": "a5ab06b0",
+  "reconciliation_checkpoints": 12,
+  "final_stock_qty": "3.000000",
+  "final_cost_amount": "34.51200000",
+  "final_ar_outstanding": "0.00",
+  "final_ap_outstanding": "0.00",
+  "cash_record_net_change": "-17.00",
+  "boundaries": [
+    "Ordinary device, one lot, two physical warehouses, two roles and simulated cash recording in the existing demonstration enterprise. This is not real enterprise opening or production acceptance.",
+    "Procurement, wholesale, retail and settlements use actual HTTP commands. Returns, transfers and counts use actual browser forms from the work queue. The final inventory ledger is inspected in the UI.",
+    "Cash net movement is confined to the isolated test account and does not represent an actual bank balance, a general ledger or profit.",
+    "New deliverables are a repeatable acceptance entry, a read-only verifier and scenario/evidence documents. No AI, reports, integrations or unrelated UI changes."
+  ],
+  "container_build_this_run": false,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:82a06b778c990d6bb65b390f0b39fe38374bc17d7cf694bf08c494ac46020ec4",
+  "container_smoke": "passed using unchanged prior image: UID 10001, both databases ready, 120 API paths and bounded expiry scan",
+  "local_services": "Core/auth/admin returned 200; existing core unchanged; expiry worker resumed at 18:38 local",
+  "next_three_steps": [
+    "Verify a new enterprise opening flow: roles, master data, opening import, reconciliation and first transactions.",
+    "Try daily work under purchasing, warehousing, quality, sales and cashier responsibilities; resolve concurrency or interrupted-flow recovery blockers.",
+    "Fix opening/daily-trial blockers and assemble the first trial package with deployment, reconciliation and business acceptance procedures."
+  ],
+  "baseline_records": {
+    "docs/development/盘点待办验证.json": "44bf19474636a1e8bcaf82ef63fa25a1d24f76045eb52c304e2518c6abab0396"
+  },
+  "unchanged_production_sha256": {
+    "backend/src/medinv/modules/workspace/application/queue.py": "fc7ad227a089c67800bfcf350fdf76a91273012f2f73961a3a1499c48747600a",
+    "apps/admin-web/src/workQueue.ts": "fb3de58e9643712dd5d97ebfe75f287db70ce8d0003132b1e7e7324e33316141",
+    "apps/admin-web/src/WorkQueue.vue": "c281e0e59f2167a476454e33df589af9c9fc9de4d4eac3d2cfbaeaf7d8a1bc72",
+    "apps/admin-web/src/CountsPage.vue": "f87eb1743379d519b63e6985c6cacb6f969b860821b612335acb390fa7833b41",
+    "apps/admin-web/src/App.vue": "e727c24b412f3bf24a5838d5095bfff061e56c75286e4a8d3d0195fcf9948cca",
+    "contracts/openapi/implemented-core-openapi.json": "c1c8b5e31190af21cfa11fc24839992c91bb8940f02c67537a6020b907fa94e0"
+  },
+  "result_sha256": {
+    "artifacts/backend-mainline-trial.xml": "a7b7378c9b91d3779e7ff93bf0844c9312d0ea15faf1026411d5ad01b516493e",
+    "artifacts/browser-mainline-trial.json": "2d99a526a35db1fc3f5d672a315697955a6caa52f3ae397fa9c9171ffb25dbeb",
+    "artifacts/mainline-trial-reconciliation.json": "89734c14cf5185a78165622b00e733af0d91d3d78b72961a8b2420d37ba55735",
+    "artifacts/mainline-trial-db.json": "05133ac6a60509da5f983e0da3e31cf41f9064e6375c9e5ec2e65136469a14dd",
+    "artifacts/container-mainline-trial.log": "159805c5185c1fd0690da10e5607723fc3f3cf987b57f0652ce1cefb2b8df8ef"
+  },
+  "inspected_screenshots": {
+    "artifacts/mainline-trial-ledger.png": "06eeb28476792fe2cc3eb39438206299a2a4c86a45d84a55a77399372adfe9ec"
+  },
+  "source_sha256": {
+    "apps/admin-web/tests/mainline.spec.ts": "351eee9318a8ac471da29b13052a215242167070867084481fb791ee8c8cd892",
+    "apps/admin-web/package.json": "465cdc71dde70f03b7f525abbf1dca22fd225824fe38c4431d3a9c86def046a7",
+    "scripts/verify_mainline_trial.py": "4bea7f624f7603719a8a031c5f6f2a9ac990a0acc6b254e05779fddcf55c5338",
+    "docs/development/主线连续试用.md": "569408751eefb2b176fa1292802bdae53456d275f8cda058360bb44d6ef47109",
+    "docs/development/开发进度.md": "02e03653d66891c9647155051cedd5cd1db04c4ee0ad3e8623b44c01789bc556",
+    "README.md": "ce77cfd4690a60be0110e4af47d2ecfce90909559bb59987e28fbdd7420cc716"
+  }
+}

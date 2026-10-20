@@ -1,0 +1,239 @@
+/* Branding only: all authentication fields, errors and actions are inherited. */
+:root {
+  --pf-v5-global--primary-color--100: #176f65;
+  --pf-v5-global--primary-color--200: #105c53;
+  --pf-v5-global--link--Color: #176f65;
+  --pf-v5-global--FontFamily--text: "Segoe UI", "Microsoft YaHei", sans-serif;
+  --pf-v5-global--FontFamily--heading:
+    "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+body#keycloak-bg {
+  background: #fff;
+  color: #243b36;
+}
+.pf-v5-c-login {
+  min-height: 100vh;
+  padding: 64px 5% 64px 58%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+.pf-v5-c-login__container {
+  width: 100%;
+  max-width: 420px;
+  display: block;
+  padding: 0;
+}
+#kc-header {
+  margin: 0 0 30px;
+  padding: 0;
+  text-align: left;
+}
+#kc-header #kc-header-wrapper {
+  color: #176f65 !important;
+  text-align: left;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0;
+}
+#kc-header-wrapper::after {
+  content: "企业进销存";
+  margin-left: 12px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #7a8c85;
+}
+.pf-v5-c-login__main {
+  background: #fff;
+  box-shadow: none;
+  border: 0;
+}
+.pf-v5-c-login__main::before {
+  display: none;
+}
+.pf-v5-c-form-control:focus-within {
+  outline: 2px solid #176f65;
+  outline-offset: 2px;
+}
+.pf-v5-c-form-control > input:focus-visible {
+  outline: none;
+}
+.pf-v5-c-form-control::after {
+  border-bottom-color: #176f65;
+}
+.pf-v5-c-login__main-header,
+.pf-v5-c-login__main-body,
+.pf-v5-c-login__main-footer {
+  padding: 0;
+}
+.pf-v5-c-login__main-header {
+  margin-bottom: 30px;
+  display: block;
+}
+#kc-page-title {
+  color: #243b36;
+  font-size: 29px;
+  font-weight: 650;
+  letter-spacing: -0.6px;
+}
+body[data-page-id="login-login"] .pf-v5-c-login__main-header::after {
+  content: "使用企业账号登录，进入您的工作台。";
+  display: block;
+  margin-top: 12px;
+  color: #7a8c85;
+  font-size: 14px;
+}
+.pf-v5-c-form {
+  --pf-v5-c-form--GridGap: 22px;
+}
+.pf-v5-c-form-control {
+  min-height: 46px;
+  border-radius: 7px;
+  background: #fbfcfb;
+}
+.pf-v5-c-form-control::before,
+.pf-v5-c-form-control::after {
+  border-radius: 7px;
+}
+.pf-v5-c-form__label {
+  color: #435c52;
+  font-size: 14px;
+}
+.pf-v5-c-button.pf-m-control {
+  border-radius: 0 7px 7px 0;
+}
+.pf-v5-c-button.pf-m-primary {
+  min-height: 48px;
+  border-radius: 7px;
+  font-size: 15px;
+}
+.pf-v5-c-button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #176f65;
+  outline-offset: 3px;
+}
+.med-login-help {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e8edeb;
+  color: #80918a;
+  font-size: 12px;
+  line-height: 1.9;
+}
+.med-login-help strong {
+  color: #536f62;
+}
+.med-login-caption {
+  margin-top: 25px;
+  color: #92a097;
+}
+.med-story {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 52.8%;
+  padding: 42px 4.3%;
+  display: flex;
+  flex-direction: column;
+  background: #eaf1ed;
+  color: #20483f;
+}
+.med-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.med-wordmark strong {
+  font-size: 20px;
+}
+.med-wordmark > span:last-child {
+  font-size: 12px;
+  color: #698276;
+}
+.med-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  background: #176f65;
+  border-radius: 11px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 20px;
+}
+.med-story-body {
+  margin: auto 0;
+  padding: 48px 0;
+}
+.med-eyebrow {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #64837e;
+}
+.med-story h2 {
+  font-size: clamp(30px, 3.2vw, 48px);
+  font-weight: 650;
+  line-height: 1.5;
+  margin: 22px 0;
+  letter-spacing: -1px;
+}
+.med-story-body > p {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #687d76;
+}
+.med-flow {
+  margin-top: 40px;
+  max-width: 410px;
+  border: 1px solid #ceded5;
+  background: #f4f8f3bb;
+  border-radius: 14px;
+  padding: 22px 25px;
+}
+.med-flow-title {
+  background: #fff;
+  border: 1px solid #d5e3db;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  font-size: 14px;
+  color: #327265;
+}
+.med-flow-steps {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+.med-flow-steps span {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #dce6e0;
+  border-radius: 6px;
+  text-align: center;
+  padding: 12px 6px;
+  font-size: 12px;
+}
+.med-flow p {
+  font-size: 11px;
+  color: #7b9188;
+  text-align: center;
+  margin-top: 20px;
+}
+.med-story-footer {
+  display: flex;
+  justify-content: space-between;
+  color: #82958b;
+  font-size: 11px;
+}
+@media (max-width: 800px), (max-height: 640px) {
+  .med-story {
+    display: none;
+  }
+  .pf-v5-c-login {
+    padding: 44px 24px;
+  }
+  #kc-page-title {
+    font-size: 27px;
+  }
+}

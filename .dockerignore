@@ -1,0 +1,17 @@
+.git
+.tools
+.cache
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.env
+**/.env.*
+docs
+artifacts
+**/node_modules
+**/dist
+images.tar
+release.json
+*.zip

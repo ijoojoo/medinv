@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-19",
+  "business_revision": "b0038",
+  "control_revision": "c0017",
+  "business_rls_tables": 91,
+  "api_paths": 153,
+  "backend_unique_tests": 240,
+  "targeted_business_rerun": 78,
+  "master_tests": 19,
+  "browser_tests": 3,
+  "categories": 10,
+  "builtin_fields": 58,
+  "basic_slots": 15,
+  "tabs": 7,
+  "browser_widths": [
+    1440,
+    850,
+    480
+  ],
+  "asserted_columns": [
+    3,
+    2,
+    1
+  ],
+  "runtime": "trial.py check passed; six services running, images match",
+  "master_purchase": {
+    "received_qty": "2",
+    "supplier_payable": "20",
+    "historic_snapshot_unchanged_after_certificate_inactivation": true
+  },
+  "screenshots": [
+    "商品维护.png",
+    "商品查询.png",
+    "固定槽位预览.png"
+  ],
+  "scope_note": "首版字段与机制，不表示493项规划字段、全部类别购销或外部平台对接完成"
+}

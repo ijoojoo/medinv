@@ -1,0 +1,527 @@
+{
+  "recorded_at": "2026-10-16T14:48:16.629668+00:00",
+  "increment": "0.24 continuous multi-role operations and tenant-sensitive work-queue planning",
+  "business_migration": "b0026",
+  "control_migration": "c0016",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 30,
+  "new_migrations": false,
+  "new_permissions": false,
+  "new_dependencies": false,
+  "new_http_paths": false,
+  "backend_targeted_passed": 60,
+  "new_backend_cases": 2,
+  "full_backend_suite_this_run": false,
+  "backend_scope": [
+    "test_work_queue",
+    "test_return_queue",
+    "test_transfer_queue",
+    "test_count_queue",
+    "test_inventory_job_queue"
+  ],
+  "backend_warning": "Existing Starlette TestClient httpx deprecation",
+  "final_browser_stats": {
+    "startTime": "2026-10-16T14:41:47.951Z",
+    "duration": 243750.962,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "earlier_browser_stats": {
+    "startTime": "2026-10-16T14:30:20.761Z",
+    "duration": 167264.519,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "full_browser_suite_this_run": false,
+  "browser_scope": [
+    "continuous-operations",
+    "mainline",
+    "command-recovery (3)",
+    "job-handoff",
+    "return-jobs",
+    "inventory-jobs"
+  ],
+  "scenario": {
+    "tenant_name": "连续营业企业-d94285b4",
+    "tenant_id": "e0fe6210-3d2a-535b-9d2b-b87f0de7cdef",
+    "entity_id": "ae328de9-3e8b-542e-9647-f0b9505870a7",
+    "run": "d94285b4-e241-45d2-a840-b59d4e4162e2",
+    "roles": {
+      "owner": {
+        "principal_id": "f1871731-6e10-5ae6-900b-0e5013c7c69b",
+        "role": "OWNER"
+      },
+      "purchase": {
+        "principal_id": "7eb2f172-5de2-5039-bf9d-b0559b344079",
+        "role": "PURCHASER"
+      },
+      "sales": {
+        "principal_id": "c13fae64-4ab0-5d11-9045-42a3c19520ee",
+        "role": "SALES"
+      },
+      "warehouse": {
+        "principal_id": "573bdb3b-371e-51e7-b842-2a64593455c5",
+        "role": "WAREHOUSE"
+      },
+      "quality": {
+        "principal_id": "00801e17-c524-5d0b-94ec-4f6de756e6f9",
+        "role": "QUALITY"
+      },
+      "cashier": {
+        "principal_id": "d062b640-7157-532d-980e-b670427953bc",
+        "role": "CASHIER"
+      },
+      "finance": {
+        "principal_id": "327000e9-fe71-565c-ae3e-1f2786706395",
+        "role": "FINANCE"
+      }
+    },
+    "checkpoints": [
+      {
+        "label": "采购已入账且恢复不重复",
+        "quantities": [
+          "10",
+          "0"
+        ],
+        "cost": "115.04",
+        "ar": "0",
+        "ap": "130"
+      },
+      {
+        "label": "采购已入账且恢复不重复",
+        "quantities": [
+          "10",
+          "0"
+        ],
+        "cost": "115.04",
+        "ar": "0",
+        "ap": "130"
+      },
+      {
+        "label": "批发4件出库",
+        "quantities": [
+          "6",
+          "0"
+        ],
+        "cost": "69.024",
+        "ar": "80",
+        "ap": "130"
+      },
+      {
+        "label": "零售2件出库且只收款一次",
+        "quantities": [
+          "4",
+          "0"
+        ],
+        "cost": "46.016",
+        "ar": "80",
+        "ap": "130"
+      },
+      {
+        "label": "批发退货1件",
+        "quantities": [
+          "5",
+          "0"
+        ],
+        "cost": "57.52",
+        "ar": "60",
+        "ap": "130"
+      },
+      {
+        "label": "零售退货1件并退款",
+        "quantities": [
+          "6",
+          "0"
+        ],
+        "cost": "69.024",
+        "ar": "60",
+        "ap": "130"
+      },
+      {
+        "label": "采购退货1件",
+        "quantities": [
+          "5",
+          "0"
+        ],
+        "cost": "57.52",
+        "ar": "60",
+        "ap": "117"
+      },
+      {
+        "label": "调拨3件在途",
+        "quantities": [
+          "2",
+          "0",
+          "3"
+        ],
+        "cost": "57.52",
+        "ar": "60",
+        "ap": "117"
+      },
+      {
+        "label": "调拨分次实收2",
+        "quantities": [
+          "2",
+          "2",
+          "1"
+        ],
+        "cost": "57.52",
+        "ar": "60",
+        "ap": "117"
+      },
+      {
+        "label": "调拨分次实收1",
+        "quantities": [
+          "2",
+          "3",
+          "0"
+        ],
+        "cost": "57.52",
+        "ar": "60",
+        "ap": "117"
+      },
+      {
+        "label": "门店盘亏1件",
+        "quantities": [
+          "2",
+          "2",
+          "0"
+        ],
+        "cost": "46.016",
+        "ar": "60",
+        "ap": "117"
+      },
+      {
+        "label": "盘点后继续销售1件",
+        "quantities": [
+          "2",
+          "1",
+          "0"
+        ],
+        "cost": "34.512",
+        "ar": "60",
+        "ap": "117"
+      },
+      {
+        "label": "营业全部结清",
+        "quantities": [
+          "2",
+          "1",
+          "0"
+        ],
+        "cost": "34.512",
+        "ar": "0",
+        "ap": "0"
+      }
+    ],
+    "recoveries": [
+      {
+        "path": "/api/v1/receipt-postings/e2e9c33d-d282-4e1e-ac22-1c0cae1555c2/post",
+        "attempts": 2,
+        "identical_request": true,
+        "original_result": {
+          "posted_document_id": "e2e9c33d-d282-4e1e-ac22-1c0cae1555c2",
+          "posting_id": "9541c64e-d864-4215-a840-02a92279399d",
+          "new_version": "2",
+          "ledger_ids": [
+            "61977c34-4589-430e-8a44-5305302b5068"
+          ],
+          "event_id": "3c048496-c733-4ffe-a03f-ca0cb69df123",
+          "posted_at": "2026-10-16T14:42:15.053922+00:00"
+        }
+      },
+      {
+        "path": "/api/v1/retail/sales/6275810f-db42-4259-9ef3-c70900a8e998/cash",
+        "attempts": 2,
+        "identical_request": true,
+        "original_result": {
+          "id": "6275810f-db42-4259-9ef3-c70900a8e998",
+          "state": "PAID_PENDING_POST",
+          "version": "2",
+          "payment_id": "e6bd71e3-e52f-4957-b470-3728a24951e0",
+          "amount": "40.00",
+          "change_amount": "10.00"
+        }
+      }
+    ],
+    "coverage": "Seven real role-scoped HTTP sessions, browser work handoffs and response-loss recovery; not every form is entered through UI."
+  },
+  "independent_database_checks": {
+    "recorded_at": "2026-10-16T14:42:53.570015+00:00",
+    "run": "d94285b4-e241-45d2-a840-b59d4e4162e2",
+    "transaction": "read only, repeatable read",
+    "role": "med_runtime; tenant RLS enforced",
+    "stock": [
+      {
+        "warehouse_id": "2ef2730e-e858-552d-b75d-c281b27b206f",
+        "on_hand": "2.000000",
+        "reserved": "0.000000",
+        "blocked": "0.000000"
+      },
+      {
+        "warehouse_id": "4ce2332b-9a6d-4ce7-a2e7-73a2812dfea3",
+        "on_hand": "1.000000",
+        "reserved": "0.000000",
+        "blocked": "0.000000"
+      },
+      {
+        "warehouse_id": "d194a0f3-3b7d-4bf3-9c16-79191ca1fee1",
+        "on_hand": "0.000000",
+        "reserved": "0.000000",
+        "blocked": "0.000000"
+      }
+    ],
+    "cost_pool": {
+      "id": "13d8ea1e-f001-4319-9784-7a2f0668428b",
+      "qty": "3.000000",
+      "amount": "34.51200000"
+    },
+    "cost_ledger": {
+      "entries": 8,
+      "qty": "3.000000",
+      "amount": "34.51200000"
+    },
+    "stock_ledger": {
+      "entries": 14,
+      "qty": "3.000000"
+    },
+    "settlements": [
+      {
+        "kind": "AP",
+        "gross_amount": "130.00",
+        "settled_amount": "117.00",
+        "outstanding_amount": "0.00"
+      },
+      {
+        "kind": "AR",
+        "gross_amount": "80.00",
+        "settled_amount": "60.00",
+        "outstanding_amount": "0.00"
+      }
+    ],
+    "wholesale_and_supplier_cash": [
+      {
+        "direction": "PAYMENT",
+        "amount": "117.00",
+        "allocated_amount": "117.00",
+        "refunded_amount": "0.00",
+        "state": "CONFIRMED"
+      },
+      {
+        "direction": "RECEIPT",
+        "amount": "60.00",
+        "allocated_amount": "60.00",
+        "refunded_amount": "0.00",
+        "state": "CONFIRMED"
+      }
+    ],
+    "retail_receipts": [
+      {
+        "direction": "RECEIPT",
+        "amount": "20.00"
+      },
+      {
+        "direction": "RECEIPT",
+        "amount": "40.00"
+      }
+    ],
+    "retail_return_refunds": [
+      {
+        "amount": "20.00"
+      }
+    ],
+    "cash_record_net_change": "-17.00",
+    "document_final_states": {
+      "shipment": "POSTED",
+      "wholesale_return": "POSTED",
+      "retail_return": "POSTED",
+      "purchase_return": "POSTED",
+      "retail": "COMPLETED",
+      "retail_after_count": "COMPLETED",
+      "transfer": "RECEIVED",
+      "count": "POSTED"
+    },
+    "interpretation": "Isolated test account movement only; not an actual bank balance or general ledger."
+  },
+  "performance": {
+    "before": "Business queue statement timed out at 5s; readonly generic plan prepared in new tenant then reused in older tenant also timed out at 30s. No JIT observed in fresh-plan probes.",
+    "after": [
+      {
+        "tenant": "new",
+        "mode": "force_generic_plan",
+        "elapsed_seconds": 0.052750900000319234,
+        "planning_ms": 38.977,
+        "execution_ms": 3.43,
+        "cost": 1486.97,
+        "rows": 0.0
+      },
+      {
+        "tenant": "old",
+        "mode": "force_custom_plan",
+        "elapsed_seconds": 0.05669159999888507,
+        "planning_ms": 26.256,
+        "execution_ms": 19.033,
+        "cost": 7325.16,
+        "rows": 51.0
+      },
+      {
+        "tenant": "new",
+        "mode": "force_custom_plan",
+        "elapsed_seconds": 0.03730560000076366,
+        "planning_ms": 26.176,
+        "execution_ms": 2.297,
+        "cost": 1485.6,
+        "rows": 0.0
+      },
+      {
+        "tenant": "old",
+        "mode": "force_custom_plan",
+        "elapsed_seconds": 0.05570880000050238,
+        "planning_ms": 24.622,
+        "execution_ms": 18.922,
+        "cost": 7325.16,
+        "rows": 51.0
+      }
+    ],
+    "scope": "Only SET LOCAL plan_cache_mode within the WorkQueue readonly transaction; no global PostgreSQL/driver setting or timeout changes.",
+    "limitation": "Local targeted reproduction and verification, not a load benchmark. Other historical page waits were not proved to share this root cause."
+  },
+  "checks": {
+    "backend_ruff": "passed",
+    "backend_format_files": 205,
+    "mypy_strict_source_files": 114,
+    "new_browser_strict_types": "passed",
+    "frontend_format": "passed",
+    "frontend_types_and_build": "passed",
+    "ledger_screenshot": "visually inspected"
+  },
+  "runtime": {
+    "image_tag": "medinv-core:0.24.0",
+    "image_id": "sha256:95354088bd2d796d70ae962e56f3420018ce97a31404b0e303ad8e97c4eb6cf5",
+    "linux_smoke": "passed; non-root 10001, both databases, 120 API paths, bounded expiry scan",
+    "health": {
+      "core": 200,
+      "auth": 200,
+      "admin": 200
+    },
+    "expiry_worker": "restored after validation"
+  },
+  "limitations": [
+    "Development validation release; no production deployment this turn.",
+    "No backup restore or service-restart continuation drill this turn.",
+    "No claim of cross-device or closed-tab command recovery.",
+    "Normal role-scoped HTTP operations plus critical browser handoffs, not every input form through UI."
+  ],
+  "files": [
+    {
+      "path": "backend/src/medinv/modules/workspace/application/queue.py",
+      "sha256": "dd67df565d4574688fdd91e153b9133d0be89486ee378658afacc19c3d09565e",
+      "bytes": 16743
+    },
+    {
+      "path": "backend/tests/integration/test_work_queue.py",
+      "sha256": "ff6e8836f6a084adb411b140cec8a266e27f38de0d346ccd72844673258f3302",
+      "bytes": 12219
+    },
+    {
+      "path": "apps/admin-web/tests/continuous-operations.spec.ts",
+      "sha256": "256d8944d9148965f1226db40d333a21b86e45864f76131cf737d69c55406122",
+      "bytes": 32143
+    },
+    {
+      "path": "apps/admin-web/package.json",
+      "sha256": "dc9b3bd3f85e9a89128102d570cc79642d0e8eb987ee6efa1a623a02982507b5",
+      "bytes": 1158
+    },
+    {
+      "path": "scripts/verify_mainline_trial.py",
+      "sha256": "1ea451d618135f480ce3ab35334e5831dc0d6b179571fdf00b414fd59920c61e",
+      "bytes": 9512
+    },
+    {
+      "path": "README.md",
+      "sha256": "c798ce862a9aba16b3d4ff68187fb53076747baf9c4a0c4c79a09f130950ac58",
+      "bytes": 35019
+    },
+    {
+      "path": "docs/development/开发进度.md",
+      "sha256": "9c12e84f666aab84b2cbc01df6314affb7d8b72451baebb482bf25cb80c736d8",
+      "bytes": 49574
+    },
+    {
+      "path": "docs/development/跨岗连续营业试用.md",
+      "sha256": "293d5a9a789dd8c0827ad293b467746140a868a92a3bb3145dec90c98860e8e6",
+      "bytes": 7562
+    },
+    {
+      "path": "artifacts/backend-continuous-queue.xml",
+      "sha256": "5b76ce6b4910167f6323c4071f48c53b2ffb3b1a1122fe5bdd83c6ec017419b6",
+      "bytes": 9424
+    },
+    {
+      "path": "artifacts/browser-continuous-final.json",
+      "sha256": "c2d04acf0937b2f34e1469c4302d79fc4a3db4b3911d3d5d1e160b9d3890a6a1",
+      "bytes": 15745
+    },
+    {
+      "path": "artifacts/browser-continuous-regression.json",
+      "sha256": "bbe9df732a6d6fe6fa296258fd413e0b3c368d9081ad559761e7569ba7b99d1b",
+      "bytes": 22500
+    },
+    {
+      "path": "artifacts/continuous-operations-manifest.json",
+      "sha256": "25483b480d447ea6e8332585c134d502b176d90fcd7b53770d5205a50a4048f2",
+      "bytes": 1207
+    },
+    {
+      "path": "artifacts/continuous-operations-reconciliation.json",
+      "sha256": "408f07c45257cdc8b3b883398530e168e88a7a2413c822afec2feb04b5adbe82",
+      "bytes": 7433
+    },
+    {
+      "path": "artifacts/continuous-operations-db.json",
+      "sha256": "91c28172992fc2f2d565a32dcb4e49a93676c253b174a17d91a032294f9cb342",
+      "bytes": 2385
+    },
+    {
+      "path": "artifacts/continuous-operations-ledger.png",
+      "sha256": "be90ba777c2c9fe19f5e2e4a098b8d7f54ffd0f27952b2a01b37d19cadc8f55d",
+      "bytes": 177786
+    },
+    {
+      "path": "artifacts/work-queue-timeout-evidence.json",
+      "sha256": "2b6cfbe80a3be95405439d30f1a7e289ef5b3fd92b0951eb4de3e8d76b105845",
+      "bytes": 969
+    },
+    {
+      "path": "artifacts/work-queue-cross-tenant-after.json",
+      "sha256": "2712e39afaf86a9c382124100a5f5e0f603599a746d902bec19d220956536af1",
+      "bytes": 835
+    },
+    {
+      "path": "artifacts/work-queue-cross-tenant-plan-0.json",
+      "sha256": "1bb04f666623c71a07ed0976dfb10a1c897eaad0746a8d83ca91fd262cccab99",
+      "bytes": 658546
+    },
+    {
+      "path": "artifacts/work-queue-fixed-plan-1.json",
+      "sha256": "9c834b00b88a7229ca12203375a3ff64465954d29fb80b67835015c59a0c6a47",
+      "bytes": 693029
+    },
+    {
+      "path": "artifacts/container-continuous-build.log",
+      "sha256": "e3291618cfa77642fd9e30c955396d8af925c097242215fa82911319d1091ccd",
+      "bytes": 2080
+    },
+    {
+      "path": "artifacts/container-continuous.log",
+      "sha256": "1ebaaec6e772adfd4737b706ada1ea90a33f3dfe317b4f836db4bbd96310b000",
+      "bytes": 801
+    }
+  ]
+}

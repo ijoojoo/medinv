@@ -1,0 +1,105 @@
+{
+  "recorded_at": "2026-10-16T17:31:38.987775+08:00",
+  "increment": "0.24 follow-up: per-sales-order shortages, linked replenishment purchases, original sales fulfillment after receipt",
+  "business_migration": "b0026",
+  "control_migration": "c0014",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "backend_tests": 540,
+  "backend_integration_tests": 475,
+  "new_backend_replenishment_cases": 14,
+  "earlier_targeted_backend_tests": 39,
+  "earlier_targeted_scope": [
+    "test_replenishment.py",
+    "test_sale_stock.py",
+    "test_api.py"
+  ],
+  "backend_counts_note": "39 targeted checks and 14 new cases are included in the full 540 result, not additional to it.",
+  "real_oidc_browser_tests": 10,
+  "new_browser_tests": 2,
+  "browser_regression_tests": 8,
+  "browser_scope": [
+    "replenishment.spec.ts",
+    "procurement.spec.ts",
+    "purchase-revisions.spec.ts",
+    "sales-revisions.spec.ts",
+    "sale-stock.spec.ts",
+    "work-queue.spec.ts"
+  ],
+  "failures": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "python_lint_and_format": "passed; 193 Python files",
+  "python_types": "mypy strict passed; 112 source files",
+  "frontend_format": "passed",
+  "frontend_build": "vue-tsc and Vite passed",
+  "full_backend_suite_this_run": true,
+  "full_browser_suite_this_run": false,
+  "business_proof": [
+    "Real owner/quality UI: original qualified stock 10; approved sale 15; shortage 5; supplier and base-unit purchase price confirmed; linked purchase draft created; independent approval, arrival, inspection and posting of 5; original sale allocated 15 across two lots, picked, independently verified and fully posted.",
+    "Final on-hand 0, supplier payable CNY 130+65=195, customer receivable CNY 300, issue cost CNY 172.56.",
+    "After another request creates a linked purchase of 2, submission of stale suggestion 5 receives 409; refresh suggests 3 and preserves entered purchase price; one linked purchase remains.",
+    "Failed query removes displayed old suggestions; viewer authenticated in a separate browser session can inspect but cannot create through UI or API.",
+    "Backend covers repeated-SKU aggregation, partial allocation, partial inspection/rejection, closed unreceived quantities, cancellation, concurrency, idempotency, source immutability, tenant/entity/permission fences and commit-time rollback."
+  ],
+  "verification_adjustments": [
+    "Browser expected quantity corrected to the existing six-decimal format 15.000000; final two new tests passed without retries."
+  ],
+  "boundaries": [
+    "One original sales order, one supplier per purchase, unique SKU lines in base units; no merged multi-order procurement or packaging entry in this new form.",
+    "Only linked same-warehouse, same-SKU non-cancelled pending purchases reduce the suggestion; unrelated purchase orders are not included.",
+    "Shared available stock remains advisory. Procurement neither reserves sales inventory nor guarantees quality, expiry, arrival time or fulfillment.",
+    "Sales amendments/closure do not cancel purchases; procurement amendments do not change sales. Original source reference is immutable.",
+    "Existing purchase approval, receiving, inspection, stock/cost/AP posting and original sales allocation/review/AR posting remain authoritative.",
+    "No new permission, dependency, report, AI integration or external system integration."
+  ],
+  "pre_migration_backup": "Business custom-format archive saved under .cache/backups before b0026; archive directory verified. No restore rehearsal this run.",
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:844e327d5b86423fc4931d8fa0311b41261135102e0e914b136ce3630e74e7ab",
+  "container_smoke": "passed: UID 10001, both databases ready, 120 API paths and one bounded expiry scan",
+  "local_services": "Core/auth/admin returned 200; final core restarted; expiry worker resumed after all tests",
+  "next_three_steps": [
+    "Connect purchase, wholesale and retail return work to pending receive/inspect/handback/refund operations.",
+    "Connect unfinished warehouse transfer and stock-count operations to original documents.",
+    "Complete multi-role end-to-end business trial and stock/cost/receivable/payable reconciliation; resolve blocking issues."
+  ],
+  "baseline_records": {
+    "docs/development/验证记录.json": "605378b16e4edf0b0d9fd2b3ef6bd7c8fc2870f4ccb96004e6c858969870ee2d",
+    "docs/development/业务待办验证.json": "10ee3723dc9ba8fb4f65a42aa340ca00b56ba3d283194cff8084fd1b6fe9e987",
+    "docs/development/销售库存联动验证.json": "c4a33b4cfa9528864499d86dc2629b5c1caf1b6ca73b1f4b7662a0075a394e45"
+  },
+  "result_sha256": {
+    "artifacts/backend-replenishment.xml": "c2de7d36632bd3f22ac388e213ff2ece6addf777faa0b8e62cedc5c5278ce31b",
+    "artifacts/backend-replenishment-full.xml": "ec24a8948dbf64e9f2151bf99ee57b79b05f4728f2aaa72321517df9b6dc6735",
+    "artifacts/browser-replenishment.json": "c5e47cce785ea9375e5b780331736af91491cfc70864121c327b3eed75145135",
+    "artifacts/browser-replenishment-regression.json": "f8cc46a1acf073953ebc534920186a4abfa9df12495e14b1f2d08df2775cfc78",
+    "artifacts/container-replenishment.log": "717c34ef16e3ae3bb35d3de1dfe413405a15e70b9510c4b5e72e58b02cec0dc8"
+  },
+  "inspected_screenshots": {
+    "artifacts/replenishment-shortage.png": "d3b6fa6e739e5bb915aec50d10a9209dfc3659cffcccf1186ddbda26c258734d"
+  },
+  "source_sha256": {
+    "backend/migrations/business/versions/0026_sales_replenishment.py": "b98d7e45311909477125fe9449a7322e239ec5244855c2c11b868d9ff8d8aab0",
+    "backend/src/medinv/modules/sales/application/replenishment.py": "31c392164af9acbc8a941817242aacbe66b8cceca253979eebf46666d94e625f",
+    "backend/src/medinv/modules/sales/application/stock.py": "aeadafcdd71717325de002f5de58a28fbbef510b079e3c921e169039654450b7",
+    "backend/src/medinv/modules/sales/api/schemas.py": "2ace1bdf04c66425ce2a355102489886e1922d56b90100c139a852a61a1db354",
+    "backend/src/medinv/modules/procurement/application/service.py": "7c3d877f2e0011e1d09c7e9ad61f282b4ab26a40065196d68cd9b4814df1d164",
+    "backend/src/medinv/entrypoints/core_api.py": "bcb8e67eebf12cbbf0f3e04e0cb34f1799cfb0bb44ff070c605b3f457c420d67",
+    "backend/tests/integration/test_replenishment.py": "1961298d0bc4b048fa8f77832f517aa6d33e92366b3180469edbf2d6a04693ef",
+    "backend/tests/integration/test_api.py": "de4d116116a95cfe77ee80ad55539a13cf29a09215720c4f2d10d9dcb47c507d",
+    "apps/admin-web/src/ReplenishmentPanel.vue": "831c2b9294ee41f65ef22f9401717c32b40bbeef50ba35b54629f3aefeb9f9ae",
+    "apps/admin-web/src/SalesDetail.vue": "36477a496384cccb66c1bfb7bb3992c673541c739637012de0cb08fbc79f5867",
+    "apps/admin-web/src/SalesPage.vue": "1a49f0cc9e8ab40b3e92e10ebf4148af803bf5c3b16013dac427e302bb6fd3ac",
+    "apps/admin-web/src/PurchaseDetail.vue": "a8cd8d8ad0e96ba3858be1bb93272539df2a84e9d940ee85f680bd7b21dbc4f7",
+    "apps/admin-web/src/PurchasingPage.vue": "f8d4e2384c332d837de903bade1f5885aee018ac22608c1bbabec5b99714bba7",
+    "apps/admin-web/src/App.vue": "6917c41153481f26fbe8c1ffcc00bcce5729bff9b9758c7c00385756347847e7",
+    "apps/admin-web/tests/replenishment.spec.ts": "10f3c20a7834dbc2fcccfe6b1536082fa65188754d20511e3e0c01673ad9a834",
+    "contracts/openapi/implemented-core-openapi.json": "601ea571e4c610a7fde92175bfc81b6a7dd4d9d6fbf39c8f2a728fdc89b9b284",
+    "scripts/smoke_container.py": "9a587781e413976741cd02b0aeeb54369b1c24a281b145228497424689e7fae5",
+    "docs/adr/0023-销售缺货与关联补货采购.md": "3602b53079cc9a87689c914379eb41be985f51636e7aebc4b3d40f16317b07d4",
+    "docs/development/销售补货操作指引.md": "bbf99874b8456ff81c4aa23e87e57acaecbe2969a35da4500f45143409c15c56",
+    "docs/development/开发进度.md": "f1c004c276afa9d92bf57116648093d3d0e4ee1f1840f047bf4fa6a5784b7ed7",
+    "README.md": "dc966b28c811567b77cb64120369b3f185481f1bc829cb989a1e0363e0225193"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "version": "1.0",
+  "files": [
+    {
+      "path": "assets/technical-architecture.png",
+      "bytes": 202382,
+      "sha256": "63c1793225747361e5727098f2d0bd54d6a1392fbe381e086705ad3eb69cc7c6"
+    },
+    {
+      "path": "contracts/core-openapi.json",
+      "bytes": 73483,
+      "sha256": "88e394e8b3bbdc4d60a20481009fd02a3491b8ce565707d254ee06d77508e6bf"
+    },
+    {
+      "path": "contracts/domain-event.schema.json",
+      "bytes": 4211,
+      "sha256": "28508c8cd353b2d19c4295001d39e458ee3be3cb628b74062c1832ec05b29795"
+    },
+    {
+      "path": "contracts/examples/allocation-request.json",
+      "bytes": 337,
+      "sha256": "aaff666c5aae5ceede94bfa9b860d21f8e43b90cdae5208365c9b4e4bb970f18"
+    },
+    {
+      "path": "contracts/examples/inventory-posted-event.json",
+      "bytes": 815,
+      "sha256": "a012c61a1152f13286befde1fc572b210819e7f349d65468dd90b71fc17d762a"
+    },
+    {
+      "path": "contracts/examples/manual-cash-request.json",
+      "bytes": 195,
+      "sha256": "ab1884ab776b7797e327d991e1e0189265412d68a3d0de6a952204d1cdb03068"
+    },
+    {
+      "path": "contracts/examples/posting-response.json",
+      "bytes": 403,
+      "sha256": "f634bd694cc122e8f1e902852972819d895bc633b526e62b270cecc75a02decf"
+    },
+    {
+      "path": "contracts/examples/receipt-post-request.json",
+      "bytes": 156,
+      "sha256": "13a55b238a36182acf90dcab39b81d8824fc866d7fd495498493aab4b35d1459"
+    },
+    {
+      "path": "contracts/examples/reserve-request.json",
+      "bytes": 487,
+      "sha256": "646c9519ae4079576f93bb8da3c28bcc059b191e61a349c7623fb0e3a0a2cf8d"
+    },
+    {
+      "path": "contracts/examples/retail-complete-request.json",
+      "bytes": 162,
+      "sha256": "c3c9de9c4c2eafae8941e941059cbe37ea4f12c730bd7ad72c781839fe6ae2ed"
+    },
+    {
+      "path": "database/core-reference.sql",
+      "bytes": 28737,
+      "sha256": "934e369c31898b3a56007ded680c67e926893f33f3bb71b138214d535f3ad9db"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3062,
+      "sha256": "c42782f73ceb9adc15309cf8e1ec669c48b1c829f82a3034ab746b2b5398c738"
+    },
+    {
+      "path": "接口登记表.md",
+      "bytes": 10491,
+      "sha256": "78aa742cf98a5cd58e950b95753ceb30fd431b512ca58231d41f29799b1d86c0"
+    },
+    {
+      "path": "数据字典.md",
+      "bytes": 48262,
+      "sha256": "11129f39f15defb199820901b5e8d0555832828196b9c46896c53b14abf2e323"
+    },
+    {
+      "path": "测试矩阵.md",
+      "bytes": 12921,
+      "sha256": "1f386d6d1d71fab9190e041d9e224a6103ffe79f0955d8bb8bfef21e5f1bc25c"
+    },
+    {
+      "path": "药械进销存SaaS技术设计文档.docx",
+      "bytes": 287182,
+      "sha256": "a7e23da3f7c1847941ed51f6134460ebcf1614838c4bf25cba8ce5efe0f95e01"
+    },
+    {
+      "path": "药械进销存SaaS技术设计文档.md",
+      "bytes": 67593,
+      "sha256": "947f0de19b789957eeceebbf32337e06be9b289829177cf2d99ada44692cfd55"
+    },
+    {
+      "path": "部署与运行手册.md",
+      "bytes": 7725,
+      "sha256": "e8f76e4680a7a01c59a06cd9422e76554ef62e14f50beeba5186a69242cab606"
+    },
+    {
+      "path": "验证范围.md",
+      "bytes": 1769,
+      "sha256": "da0a59fd6d5ffc4e4cea03d363f4bbb3bf44ceb6e01fc4b2ae6ed5bb388eca51"
+    }
+  ]
+}

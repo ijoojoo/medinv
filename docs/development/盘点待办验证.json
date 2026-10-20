@@ -1,0 +1,98 @@
+{
+  "recorded_at": "2026-10-16T18:25:30.973374+08:00",
+  "increment": "0.24 follow-up: stock count entry, independent review and posting work queue with direct original-document launch",
+  "business_migration": "b0026",
+  "control_migration": "c0014",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 26,
+  "new_count_work_stages": 3,
+  "new_migrations": false,
+  "new_dependencies": false,
+  "new_permissions": false,
+  "backend_tests": 86,
+  "backend_integration_tests": 86,
+  "new_backend_count_queue_cases": 11,
+  "backend_scope": [
+    "test_count_queue.py",
+    "test_stock_counts.py",
+    "test_work_queue.py",
+    "test_return_queue.py",
+    "test_transfer_queue.py",
+    "test_api.py"
+  ],
+  "backend_counts_note": "11 new cases included in 86 targeted checks. Historical full and targeted results are not added.",
+  "real_oidc_browser_tests": 11,
+  "new_browser_tests": 2,
+  "browser_regression_tests": 9,
+  "browser_scope": [
+    "count-queue.spec.ts",
+    "counts.spec.ts",
+    "work-queue.spec.ts",
+    "return-queue.spec.ts",
+    "transfer-queue.spec.ts"
+  ],
+  "failures": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "full_backend_suite_this_run": false,
+  "full_browser_suite_this_run": false,
+  "python_lint_and_format": "passed; 196 Python files",
+  "python_types": "mypy strict passed; 112 source files",
+  "frontend_format": "passed",
+  "frontend_build": "vue-tsc and Vite passed",
+  "business_proof": [
+    "Owner and independent quality reviewer proceed through count_enter, count_review and count_post from the queue to the exact original count. Warehouse and original-number search and return filters work.",
+    "Actual count reduces stock from 10 to 8, cost delta -23.00800000. A second count of 8 has zero difference, still remains frozen and visible until independent review and posting. Zero-difference posting has changed_lines=0 and cost_delta=0.00000000.",
+    "After posting, 8 units become available. Creating a one-unit retail reservation succeeds; cancellation of this unpaid test sale restores all 8. The original payable remains CNY 130 and no receivable is generated.",
+    "Cancellation removes the count from work, releases freeze and permits a new count. A read-only member opens the original but cannot submit or cancel; direct cancellation returns 403. Enterprise switching clears the old detail and work filters. Original list navigation remains usable.",
+    "Backend covers gain/loss/no-difference stages and freeze, cancel at all three stages, rejection, wrong lot, maker-checker separation, stale snapshot keeping pending post and freeze, read-only auditing, literal search, read permission and tenant/entity fences, HTTP no-store.",
+    "Regression covers original count gain/loss/rejection and read-only role; procurement, wholesale, paid retail, returns and transfers from their existing work queue entries."
+  ],
+  "verification_adjustments": [],
+  "boundaries": [
+    "Queue uses existing counts.read permission and existing write, review and posting commands. It does not itself release freeze or post stock, cost, AR/AP, audit or outbox entries.",
+    "COUNTING, SUBMITTED and APPROVED stay visible; POSTED and CANCELLED disappear. Failed commands remain in the original state. Zero-difference counts also require formal posting.",
+    "Freeze covers the selected entity/lot cost pools across other locations and warehouses; only selected balances take part in quantity adjustment. It is not a whole-warehouse stocktake freeze.",
+    "No new partial-reading save, blind/repeat-count workflow, automatic posting, task assignment, report, notification, AI or third-party integration."
+  ],
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:82a06b778c990d6bb65b390f0b39fe38374bc17d7cf694bf08c494ac46020ec4",
+  "container_smoke": "passed: UID 10001, both databases ready, 120 API paths and bounded expiry scan",
+  "local_services": "Core/auth/admin returned 200; updated core running; expiry worker resumed after checks at 18:24 local",
+  "next_three_steps": [
+    "Run continuous procurement, wholesale/retail, returns, transfers and counts for the same stock, reconciling quantities, cost and AR/AP.",
+    "Prepare enterprise opening workflow: master data, opening inventory import, roles and opening checks.",
+    "Fix main-business blockers from continuous trial and opening verification, then assemble the first trial acceptance version."
+  ],
+  "baseline_records": {
+    "docs/development/调拨待办验证.json": "ba3f832d29b9d7dec6c2d09097dfde76e07044963bcacf2b0954871c2fb1867a",
+    "docs/development/退货待办验证.json": "b75ac4e35e9c29e6ed5b31d8a4f2b1490b3b42f390e46c77fa51d3f2ce6ab8c6"
+  },
+  "result_sha256": {
+    "artifacts/backend-count-queue.xml": "e24061efe237dd5f797931b50f5a9a40a966974995e9c95708f1ca10c917efeb",
+    "artifacts/browser-count-queue.json": "32d4625c53a1087e71576bcf582216c53c07ea563bfdca338ec94f4532604384",
+    "artifacts/browser-count-queue-regression.json": "313a6f2193198b7b8bfeb85e7b2edbacff363d716484cf23bb43d428c23ae7d0",
+    "artifacts/container-count-queue.log": "0da666380e712b0b97446d9c03a0855c4b2832f0c1aed8f45d7d9c3ec1ee2617"
+  },
+  "inspected_screenshots": {
+    "artifacts/count-queue-awaiting-post.png": "519a79deeb02b0e2de1ea4d1589a7dca10cd87f42a6b25ee4ba448d4b0cfa71e"
+  },
+  "source_sha256": {
+    "backend/src/medinv/modules/workspace/application/queue.py": "fc7ad227a089c67800bfcf350fdf76a91273012f2f73961a3a1499c48747600a",
+    "backend/tests/integration/test_count_queue.py": "1afe88f424654b9f55ca993bd627266f0663dd34f748e11f8ca07d56cea6a35c",
+    "apps/admin-web/src/workQueue.ts": "fb3de58e9643712dd5d97ebfe75f287db70ce8d0003132b1e7e7324e33316141",
+    "apps/admin-web/src/WorkQueue.vue": "c281e0e59f2167a476454e33df589af9c9fc9de4d4eac3d2cfbaeaf7d8a1bc72",
+    "apps/admin-web/src/CountsPage.vue": "f87eb1743379d519b63e6985c6cacb6f969b860821b612335acb390fa7833b41",
+    "apps/admin-web/src/App.vue": "e727c24b412f3bf24a5838d5095bfff061e56c75286e4a8d3d0195fcf9948cca",
+    "apps/admin-web/tests/count-queue.spec.ts": "89eba606585836dd5162b8e9f013b05f9b1d63b9bed795cec41f61dc830aa0c3",
+    "apps/admin-web/tests/work-queue.spec.ts": "960adefd99fbfaa4816fc27eafe9c3ff56ea9d315032cd83a34149c847b6ed53",
+    "apps/admin-web/tests/return-queue.spec.ts": "ba4f0fe7a7318658310979acc22b581f34b607659aeeb2ca255c2bc32098a5c1",
+    "apps/admin-web/tests/transfer-queue.spec.ts": "0b207f2ce8426431e4221e9cd65f2d23bad26eec74c785246598bf1d648a7a69",
+    "contracts/openapi/implemented-core-openapi.json": "c1c8b5e31190af21cfa11fc24839992c91bb8940f02c67537a6020b907fa94e0",
+    "docs/development/业务待办操作指引.md": "e519d36b740081fe3fcc879308694fdd288624e21d680e791fb5e46d43b57161",
+    "docs/development/开发进度.md": "a38d65b2cd951d49059f411fd8850cb67fb5f063074b378f8697679ddd69f4a3",
+    "README.md": "38f14f1beea19a27f1c88ab0bb65f1daf3e766e91b16d3d1f25e67da37f579bc"
+  }
+}

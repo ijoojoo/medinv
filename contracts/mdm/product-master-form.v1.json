@@ -1,0 +1,6642 @@
+{
+  "format": 1,
+  "tabs": [
+    {
+      "id": "basic",
+      "label": "基本信息"
+    },
+    {
+      "id": "price",
+      "label": "价格信息"
+    },
+    {
+      "id": "quality",
+      "label": "质量管控"
+    },
+    {
+      "id": "operations",
+      "label": "运营管控"
+    },
+    {
+      "id": "extension",
+      "label": "扩展属性"
+    },
+    {
+      "id": "integration",
+      "label": "第三方对接"
+    },
+    {
+      "id": "custom",
+      "label": "自定义属性"
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "ffefbf60-ebb7-5ecf-a70a-b535983846bc",
+      "key": "code",
+      "default_label": "商品编码",
+      "semantic_definition": "商品编码；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.code",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "35539567-8248-52be-b0c0-0a75e1684319",
+      "key": "name",
+      "default_label": "规范名称",
+      "semantic_definition": "规范名称；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.name",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": true,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "c1d45de6-ab7c-508e-b651-3f82bbf4e3d5",
+      "key": "specification",
+      "default_label": "规格",
+      "semantic_definition": "规格；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.specification",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "76e36add-7db3-5a4f-90d4-f4fe3b3f0063",
+      "key": "base_unit",
+      "default_label": "基本单位 / 计费单位",
+      "semantic_definition": "基本单位 / 计费单位；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "unit.base_unit",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": true,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "8749942e-258c-54cd-9768-1ff9a6fb376c",
+      "key": "regulatory_subtype",
+      "default_label": "监管子类型",
+      "semantic_definition": "监管子类型；商品主数据，不记录本次交易或批次事实",
+      "value_type": "select",
+      "cardinality": "one",
+      "widget_type": "select",
+      "binding_key": "detail.regulatory_subtype",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": true,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "94edfe46-abea-5453-b47f-bfb436dc38db",
+      "key": "device_class",
+      "default_label": "器械管理类别",
+      "semantic_definition": "器械管理类别；商品主数据，不记录本次交易或批次事实",
+      "value_type": "select",
+      "cardinality": "one",
+      "widget_type": "select",
+      "binding_key": "product.device_class",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "device"
+      ],
+      "required": true,
+      "options": [
+        {
+          "value": "I",
+          "label": "Ⅰ类"
+        },
+        {
+          "value": "II",
+          "label": "Ⅱ类"
+        },
+        {
+          "value": "III",
+          "label": "Ⅲ类"
+        }
+      ],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": false
+    },
+    {
+      "field_id": "a25a1c54-d0fe-56eb-b85b-79b96ac21d67",
+      "key": "regulatory_subject",
+      "default_label": "监管主体",
+      "semantic_definition": "监管主体；商品主数据，不记录本次交易或批次事实",
+      "value_type": "collection",
+      "cardinality": "many",
+      "widget_type": "collection",
+      "binding_key": "role.regulatory_subject",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": false
+    },
+    {
+      "field_id": "6a01bb49-bbe4-5c58-a19d-53c204e72268",
+      "key": "manufacturer",
+      "default_label": "生产企业",
+      "semantic_definition": "生产企业；商品主数据，不记录本次交易或批次事实",
+      "value_type": "collection",
+      "cardinality": "many",
+      "widget_type": "collection",
+      "binding_key": "role.manufacturer",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": false
+    },
+    {
+      "field_id": "a5bf7657-1698-5c80-9273-392c2c59a245",
+      "key": "service_provider",
+      "default_label": "服务提供机构",
+      "semantic_definition": "服务提供机构；商品主数据，不记录本次交易或批次事实",
+      "value_type": "collection",
+      "cardinality": "many",
+      "widget_type": "collection",
+      "binding_key": "role.service_provider",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "service"
+      ],
+      "required": true,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": false
+    },
+    {
+      "field_id": "ecfbded7-9f9f-53fc-a62c-5dcbd856f6fe",
+      "key": "dosage_form",
+      "default_label": "剂型",
+      "semantic_definition": "剂型；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.dosage_form",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": false
+    },
+    {
+      "field_id": "9396b3b0-439b-5f8e-b6bd-a60671f8cf14",
+      "key": "device_model",
+      "default_label": "器械型号",
+      "semantic_definition": "器械型号；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.device_model",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "device"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": false
+    },
+    {
+      "field_id": "36210545-0ae6-5a1e-a36c-1b586354f69f",
+      "key": "service_department",
+      "default_label": "服务科室",
+      "semantic_definition": "服务科室；商品主数据，不记录本次交易或批次事实",
+      "value_type": "reference",
+      "cardinality": "one",
+      "widget_type": "reference",
+      "binding_key": "detail.service_department",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "7ea8947b-978a-501a-b49e-107d3f67d0a8",
+      "key": "product_certificates",
+      "default_label": "产品批准 / 注册 / 备案信息",
+      "semantic_definition": "产品批准 / 注册 / 备案信息；商品主数据，不记录本次交易或批次事实",
+      "value_type": "collection",
+      "cardinality": "many",
+      "widget_type": "collection",
+      "binding_key": "certificate.product_certificates",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": false
+    },
+    {
+      "field_id": "d6ed39d9-0a7b-5888-a146-26e4c76e3261",
+      "key": "barcodes",
+      "default_label": "条码与包装",
+      "semantic_definition": "条码与包装；商品主数据，不记录本次交易或批次事实",
+      "value_type": "collection",
+      "cardinality": "many",
+      "widget_type": "collection",
+      "binding_key": "codes.barcodes",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "8d0673d9-57d2-5c99-bdda-ef7af5cc8d57",
+      "key": "record_status",
+      "default_label": "资料状态",
+      "semantic_definition": "资料状态；商品主数据，不记录本次交易或批次事实",
+      "value_type": "select",
+      "cardinality": "one",
+      "widget_type": "select",
+      "binding_key": "product.record_status",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "basic",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [
+        {
+          "value": "ACTIVE",
+          "label": "在用"
+        },
+        {
+          "value": "INACTIVE",
+          "label": "停用"
+        }
+      ],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "fe0c6682-fa98-5bce-9d9d-ae1ae4aa13fa",
+      "key": "reference_prices",
+      "default_label": "参考价格（按现有 SKU）",
+      "semantic_definition": "参考价格（按现有 SKU）；商品主数据，不记录本次交易或批次事实",
+      "value_type": "collection",
+      "cardinality": "many",
+      "widget_type": "collection",
+      "binding_key": "prices.reference_prices",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "price",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "7079762b-4fde-55c4-b8e5-adc124795ece",
+      "key": "service_price",
+      "default_label": "服务参考单价",
+      "semantic_definition": "服务参考单价；商品主数据，不记录本次交易或批次事实",
+      "value_type": "decimal",
+      "cardinality": "one",
+      "widget_type": "decimal",
+      "binding_key": "detail.service_price",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "price",
+      "profiles": [
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "c2e5616b-df0e-51f9-8187-66ab96e58d94",
+      "key": "price_note",
+      "default_label": "价格说明",
+      "semantic_definition": "价格说明；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.price_note",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "price",
+      "profiles": [
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "c73cac86-a9f5-5ec8-967c-7f2eda33b1a1",
+      "key": "drug_business_scope",
+      "default_label": "药品经营范围类别",
+      "semantic_definition": "药品经营范围类别；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.drug_business_scope",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "e734e789-3862-5de0-964a-35b50f4be808",
+      "key": "device_business_scope",
+      "default_label": "器械经营范围类别",
+      "semantic_definition": "器械经营范围类别；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.device_business_scope",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "device"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "4f9165e1-a496-5599-a28e-edc1999cacb4",
+      "key": "drug_sale_class",
+      "default_label": "处方管理",
+      "semantic_definition": "处方管理；商品主数据，不记录本次交易或批次事实",
+      "value_type": "select",
+      "cardinality": "one",
+      "widget_type": "select",
+      "binding_key": "product.drug_sale_class",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug"
+      ],
+      "required": false,
+      "options": [
+        {
+          "value": "OTC",
+          "label": "非处方药"
+        },
+        {
+          "value": "RX",
+          "label": "处方药"
+        }
+      ],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "1e69555f-4ef6-5fff-9f1f-50e5e5d0e69e",
+      "key": "quality_note",
+      "default_label": "质量说明",
+      "semantic_definition": "质量说明；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.quality_note",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "a3917c2e-c30e-51ae-b696-ce1ffd51369c",
+      "key": "storage_conditions",
+      "default_label": "储运条件",
+      "semantic_definition": "储运条件；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.storage_conditions",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "2bcda0c1-3de1-5e77-a18e-aed6e6caaafd",
+      "key": "temperature_min",
+      "default_label": "储存温度下限（℃）",
+      "semantic_definition": "储存温度下限（℃）；商品主数据，不记录本次交易或批次事实",
+      "value_type": "decimal",
+      "cardinality": "one",
+      "widget_type": "decimal",
+      "binding_key": "detail.temperature_min",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "6374747a-5242-57de-8686-ae0e6f6c669a",
+      "key": "temperature_max",
+      "default_label": "储存温度上限（℃）",
+      "semantic_definition": "储存温度上限（℃）；商品主数据，不记录本次交易或批次事实",
+      "value_type": "decimal",
+      "cardinality": "one",
+      "widget_type": "decimal",
+      "binding_key": "detail.temperature_max",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "6a18d876-a1e0-562f-bf9c-b6e0946eac43",
+      "key": "humidity_max",
+      "default_label": "相对湿度上限（%）",
+      "semantic_definition": "相对湿度上限（%）；商品主数据，不记录本次交易或批次事实",
+      "value_type": "decimal",
+      "cardinality": "one",
+      "widget_type": "decimal",
+      "binding_key": "detail.humidity_max",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "2a40b3c5-14cd-53ec-9616-9f739cd4a09e",
+      "key": "shelf_life_months",
+      "default_label": "标准保质期（月）",
+      "semantic_definition": "标准保质期（月）；商品主数据，不记录本次交易或批次事实",
+      "value_type": "integer",
+      "cardinality": "one",
+      "widget_type": "integer",
+      "binding_key": "detail.shelf_life_months",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "bfb6482e-2948-5703-8cd7-5e7e00afae12",
+      "key": "lot_management",
+      "default_label": "批次管理规则",
+      "semantic_definition": "批次管理规则；商品主数据，不记录本次交易或批次事实",
+      "value_type": "boolean",
+      "cardinality": "one",
+      "widget_type": "boolean",
+      "binding_key": "detail.lot_management",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "4c14fb8d-5235-52be-ad67-2248d571c4a6",
+      "key": "expiry_management",
+      "default_label": "效期管理规则",
+      "semantic_definition": "效期管理规则；商品主数据，不记录本次交易或批次事实",
+      "value_type": "boolean",
+      "cardinality": "one",
+      "widget_type": "boolean",
+      "binding_key": "detail.expiry_management",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "0eb742cf-33bc-52f4-82c4-ba97b2be0d38",
+      "key": "sterile",
+      "default_label": "无菌产品",
+      "semantic_definition": "无菌产品；商品主数据，不记录本次交易或批次事实",
+      "value_type": "boolean",
+      "cardinality": "one",
+      "widget_type": "boolean",
+      "binding_key": "detail.sterile",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "device"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "b30815cc-6b73-5227-859f-c33eea1dc1a9",
+      "key": "single_use",
+      "default_label": "一次性使用",
+      "semantic_definition": "一次性使用；商品主数据，不记录本次交易或批次事实",
+      "value_type": "boolean",
+      "cardinality": "one",
+      "widget_type": "boolean",
+      "binding_key": "detail.single_use",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "quality",
+      "profiles": [
+        "device"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "728c5c15-094b-5d8d-99dc-e7779fc58496",
+      "key": "search_alias",
+      "default_label": "检索助记码",
+      "semantic_definition": "检索助记码；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.search_alias",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "operations",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "19736cce-01f8-5411-b200-1f283624267d",
+      "key": "trade_name",
+      "default_label": "商品名称（历史兼容字段）",
+      "semantic_definition": "商品名称（历史兼容字段）；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.trade_name",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "operations",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "a63985ee-df3a-5226-889e-133db608e134",
+      "key": "brand",
+      "default_label": "品牌",
+      "semantic_definition": "品牌；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.brand",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "operations",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "c2fff15e-53e9-5bde-a01f-cc558fa9c38e",
+      "key": "short_name",
+      "default_label": "简称",
+      "semantic_definition": "简称；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.short_name",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "operations",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "08b1097c-76a3-54c6-a448-978c983e1185",
+      "key": "operational_settings",
+      "default_label": "经营主体独立设置",
+      "semantic_definition": "经营主体独立设置；组织独立设置，不是公共主档值",
+      "value_type": "collection",
+      "cardinality": "many",
+      "widget_type": "collection",
+      "binding_key": "operations.operational_settings",
+      "data_scope": "ORGANIZATION",
+      "lifecycle": "BUILTIN",
+      "tab": "operations",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "b232a531-c8a9-5429-a5c7-5a31675b13ad",
+      "key": "generic_name",
+      "default_label": "通用名称",
+      "semantic_definition": "通用名称；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.generic_name",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "drug",
+        "herb"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "cc0b5544-6f1b-51c0-8412-b8ce7a798825",
+      "key": "manufacturer_address",
+      "default_label": "生产地址（原始记载）",
+      "semantic_definition": "生产地址（原始记载）；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "product.manufacturer_address",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "2e4267a8-e130-53c2-9390-fb0312fa4183",
+      "key": "herb_origin",
+      "default_label": "饮片标准产地",
+      "semantic_definition": "饮片标准产地；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.herb_origin",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "herb"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "d47de211-2d6c-5bea-9a02-3dcc83bbc40f",
+      "key": "herb_processing",
+      "default_label": "炮制方法",
+      "semantic_definition": "炮制方法；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.herb_processing",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "herb"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "3c74413b-1e1a-57dd-a9ba-ea42d12cbe61",
+      "key": "execution_standard",
+      "default_label": "执行标准",
+      "semantic_definition": "执行标准；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.execution_standard",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "8f286e9c-c1fa-51b5-94c7-fba6297f8024",
+      "key": "herb_grade",
+      "default_label": "饮片等级",
+      "semantic_definition": "饮片等级；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.herb_grade",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "herb"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "4d578800-379b-58f6-a290-085bd13986c4",
+      "key": "herb_part",
+      "default_label": "药用部位",
+      "semantic_definition": "药用部位；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.herb_part",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "herb"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "3b5ee3a7-e223-51ec-9d63-7a96aa4c3c58",
+      "key": "ingredients",
+      "default_label": "成分 / 配料",
+      "semantic_definition": "成分 / 配料；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.ingredients",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "drug",
+        "herb",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "67197e6e-efbb-511d-b366-fdcec26a37ea",
+      "key": "allergens",
+      "default_label": "致敏物质提示",
+      "semantic_definition": "致敏物质提示；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.allergens",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "68cabf5f-4375-50ea-93c9-924cafb5e79c",
+      "key": "nutrition",
+      "default_label": "营养成分标示",
+      "semantic_definition": "营养成分标示；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.nutrition",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "food",
+        "health",
+        "fsmp",
+        "infant"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "5bd91f42-522b-5385-a2b5-ed2b9f082685",
+      "key": "target_population",
+      "default_label": "适用人群",
+      "semantic_definition": "适用人群；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.target_population",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "6fa21d7a-6194-5c77-94c2-e287fa658db2",
+      "key": "unsuitable_population",
+      "default_label": "不适宜人群",
+      "semantic_definition": "不适宜人群；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.unsuitable_population",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "c8b07fb8-bba1-5668-a1cb-f1b11fbe7986",
+      "key": "health_function",
+      "default_label": "批准 / 备案保健功能",
+      "semantic_definition": "批准 / 备案保健功能；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.health_function",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "health"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "ae1409c2-a0bd-5534-8b90-91c450da8cac",
+      "key": "fsmp_use",
+      "default_label": "特医食品适用疾病 / 医学状况",
+      "semantic_definition": "特医食品适用疾病 / 医学状况；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.fsmp_use",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "fsmp"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "016e97f5-2ac8-58a1-a445-67b69229543a",
+      "key": "infant_stage",
+      "default_label": "婴幼儿适用月龄段",
+      "semantic_definition": "婴幼儿适用月龄段；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.infant_stage",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "infant"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "62035fdf-9f58-5793-929a-927fcc95ced8",
+      "key": "cosmetic_purpose",
+      "default_label": "化妆品用途 / 功效宣称",
+      "semantic_definition": "化妆品用途 / 功效宣称；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.cosmetic_purpose",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "cosmetic"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "1be0d67d-17db-552e-bcf1-cf53d65da648",
+      "key": "cosmetic_usage",
+      "default_label": "使用方法与注意事项",
+      "semantic_definition": "使用方法与注意事项；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.cosmetic_usage",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "cosmetic"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "f1d4f5df-bb74-50b3-a6a3-4b44125f79ed",
+      "key": "material",
+      "default_label": "主要材质",
+      "semantic_definition": "主要材质；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.material",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "device",
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "f17fba6a-bb2f-5dbb-a842-b08511c03ff9",
+      "key": "daily_use",
+      "default_label": "日用品用途",
+      "semantic_definition": "日用品用途；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.daily_use",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "daily"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "936b91ae-82c4-5f95-8810-817368ffb4d1",
+      "key": "service_duration_minutes",
+      "default_label": "预计服务时长（分钟）",
+      "semantic_definition": "预计服务时长（分钟）；商品主数据，不记录本次交易或批次事实",
+      "value_type": "integer",
+      "cardinality": "one",
+      "widget_type": "integer",
+      "binding_key": "detail.service_duration_minutes",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "6fb062d0-ad31-53a8-92d8-37e72fbf564c",
+      "key": "service_instructions",
+      "default_label": "门诊服务说明与预约要求",
+      "semantic_definition": "门诊服务说明与预约要求；商品主数据，不记录本次交易或批次事实",
+      "value_type": "text",
+      "cardinality": "one",
+      "widget_type": "text",
+      "binding_key": "detail.service_instructions",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "extension",
+      "profiles": [
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": 500,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    },
+    {
+      "field_id": "3dccecda-12b7-5221-8498-1d81177420b7",
+      "key": "external_codes",
+      "default_label": "医保 / 追溯 / 平台编码",
+      "semantic_definition": "医保 / 追溯 / 平台编码；商品主数据，不记录本次交易或批次事实",
+      "value_type": "collection",
+      "cardinality": "many",
+      "widget_type": "collection",
+      "binding_key": "codes.external_codes",
+      "data_scope": "PRODUCT",
+      "lifecycle": "BUILTIN",
+      "tab": "integration",
+      "profiles": [
+        "drug",
+        "herb",
+        "device",
+        "food",
+        "health",
+        "fsmp",
+        "infant",
+        "cosmetic",
+        "daily",
+        "service"
+      ],
+      "required": false,
+      "options": [],
+      "max_length": null,
+      "read_permission": "catalog.read",
+      "write_permission": "catalog.write",
+      "alias_allowed": true
+    }
+  ],
+  "slots": [
+    {
+      "slot_id": "B001",
+      "field_key": "code",
+      "tab": "basic",
+      "position": 0,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B002",
+      "field_key": "name",
+      "tab": "basic",
+      "position": 1,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B003",
+      "field_key": "specification",
+      "tab": "basic",
+      "position": 2,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B004",
+      "field_key": "base_unit",
+      "tab": "basic",
+      "position": 3,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B005",
+      "field_key": "regulatory_subtype",
+      "tab": "basic",
+      "position": 4,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B006",
+      "field_key": "device_class",
+      "tab": "basic",
+      "position": 5,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B007",
+      "field_key": "regulatory_subject",
+      "tab": "basic",
+      "position": 6,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B008",
+      "field_key": "manufacturer",
+      "tab": "basic",
+      "position": 7,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B009",
+      "field_key": "service_provider",
+      "tab": "basic",
+      "position": 8,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B010",
+      "field_key": "dosage_form",
+      "tab": "basic",
+      "position": 9,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B011",
+      "field_key": "device_model",
+      "tab": "basic",
+      "position": 10,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B012",
+      "field_key": "service_department",
+      "tab": "basic",
+      "position": 11,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B013",
+      "field_key": "product_certificates",
+      "tab": "basic",
+      "position": 12,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B014",
+      "field_key": "barcodes",
+      "tab": "basic",
+      "position": 13,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "B015",
+      "field_key": "record_status",
+      "tab": "basic",
+      "position": 14,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "P_001",
+      "field_key": "reference_prices",
+      "tab": "price",
+      "position": 0,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "P_002",
+      "field_key": "service_price",
+      "tab": "price",
+      "position": 1,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "P_003",
+      "field_key": "price_note",
+      "tab": "price",
+      "position": 2,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_001",
+      "field_key": "drug_business_scope",
+      "tab": "quality",
+      "position": 0,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_002",
+      "field_key": "device_business_scope",
+      "tab": "quality",
+      "position": 1,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_003",
+      "field_key": "drug_sale_class",
+      "tab": "quality",
+      "position": 2,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_004",
+      "field_key": "quality_note",
+      "tab": "quality",
+      "position": 3,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_005",
+      "field_key": "storage_conditions",
+      "tab": "quality",
+      "position": 4,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_006",
+      "field_key": "temperature_min",
+      "tab": "quality",
+      "position": 5,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_007",
+      "field_key": "temperature_max",
+      "tab": "quality",
+      "position": 6,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_008",
+      "field_key": "humidity_max",
+      "tab": "quality",
+      "position": 7,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_009",
+      "field_key": "shelf_life_months",
+      "tab": "quality",
+      "position": 8,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_010",
+      "field_key": "lot_management",
+      "tab": "quality",
+      "position": 9,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_011",
+      "field_key": "expiry_management",
+      "tab": "quality",
+      "position": 10,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_012",
+      "field_key": "sterile",
+      "tab": "quality",
+      "position": 11,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "Q_013",
+      "field_key": "single_use",
+      "tab": "quality",
+      "position": 12,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "O_001",
+      "field_key": "search_alias",
+      "tab": "operations",
+      "position": 0,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "O_002",
+      "field_key": "trade_name",
+      "tab": "operations",
+      "position": 1,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "O_003",
+      "field_key": "brand",
+      "tab": "operations",
+      "position": 2,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "O_004",
+      "field_key": "short_name",
+      "tab": "operations",
+      "position": 3,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "O_005",
+      "field_key": "operational_settings",
+      "tab": "operations",
+      "position": 4,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_001",
+      "field_key": "generic_name",
+      "tab": "extension",
+      "position": 0,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_002",
+      "field_key": "manufacturer_address",
+      "tab": "extension",
+      "position": 1,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_003",
+      "field_key": "herb_origin",
+      "tab": "extension",
+      "position": 2,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_004",
+      "field_key": "herb_processing",
+      "tab": "extension",
+      "position": 3,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_005",
+      "field_key": "execution_standard",
+      "tab": "extension",
+      "position": 4,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_006",
+      "field_key": "herb_grade",
+      "tab": "extension",
+      "position": 5,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_007",
+      "field_key": "herb_part",
+      "tab": "extension",
+      "position": 6,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_008",
+      "field_key": "ingredients",
+      "tab": "extension",
+      "position": 7,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_009",
+      "field_key": "allergens",
+      "tab": "extension",
+      "position": 8,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_010",
+      "field_key": "nutrition",
+      "tab": "extension",
+      "position": 9,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_011",
+      "field_key": "target_population",
+      "tab": "extension",
+      "position": 10,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_012",
+      "field_key": "unsuitable_population",
+      "tab": "extension",
+      "position": 11,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_013",
+      "field_key": "health_function",
+      "tab": "extension",
+      "position": 12,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_014",
+      "field_key": "fsmp_use",
+      "tab": "extension",
+      "position": 13,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_015",
+      "field_key": "infant_stage",
+      "tab": "extension",
+      "position": 14,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_016",
+      "field_key": "cosmetic_purpose",
+      "tab": "extension",
+      "position": 15,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_017",
+      "field_key": "cosmetic_usage",
+      "tab": "extension",
+      "position": 16,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_018",
+      "field_key": "material",
+      "tab": "extension",
+      "position": 17,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_019",
+      "field_key": "daily_use",
+      "tab": "extension",
+      "position": 18,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_020",
+      "field_key": "service_duration_minutes",
+      "tab": "extension",
+      "position": 19,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "E_021",
+      "field_key": "service_instructions",
+      "tab": "extension",
+      "position": 20,
+      "height": 94,
+      "span": 1
+    },
+    {
+      "slot_id": "I_001",
+      "field_key": "external_codes",
+      "tab": "integration",
+      "position": 0,
+      "height": 94,
+      "span": 1
+    }
+  ],
+  "nodes": [
+    {
+      "node_id": "8a692fe9-93b3-54bb-8ede-dbb2966dbf67",
+      "node_code": "catalog_root",
+      "name": "全部商品与项目",
+      "parent_id": null,
+      "sort_order": 0,
+      "enabled": true,
+      "is_assignable": false,
+      "field_profile_id": null
+    },
+    {
+      "node_id": "44e5f59e-f426-5400-8bcb-10cb7a82e27b",
+      "node_code": "drug_group",
+      "name": "药品",
+      "parent_id": "8a692fe9-93b3-54bb-8ede-dbb2966dbf67",
+      "sort_order": 1,
+      "enabled": true,
+      "is_assignable": false,
+      "field_profile_id": null
+    },
+    {
+      "node_id": "d89523ed-dc9b-53a5-9c65-96f1787ebd14",
+      "node_code": "drug",
+      "name": "中西成药",
+      "parent_id": "44e5f59e-f426-5400-8bcb-10cb7a82e27b",
+      "sort_order": 2,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "drug"
+    },
+    {
+      "node_id": "7d7d148f-37c5-5cc2-a0b6-89672f34cd90",
+      "node_code": "herb",
+      "name": "中药饮片",
+      "parent_id": "44e5f59e-f426-5400-8bcb-10cb7a82e27b",
+      "sort_order": 3,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "herb"
+    },
+    {
+      "node_id": "b8c05972-b815-5e98-b0be-85b311dc3e1a",
+      "node_code": "device",
+      "name": "医疗器械",
+      "parent_id": "8a692fe9-93b3-54bb-8ede-dbb2966dbf67",
+      "sort_order": 4,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "device"
+    },
+    {
+      "node_id": "5b4a8079-f286-5995-8c84-c222cfacda6f",
+      "node_code": "food_group",
+      "name": "食品",
+      "parent_id": "8a692fe9-93b3-54bb-8ede-dbb2966dbf67",
+      "sort_order": 5,
+      "enabled": true,
+      "is_assignable": false,
+      "field_profile_id": null
+    },
+    {
+      "node_id": "df73be9b-9ffe-5675-bf27-0809dbdda92d",
+      "node_code": "food",
+      "name": "普通食品",
+      "parent_id": "5b4a8079-f286-5995-8c84-c222cfacda6f",
+      "sort_order": 6,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "food"
+    },
+    {
+      "node_id": "90359c22-cc74-58ba-a3bc-4fc7bd0289fb",
+      "node_code": "special_food",
+      "name": "特殊食品",
+      "parent_id": "5b4a8079-f286-5995-8c84-c222cfacda6f",
+      "sort_order": 7,
+      "enabled": true,
+      "is_assignable": false,
+      "field_profile_id": null
+    },
+    {
+      "node_id": "e83931ce-4abe-574a-a4f7-d554359fa820",
+      "node_code": "health",
+      "name": "保健食品",
+      "parent_id": "90359c22-cc74-58ba-a3bc-4fc7bd0289fb",
+      "sort_order": 8,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "health"
+    },
+    {
+      "node_id": "ca477d18-c18f-523b-bfb5-5acc041416a6",
+      "node_code": "fsmp",
+      "name": "特殊医学用途配方食品",
+      "parent_id": "90359c22-cc74-58ba-a3bc-4fc7bd0289fb",
+      "sort_order": 9,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "fsmp"
+    },
+    {
+      "node_id": "d1943acd-8eeb-53c7-98f4-75036c203eaf",
+      "node_code": "infant",
+      "name": "婴幼儿配方食品",
+      "parent_id": "90359c22-cc74-58ba-a3bc-4fc7bd0289fb",
+      "sort_order": 10,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "infant"
+    },
+    {
+      "node_id": "254d4d3f-eff2-5cde-9990-5578deb3f76d",
+      "node_code": "cosmetic",
+      "name": "化妆品",
+      "parent_id": "8a692fe9-93b3-54bb-8ede-dbb2966dbf67",
+      "sort_order": 11,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "cosmetic"
+    },
+    {
+      "node_id": "e9fb32e4-048c-5f98-b4bd-1b588d22ee4a",
+      "node_code": "daily",
+      "name": "日用品",
+      "parent_id": "8a692fe9-93b3-54bb-8ede-dbb2966dbf67",
+      "sort_order": 12,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "daily"
+    },
+    {
+      "node_id": "7cf27d31-6f80-52e2-8cd0-17e7d0aede26",
+      "node_code": "service",
+      "name": "门诊医疗服务",
+      "parent_id": "8a692fe9-93b3-54bb-8ede-dbb2966dbf67",
+      "sort_order": 13,
+      "enabled": true,
+      "is_assignable": true,
+      "field_profile_id": "service"
+    },
+    {
+      "node_id": "561bfe09-6148-56b3-8018-1065576d79ac",
+      "node_code": "legacy_drug",
+      "name": "药品（旧档待确认细类）",
+      "parent_id": "44e5f59e-f426-5400-8bcb-10cb7a82e27b",
+      "sort_order": 14,
+      "enabled": false,
+      "is_assignable": false,
+      "field_profile_id": "drug"
+    }
+  ],
+  "rules": {
+    "drug": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "herb": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "device": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "food": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "health": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "fsmp": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "infant": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "cosmetic": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "daily": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    },
+    "service": {
+      "code": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "name": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "specification": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "base_unit": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subtype": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "regulatory_subject": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_provider": {
+        "applicable": true,
+        "label": "",
+        "required": true,
+        "read_only": false,
+        "required_when": null
+      },
+      "dosage_form": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_model": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_department": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "product_certificates": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "barcodes": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "record_status": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "reference_prices": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_price": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "price_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "device_business_scope": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "drug_sale_class": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "quality_note": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "storage_conditions": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_min": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "temperature_max": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "humidity_max": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "shelf_life_months": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "lot_management": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "expiry_management": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "sterile": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "single_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "search_alias": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "trade_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "brand": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "short_name": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "operational_settings": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "generic_name": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "manufacturer_address": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_origin": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_processing": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "execution_standard": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_grade": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "herb_part": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "ingredients": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "allergens": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "nutrition": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "target_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "unsuitable_population": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "health_function": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "fsmp_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "infant_stage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_purpose": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "cosmetic_usage": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "material": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "daily_use": {
+        "applicable": false,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_duration_minutes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "service_instructions": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      },
+      "external_codes": {
+        "applicable": true,
+        "label": "",
+        "required": false,
+        "read_only": false,
+        "required_when": null
+      }
+    }
+  },
+  "columns": [
+    {
+      "key": "code",
+      "label": "商品编码",
+      "value_type": "text",
+      "projection": "code"
+    },
+    {
+      "key": "name",
+      "label": "规范名称",
+      "value_type": "text",
+      "projection": "name"
+    },
+    {
+      "key": "specification",
+      "label": "规格",
+      "value_type": "text",
+      "projection": "specification"
+    },
+    {
+      "key": "base_unit",
+      "label": "基本单位 / 计费单位",
+      "value_type": "text",
+      "projection": "base_unit"
+    },
+    {
+      "key": "regulatory_subtype",
+      "label": "监管子类型",
+      "value_type": "select",
+      "projection": "regulatory_subtype"
+    },
+    {
+      "key": "device_class",
+      "label": "器械管理类别",
+      "value_type": "select",
+      "projection": "device_class"
+    },
+    {
+      "key": "regulatory_subject",
+      "label": "监管主体",
+      "value_type": "collection",
+      "projection": "regulatory_subject"
+    },
+    {
+      "key": "manufacturer",
+      "label": "生产企业",
+      "value_type": "collection",
+      "projection": "manufacturer"
+    },
+    {
+      "key": "service_provider",
+      "label": "服务提供机构",
+      "value_type": "collection",
+      "projection": "service_provider"
+    },
+    {
+      "key": "dosage_form",
+      "label": "剂型",
+      "value_type": "text",
+      "projection": "dosage_form"
+    },
+    {
+      "key": "device_model",
+      "label": "器械型号",
+      "value_type": "text",
+      "projection": "device_model"
+    },
+    {
+      "key": "service_department",
+      "label": "服务科室",
+      "value_type": "reference",
+      "projection": "service_department"
+    },
+    {
+      "key": "product_certificates",
+      "label": "产品批准 / 注册 / 备案信息",
+      "value_type": "collection",
+      "projection": "product_certificates"
+    },
+    {
+      "key": "barcodes",
+      "label": "条码与包装",
+      "value_type": "collection",
+      "projection": "barcodes"
+    },
+    {
+      "key": "record_status",
+      "label": "资料状态",
+      "value_type": "select",
+      "projection": "record_status"
+    },
+    {
+      "key": "reference_prices",
+      "label": "参考价格（按现有 SKU）",
+      "value_type": "collection",
+      "projection": "reference_prices"
+    },
+    {
+      "key": "service_price",
+      "label": "服务参考单价",
+      "value_type": "decimal",
+      "projection": "service_price"
+    },
+    {
+      "key": "price_note",
+      "label": "价格说明",
+      "value_type": "text",
+      "projection": "price_note"
+    },
+    {
+      "key": "drug_business_scope",
+      "label": "药品经营范围类别",
+      "value_type": "text",
+      "projection": "drug_business_scope"
+    },
+    {
+      "key": "device_business_scope",
+      "label": "器械经营范围类别",
+      "value_type": "text",
+      "projection": "device_business_scope"
+    },
+    {
+      "key": "drug_sale_class",
+      "label": "处方管理",
+      "value_type": "select",
+      "projection": "drug_sale_class"
+    },
+    {
+      "key": "quality_note",
+      "label": "质量说明",
+      "value_type": "text",
+      "projection": "quality_note"
+    },
+    {
+      "key": "storage_conditions",
+      "label": "储运条件",
+      "value_type": "text",
+      "projection": "storage_conditions"
+    },
+    {
+      "key": "temperature_min",
+      "label": "储存温度下限（℃）",
+      "value_type": "decimal",
+      "projection": "temperature_min"
+    },
+    {
+      "key": "temperature_max",
+      "label": "储存温度上限（℃）",
+      "value_type": "decimal",
+      "projection": "temperature_max"
+    },
+    {
+      "key": "humidity_max",
+      "label": "相对湿度上限（%）",
+      "value_type": "decimal",
+      "projection": "humidity_max"
+    },
+    {
+      "key": "shelf_life_months",
+      "label": "标准保质期（月）",
+      "value_type": "integer",
+      "projection": "shelf_life_months"
+    },
+    {
+      "key": "lot_management",
+      "label": "批次管理规则",
+      "value_type": "boolean",
+      "projection": "lot_management"
+    },
+    {
+      "key": "expiry_management",
+      "label": "效期管理规则",
+      "value_type": "boolean",
+      "projection": "expiry_management"
+    },
+    {
+      "key": "sterile",
+      "label": "无菌产品",
+      "value_type": "boolean",
+      "projection": "sterile"
+    },
+    {
+      "key": "single_use",
+      "label": "一次性使用",
+      "value_type": "boolean",
+      "projection": "single_use"
+    },
+    {
+      "key": "search_alias",
+      "label": "检索助记码",
+      "value_type": "text",
+      "projection": "search_alias"
+    },
+    {
+      "key": "trade_name",
+      "label": "商品名称（历史兼容字段）",
+      "value_type": "text",
+      "projection": "trade_name"
+    },
+    {
+      "key": "brand",
+      "label": "品牌",
+      "value_type": "text",
+      "projection": "brand"
+    },
+    {
+      "key": "short_name",
+      "label": "简称",
+      "value_type": "text",
+      "projection": "short_name"
+    },
+    {
+      "key": "operational_settings",
+      "label": "经营主体独立设置",
+      "value_type": "collection",
+      "projection": "operational_settings"
+    },
+    {
+      "key": "generic_name",
+      "label": "通用名称",
+      "value_type": "text",
+      "projection": "generic_name"
+    },
+    {
+      "key": "manufacturer_address",
+      "label": "生产地址（原始记载）",
+      "value_type": "text",
+      "projection": "manufacturer_address"
+    },
+    {
+      "key": "herb_origin",
+      "label": "饮片标准产地",
+      "value_type": "text",
+      "projection": "herb_origin"
+    },
+    {
+      "key": "herb_processing",
+      "label": "炮制方法",
+      "value_type": "text",
+      "projection": "herb_processing"
+    },
+    {
+      "key": "execution_standard",
+      "label": "执行标准",
+      "value_type": "text",
+      "projection": "execution_standard"
+    },
+    {
+      "key": "herb_grade",
+      "label": "饮片等级",
+      "value_type": "text",
+      "projection": "herb_grade"
+    },
+    {
+      "key": "herb_part",
+      "label": "药用部位",
+      "value_type": "text",
+      "projection": "herb_part"
+    },
+    {
+      "key": "ingredients",
+      "label": "成分 / 配料",
+      "value_type": "text",
+      "projection": "ingredients"
+    },
+    {
+      "key": "allergens",
+      "label": "致敏物质提示",
+      "value_type": "text",
+      "projection": "allergens"
+    },
+    {
+      "key": "nutrition",
+      "label": "营养成分标示",
+      "value_type": "text",
+      "projection": "nutrition"
+    },
+    {
+      "key": "target_population",
+      "label": "适用人群",
+      "value_type": "text",
+      "projection": "target_population"
+    },
+    {
+      "key": "unsuitable_population",
+      "label": "不适宜人群",
+      "value_type": "text",
+      "projection": "unsuitable_population"
+    },
+    {
+      "key": "health_function",
+      "label": "批准 / 备案保健功能",
+      "value_type": "text",
+      "projection": "health_function"
+    },
+    {
+      "key": "fsmp_use",
+      "label": "特医食品适用疾病 / 医学状况",
+      "value_type": "text",
+      "projection": "fsmp_use"
+    },
+    {
+      "key": "infant_stage",
+      "label": "婴幼儿适用月龄段",
+      "value_type": "text",
+      "projection": "infant_stage"
+    },
+    {
+      "key": "cosmetic_purpose",
+      "label": "化妆品用途 / 功效宣称",
+      "value_type": "text",
+      "projection": "cosmetic_purpose"
+    },
+    {
+      "key": "cosmetic_usage",
+      "label": "使用方法与注意事项",
+      "value_type": "text",
+      "projection": "cosmetic_usage"
+    },
+    {
+      "key": "material",
+      "label": "主要材质",
+      "value_type": "text",
+      "projection": "material"
+    },
+    {
+      "key": "daily_use",
+      "label": "日用品用途",
+      "value_type": "text",
+      "projection": "daily_use"
+    },
+    {
+      "key": "service_duration_minutes",
+      "label": "预计服务时长（分钟）",
+      "value_type": "integer",
+      "projection": "service_duration_minutes"
+    },
+    {
+      "key": "service_instructions",
+      "label": "门诊服务说明与预约要求",
+      "value_type": "text",
+      "projection": "service_instructions"
+    },
+    {
+      "key": "external_codes",
+      "label": "医保 / 追溯 / 平台编码",
+      "value_type": "collection",
+      "projection": "external_codes"
+    }
+  ]
+}

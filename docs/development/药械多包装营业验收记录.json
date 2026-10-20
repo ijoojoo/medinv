@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-17",
+  "version": "0.24.0",
+  "scope": "七岗位OTC药品与普通器械多包装采购、批发、零售、包装更新后原单履约与往来结清",
+  "tenant_name": "药械包装营业企业-ec52ed30",
+  "tenant_id": "43af7f31-5b81-59ee-bd53-dce9887513f5",
+  "entity_id": "b11a9dee-2d1b-5309-963f-01552b8bb897",
+  "run": "ec52ed30-5d31-4760-ac57-82731709b080",
+  "fix": "采购、销售新单使用稳定商品行标识；删前行保留后续包装/数量/单价；主动换商品仅清空本行包装；内部标识不进入业务请求",
+  "database": {
+    "business": "b0026",
+    "control": "c0016",
+    "new_migrations": 0
+  },
+  "api_paths": 120,
+  "queue_stages": 32,
+  "new_permissions": 0,
+  "backend": {
+    "targeted_passed": 90,
+    "targeted_failed": 0,
+    "full_suite_rerun": false,
+    "report": "artifacts/backend-mixed-packaging.xml"
+  },
+  "browser": {
+    "pre_fix_expected_failed": 1,
+    "new_scenario_passed": 1,
+    "related_regression_passed": 3,
+    "distinct_scenarios_with_pass": 4,
+    "automatic_retries": 0,
+    "full_suite_rerun": false,
+    "coverage": "七个岗位正常接口办理；页面实际覆盖采购和销售新单增删行、切换商品、零售购物车与现金收款交付；相关回归包括原包装、采购改单与销售改单",
+    "reports": [
+      "artifacts/browser-mixed-packaging-before.json",
+      "artifacts/browser-mixed-packaging.json",
+      "artifacts/browser-mixed-packaging-regression.json"
+    ]
+  },
+  "reconciliation": {
+    "reader": "med_runtime; tenant RLS; read-only repeatable-read",
+    "actors": 7,
+    "drug_qty": "15盒",
+    "drug_cost": "150.00",
+    "device_qty": "5支",
+    "device_cost": "50.00",
+    "cost_amount": "200.00",
+    "reserved_qty": "0",
+    "blocked_qty": "0",
+    "stock_ledger_entries": 6,
+    "cost_ledger_entries": 6,
+    "posting_batches": 3,
+    "ar_outstanding": "0",
+    "ap_outstanding": "0",
+    "pending_work": 0,
+    "virtual_cash_record_net_change": "-198.70",
+    "proof": "artifacts/mixed-packaging-reconciliation.json",
+    "database_proof": "artifacts/mixed-packaging-db.json",
+    "screenshot": "artifacts/mixed-packaging-ledger.png",
+    "screenshot_reviewed": true
+  },
+  "checks": [
+    "新页面场景严格TypeScript",
+    "页面与场景Prettier",
+    "新核对脚本Ruff及格式",
+    "前端类型与构建",
+    "源文件与镜像指纹一致",
+    "六个原服务运行及入口就绪"
+  ],
+  "images": {
+    "core": "sha256:42dcf96fd1fff74926c41353ff6b2f4f4734a045d4705bf04d785b8bdef0d49f",
+    "web": "sha256:d875f5b86547ee681d2f2d7109f9ca1dd3a0ab4d2e6deec3eeef3b8a6f74a4e2"
+  },
+  "limitations": [
+    "虚拟OTC及普通器械场景，未验证处方、医保、冷链或特殊管理品种",
+    "本次为整批入库与一次批发发货，分批收发和退货结算连续衔接列入后续工作",
+    "未改写历史单据，未宣称历史错误数据自动修复",
+    "开发试用环境，不是生产上线或全量测试声明"
+  ],
+  "package": {
+    "package": "medinv-trial-0.24-20261017-packaging.zip",
+    "bytes": 101196597,
+    "sha256": "3fe5900b31ea902997568eef7f8064f80719eb4773fe8519c9632dd86db93b15",
+    "entries": 376,
+    "manifest_checked": true,
+    "image_archive_checked": true,
+    "docs_and_verifier_match": true,
+    "private_configuration_absent": true
+  }
+}

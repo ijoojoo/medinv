@@ -1,0 +1,55 @@
+{
+  "recorded_at": "2026-10-16T16:13:25.695785+08:00",
+  "increment": "0.24 follow-up: opening inventory CSV preview and confirmed form import",
+  "backend_tests": 13,
+  "frontend_parser_tests": 26,
+  "real_oidc_browser_tests": 2,
+  "failures": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "frontend_build": "vue-tsc and Vite passed",
+  "frontend_format": "passed",
+  "python_changed_files_lint_and_format": "passed",
+  "business_proof": "Both manual and CSV paths: 2 opening lots, 10 units and CNY 130; independently reviewed and posted; retail sale 3 units consumed CNY 30 original cost; remaining lot quantities 1 and 6; no opening payable.",
+  "import_boundaries": [
+    "UTF-8 CSV only, up to 200 rows and 512 KiB; no truncation or skipping invalid rows.",
+    "Client-only preview and explicit replacement of unsaved lines; existing server command, independent review and posting remain authoritative.",
+    "Unknown/unsupported SKU, wrong warehouse location, invalid/expired/future dates, precision/amount errors, duplicates and inconsistent batch dates are rejected in preview.",
+    "Malformed format, unsupported extension and invalid UTF-8 never replace unsaved data.",
+    "No raw CSV attachment storage or XLSX parsing."
+  ],
+  "api_change": "Existing inventory opening options now expose SKU qty_scale; no new paths or migration",
+  "business_migration": "b0025",
+  "control_migration": "c0014",
+  "full_backend_suite_this_run": false,
+  "full_browser_suite_this_run": false,
+  "container_build_this_run": false,
+  "local_services": "Core and auth readiness passed; management UI available; expiry worker resumed after tests",
+  "baseline_records": {
+    "docs/development/验证记录.json": "605378b16e4edf0b0d9fd2b3ef6bd7c8fc2870f4ccb96004e6c858969870ee2d",
+    "docs/development/站内登录验证.json": "22d9de188f3e75854ef75434f865e7e6357e9eae4ab4d5763f4a9ee925e442f0"
+  },
+  "result_sha256": {
+    "artifacts/backend-opening-import.xml": "d982d1dc2aead5e7884a3b7ad966602a940bf1108c631e44ff90a7159a22a69a",
+    "artifacts/browser-opening-import.json": "df00fd9df02582d3393e81be4472f9af25489fd36e5908157f78b953bf54c62d"
+  },
+  "inspected_preview_sha256": {
+    "artifacts/opening-import-preview.png": "7dea2b1af8f79f9e5f86e87baccbd7b26a22b77c4b476aed1ee678b65fea2acc"
+  },
+  "business_screenshot_sha256": {
+    "artifacts/opening-enabled.png": "4069e8d19dfd408335aee96a44a33fd4c6b8ff3ced4babe752fc4a353086e4fd",
+    "artifacts/opening-after-sale.png": "417d4988b46065322a77f4d3e00b4175f5a7cb0d54b240409d9846620a37c087"
+  },
+  "source_sha256": {
+    "apps/admin-web/src/openingImport.ts": "706d97859f0dc24ed2099dcf6e650721248590fcee958a74c40baa91818b060d",
+    "apps/admin-web/src/OpeningImport.vue": "b8989f238398c0381f6aa49db9f912028259f0511c5d34b77c1ac68c3b4f447a",
+    "apps/admin-web/src/OpeningsPage.vue": "2475d6b3c7a637a22152864ebdb6f5e94455b1590a6711d682dc94a4a93492c0",
+    "apps/admin-web/tests/opening-import-parse.spec.ts": "0ef3c00efa89c101e9f9867f08f4bec79ace14b56efc35160ddbbda44359e81d",
+    "apps/admin-web/tests/openings.spec.ts": "da7ac0006dd9d2435cab032a2e52bace7e0a92cbd2380d301ff6032249a33272",
+    "backend/src/medinv/modules/inventory/application/openings.py": "bdc7e39e6726ed4a6db97de6450d11932906aaa1fa855f561a312a699d2e20a2",
+    "backend/tests/integration/test_openings.py": "38c20a55ac8b04fb935083bd2778d5840f2657f96cfb3bbdcf952266f4498a2e",
+    "docs/development/期初库存操作指引.md": "9e24135c83ea2543b13362953b98998869a334440bf364f3afb39b63f6a1ad72",
+    "docs/development/开发进度.md": "72b664f659df18108944fa422595aa8113c3415730ca7b2583eea3cb33601f9d",
+    "README.md": "99980690944c9b8f8b21c2947f064669944198601c1139f129fbe2215b4f52bc"
+  }
+}

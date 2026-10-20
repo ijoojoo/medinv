@@ -1,0 +1,8 @@
+{
+  "client_operation_id": "00000000-0000-4000-8000-000000000009",
+  "expected_version": "4",
+  "method": "CASH",
+  "amount": "28.50",
+  "cash_tendered": "30.00",
+  "cash_change": "1.50"
+}

@@ -1,0 +1,78 @@
+{
+  "recorded_at": "2026-10-16T16:33:39.395313+08:00",
+  "increment": "0.24 follow-up: warehouse saleable stock in wholesale/retail entry and stock-aware partial shipment fill",
+  "backend_tests": 25,
+  "backend_scope": [
+    "test_sale_stock.py: 13 real PostgreSQL tests",
+    "test_api.py: 12 API contract/auth tests"
+  ],
+  "frontend_quantity_tests": 9,
+  "real_oidc_browser_tests": 7,
+  "browser_scope": [
+    "sale-stock.spec.ts",
+    "sales.spec.ts",
+    "retail.spec.ts",
+    "sales-revisions.spec.ts",
+    "packaging.spec.ts"
+  ],
+  "failures": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "python_lint_and_format": "passed; 186 Python files",
+  "python_types": "mypy strict passed; 108 source files",
+  "frontend_format": "passed",
+  "frontend_build": "vue-tsc and Vite passed",
+  "business_proof": "Purchase 10 units; retail reserves 3; wholesale order 10 sees 7 available; independently reviewed and shipped 7; unpaid retail cancelled and released 3; remaining 3 shipped. Wholesale fulfilled, stock and reserved both zero, AR CNY 140 + 60, cost CNY 115.04.",
+  "boundaries": [
+    "Read-only snapshot, shared inventory allocation candidate rules; no new reservation or posting command.",
+    "Wholesale minimum shelf life and retail product admission are applied. Customer qualification and credit still validated by the existing commands.",
+    "At most 50 requested SKU IDs and 2000 candidate balances; no silent truncation.",
+    "Query failures clear old displayed stock and allow retry; changing selection invalidates pending responses.",
+    "Shipment fill re-queries stock, shares quantity across repeated SKU lines, caps unallocated demand, uses exact base-unit decimals, and does not submit.",
+    "No reports, AI, integration or database migration added."
+  ],
+  "api_paths": 118,
+  "business_migration": "b0025",
+  "control_migration": "c0014",
+  "business_rls_tables": 75,
+  "full_backend_suite_this_run": false,
+  "full_browser_suite_this_run": false,
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:fb6dbcbd3d7dcd8b7b575b0f2a89c6f6cfc0841c5de13d6acb26f5d1c636ee3e",
+  "container_smoke": "passed: UID 10001, both databases ready, 118 API paths, one bounded expiry scan",
+  "local_services": "Core/auth/admin returned 200; core updated and expiry worker resumed after tests",
+  "baseline_records": {
+    "docs/development/验证记录.json": "605378b16e4edf0b0d9fd2b3ef6bd7c8fc2870f4ccb96004e6c858969870ee2d",
+    "docs/development/站内登录验证.json": "22d9de188f3e75854ef75434f865e7e6357e9eae4ab4d5763f4a9ee925e442f0",
+    "docs/development/期初导入验证.json": "7d6f741d87f5c0bd87372b92c3a1451a718e224074fdc5569ccf6c4d37c7ff55"
+  },
+  "result_sha256": {
+    "artifacts/backend-sale-stock.xml": "edc66a10ff68cfbccfc45f5f4217ec6a26a45d6e06e1eb970f0fbb3cc573ad91",
+    "artifacts/browser-sale-stock.json": "41170b122fa5c0c1e69e47024f33624cea4464251fcfaac419075f8780ceed83",
+    "artifacts/container-sale-stock.log": "4ce5d21d6e4e378add44e7ebe1f81ded37ee541346bff0d1852e1a04e6775184"
+  },
+  "inspected_screenshots": {
+    "artifacts/sale-stock-partial.png": "d6c1a92e1d54f01e063bf646ceb32e2b0ffd7376609d898430de4248e706692c",
+    "artifacts/sale-stock-fulfilled.png": "7b79d4b454cf55bf68f24e7ccd19f1dc90b416d90ad21552056e688a5f563072"
+  },
+  "source_sha256": {
+    "backend/src/medinv/modules/sales/application/stock.py": "be732d20df532560662daff13401809e009e15e85cb4b788f7083db490b510d2",
+    "backend/src/medinv/entrypoints/core_api.py": "b85046f8746d5029cea72baf1f5fe0ef09b2567a264aa1d1a563da4542dffc5f",
+    "backend/tests/integration/test_sale_stock.py": "d49583bd35308afb20ad2bbf61c2832b5d1a9ad7e19bf5819207951ec0c9ca75",
+    "backend/tests/integration/test_api.py": "e01340bdc40a02e41045558032f34bde708beb0f0991a7eabb8fab4ebbd8efa3",
+    "apps/admin-web/src/saleStock.ts": "b22a17a17cc94e180c7582ec508a99d64349601ad54165fb0bee4935d8c9535f",
+    "apps/admin-web/src/SaleStockPanel.vue": "30a113a140de5d9d291fcf7d1582b053106eb5ca69265da02f6827f145f21758",
+    "apps/admin-web/src/SalesPage.vue": "e7d8ccbd133a02af2ba031e56e8206ada6cf22164b4297ee5466f6edd11b4775",
+    "apps/admin-web/src/SalesRevision.vue": "5611d099110055b0ecbc25c59b8fe9290374856851abb2f10923ed4926269f33",
+    "apps/admin-web/src/SalesDetail.vue": "aa85db7fdb4600621168104665ef78dd6b76944d826f955ac6b5d87893f2818b",
+    "apps/admin-web/src/RetailPage.vue": "71edd1e128cd7b06b37d030899d70d113845ce2d4b84b04595f19d0a1d61f1d7",
+    "apps/admin-web/tests/sale-stock.spec.ts": "3522c0f6ecb941b6c9a97fe873d64d39a43d1462672b3edaad293554fad2698b",
+    "apps/admin-web/tests/sale-stock-quantity.spec.ts": "8f24169b1d0881ee6c000c30a3ed1e5843800194c06fad422b053556ec0b0a3a",
+    "contracts/openapi/implemented-core-openapi.json": "74eff37a41a668976a152cfec66d311980a714710e43bbacdf4e1214a8443e35",
+    "scripts/smoke_container.py": "a42630d1f5be43ccedc6a856b8ad5a48b77290100ada9e6a03c4ed1b30bb5a1d",
+    "docs/development/销售库存联动操作指引.md": "f718bf6fce036bc338aa09f899b0d4672448a3451217d89b0474f86ec1e20faf",
+    "docs/development/开发进度.md": "085c3430621745442ec3db352953958ab4c0f920d74efa8b2a01f86af66dceb5",
+    "README.md": "03aa9c6818b28823ee57fa4880c17a222fa0df01025fa91d5189d2f6e0defc32"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "recorded_at": "2026-10-16T15:56:07.678451+08:00",
+  "increment": "0.24 follow-up: same-origin branded website login; no business API/schema version change",
+  "baseline_record": "docs/development/验证记录.json",
+  "baseline_sha256": "605378b16e4edf0b0d9fd2b3ef6bd7c8fc2870f4ccb96004e6c858969870ee2d",
+  "backend_tests_this_run": 24,
+  "backend_scope": [
+    "tests/integration/test_auth.py",
+    "tests/unit/test_oidc.py"
+  ],
+  "full_backend_suite_this_run": false,
+  "browser_tests_this_run": 42,
+  "browser_flaky": 0,
+  "failures": 0,
+  "skipped": 0,
+  "frontend_format": "passed",
+  "frontend_typecheck_build": "passed",
+  "changed_python_scripts": "syntax checked; prepare and sync executed against local development services",
+  "operational_checks": {
+    "idempotent_identity_sync_preserves_active_session": true,
+    "password_grant_disabled": true,
+    "existing_demo_password_login": true,
+    "logout_after_check": true
+  },
+  "local_services": "Core 8000, auth 8001, management UI 5173 and same-origin discovery HTTP 200; expiry worker resumed",
+  "issuer": "http://127.0.0.1:5173/identity/realms/medinv",
+  "flow": "Confidential authorization code + PKCE S256; inherited Keycloak 26.8 templates and server-side token/session checks retained",
+  "business_migration": "b0025",
+  "control_migration": "c0014",
+  "container_build_this_run": false,
+  "remote_ci": "Startup ordering updated; not pushed/run",
+  "limits": [
+    "Local development delivery; production HTTPS/proxy/domain configuration is not deployed or validated.",
+    "MFA, enterprise SSO and self-service password reset are not enabled.",
+    "Same-origin standard OIDC redirects remain internally; there is no new Vue/Python password grant API.",
+    "Only three predefined local demo identity mappings are migrated; production accounts require a separately verified migration."
+  ],
+  "result_sha256": {
+    "artifacts/backend-login.xml": "eeeb5a5a993c195a019b729f560575b8125b7573b4b2b14b61113b2494be70c0",
+    "artifacts/browser-login-regression.json": "3a26ba23e9e3ea032c23fc0d4ae3a63baeca4b9c92efe3e6c0c364c82bebe5c2",
+    "artifacts/login-runtime-checks.json": "9183a4ff8be8fcc6005a0d00fc0cad5dbb03bf792f3bf79b680eb3d1326d41e1"
+  },
+  "inspected_screenshots_sha256": {
+    "artifacts/login-desktop-final.png": "41123d2243fdc05655ff0fdc25c0954c328e16cdfe3e85a263f1ad252577244b",
+    "artifacts/login-mobile-final.png": "55ac1d515abe041004876d33f1208bd4601c441a203a050e9f867f1973e0b180"
+  },
+  "source_sha256": {
+    ".github/workflows/backend.yml": "c46e38b992c7978051c180b230622015ead3f7a44a76ea3292f5f4a81ad41d08",
+    "README.md": "cfc28594689b95c6b5ccc829f3976c40646798fd4315971f00e5ccda82b344fc",
+    "apps/admin-web/src/App.vue": "aa034dd8692532ccb5a77ade105408a9c4b0c6be114e5c0de643f5c51075a103",
+    "apps/admin-web/tests/helpers.ts": "0a853d91649e724428cfa7b3d3259b5e6a129f9adddbd155151e544f3f41ebc4",
+    "apps/admin-web/tests/workspace.spec.ts": "bea901825e926f5bca785f9c16845cd2cede2edfaf8d8e25dcc0a13b9f9b8c33",
+    "apps/admin-web/vite.config.ts": "8f7c3842a9e0d0cea6c7e6fd51cfb2bba8a5a1d58fbc4d57ae9dbe24939c4c62",
+    "deploy/compose.yaml": "2a93fa08d2332f998eb0841d5842fe3ae0b9c92b8906395ceb75f21493a68075",
+    "deploy/keycloak/themes/medinv/login/footer.ftl": "ea9324835caca063bfdb0600c8ad527d6010ff175884c047b654082b182c764d",
+    "deploy/keycloak/themes/medinv/login/messages/messages_zh_CN.properties": "3697851ea4f90ed8d53f992a24bd6cd33d4811b7b6bed4010724526d9e0a9f21",
+    "deploy/keycloak/themes/medinv/login/resources/css/medinv.css": "b0853f1b1850453370903a4a9fe5ad8ba251973661a61f210fd6638d6f75d6b7",
+    "deploy/keycloak/themes/medinv/login/theme.properties": "ee430450c44b987e4f180abfd61ed21612d0d38ee273892ee17ff102e497c32e",
+    "docs/adr/0022-站内统一登录与同源身份入口.md": "65e8f75d3884c984cf781743802adbf81b3a05f1982473f2cfc277f22157bf06",
+    "docs/development/开发进度.md": "346eb79d12673423f224fe4171b6fe3ba961d2a565eaf4993ccb61b6888ec804",
+    "docs/development/站内登录说明.md": "274aebfa4372938ec63f365d6d58bddf4e891c5aa223df00378b2ea137e9133c",
+    "scripts/dev.py": "efa46cfd9ede646df743d39542407d61f82371a8e30643eb0e606ca67e6f1c3f",
+    "scripts/prepare_identity.py": "327fd0af57474774d4f591cb7f7b8c6c77c91225b02ee293ff7583c60f219b3b",
+    "scripts/sync_demo_identity.py": "3ff6b2dcb675642c9f871eda38d8335ae6862cfea7e539d5808bb28d8c53a754"
+  }
+}

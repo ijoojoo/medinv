@@ -1,0 +1,83 @@
+# Application layer for the existing initialized local trial databases/identity.
+# Shared gateway network namespace keeps the canonical loopback OIDC issuer reachable
+# from auth without relaxing issuer validation or exposing core/auth ports to the host.
+services:
+  web:
+    image: medinv-web:0.25.0
+    ports:
+      - "127.0.0.1:5173:5173"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      keycloak:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:5173/identity/realms/medinv/.well-known/openid-configuration"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+  core:
+    image: medinv-core:0.25.0
+    network_mode: service:web
+    env_file:
+      - path: ../.cache/trial/core.env
+        format: raw
+    command: ["python", "-m", "uvicorn", "medinv.entrypoints.core_api:create_app", "--factory", "--host", "127.0.0.1", "--port", "8000", "--no-access-log"]
+    read_only: true
+    tmpfs: [/tmp]
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=3)"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+  auth:
+    image: medinv-core:0.25.0
+    network_mode: service:web
+    env_file:
+      - path: ../.cache/trial/auth.env
+        format: raw
+    command: ["python", "-m", "uvicorn", "medinv.entrypoints.control_api:create_app", "--factory", "--host", "127.0.0.1", "--port", "8001", "--no-access-log"]
+    read_only: true
+    tmpfs: [/tmp]
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health/ready',timeout=3)"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+  expiry:
+    image: medinv-core:0.25.0
+    network_mode: service:web
+    env_file:
+      - path: ../.cache/trial/core.env
+        format: raw
+    command: ["python", "-m", "medinv.entrypoints.expiry_worker"]
+    read_only: true
+    tmpfs: [/tmp]
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      core:
+        condition: service_healthy
+      auth:
+        condition: service_healthy

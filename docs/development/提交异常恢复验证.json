@@ -1,0 +1,186 @@
+{
+  "recorded_at": "2026-10-16T21:14:56.286037+08:00",
+  "increment": "0.24 tab-scoped pending command recovery and original shipment cancellation permission fix",
+  "business_migration": "b0026",
+  "control_migration": "c0015",
+  "business_rls_tables": 75,
+  "api_paths": 120,
+  "work_stages": 26,
+  "new_migrations": false,
+  "new_permissions": false,
+  "new_dependencies": false,
+  "backend_tests": 158,
+  "new_backend_tests": 4,
+  "full_backend_suite_this_run": false,
+  "backend_scope": [
+    "test_channel_recovery.py",
+    "test_sales.py",
+    "test_retail.py",
+    "test_inventory.py",
+    "test_api.py",
+    "test_auth.py",
+    "test_reservation_expiry.py",
+    "test_work_queue.py",
+    "test_sales_revisions.py",
+    "test_sale_stock.py"
+  ],
+  "backend_warning": "Existing Starlette TestClient httpx deprecation",
+  "new_browser_tests": 3,
+  "browser_regression_unique_tests": 16,
+  "browser_unique_scenarios_eventually_passed": 19,
+  "full_browser_suite_this_run": false,
+  "browser_runs": {
+    "browser-command-recovery.json": {
+      "startTime": "2026-10-16T13:06:18.069Z",
+      "duration": 27431.103,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "browser-recovery-regression.json": {
+      "startTime": "2026-10-16T13:07:22.667Z",
+      "duration": 173179.492,
+      "expected": 15,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "browser-recovery-mainline.json": {
+      "startTime": "2026-10-16T13:10:27.696Z",
+      "duration": 43431.174999999996,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "browser_regression_note": "Initial related run: 15 passed, 1 failed. Mainline wait for work-queue refresh exceeded 5 seconds. Failure report preserved. Same source and assertion timeout, isolated manual rerun: 1 passed. No automatic retries. Not a single all-green 19-test execution.",
+  "preliminary_fixes": [
+    "New test assertion corrected from ordered_qty to existing qty field.",
+    "Manual reconciliation checkbox registration and interaction fixed with native checkbox.",
+    "Mixed-channel tests exposed sales cancellation requiring inventory.release; fixed internal original-document cancellation to require sales.write without adding generic release to role."
+  ],
+  "proof_of_behavior": [
+    "Real purchase commit then response abort: same ID, key, body and qty; only one recovered purchase.",
+    "Real cash commit then incomplete success response: same key/body, one net receipt 60, original sale issues 3, stock remains 7.",
+    "Reload does not send writes. Tenant and principal changes hide original record; same owner can recover after real login.",
+    "Simulated later 403 retains original pending record.",
+    "Storage unavailable prevents dispatch; corrupt and expired records require checked manual reconciliation.",
+    "Two channels compete for 7 out of 10: one succeeds, one shortage; no extra demand or financial rows from failed transaction.",
+    "Both release directions allow original failed request to complete and replay only once; stock 3, cost 34.512.",
+    "Seller cancels original unposted shipment but cannot call generic release; wrong job and entity scope remain blocked."
+  ],
+  "python_lint_and_format": "passed; 200 backend files",
+  "python_types": "mypy strict passed, 113 source files",
+  "frontend_types": "new test strict TypeScript and vue-tsc passed",
+  "frontend_format": "passed",
+  "frontend_build": "passed",
+  "visual_check": "command-recovery-pending.png inspected",
+  "container_build_this_run": true,
+  "container_image": "medinv-core:0.24.0",
+  "container_image_id": "sha256:ab7b379d16e8821b31b609c616f342be2c63ca4a153bf0a0c8f7fd6435955204",
+  "container_smoke": "passed; UID 10001, both databases, 120 API paths, bounded expiry scan",
+  "local_health": {
+    "core": 200,
+    "auth": 200,
+    "admin": 200
+  },
+  "core_service_restarted": true,
+  "expiry_worker_restored": true,
+  "boundaries": [
+    "sessionStorage in current browser tab; no guarantee after tab closure, data clearing or device change.",
+    "No cross-tab or cross-device pending write coordination.",
+    "Explicit continue resubmits immutable command with current session; page load never automatically retries.",
+    "24h recovery window and 20s request timeout. No separate 20s stalled-network browser scenario run.",
+    "Manual reconciliation only clears local record; no cancellation, stock release or cash transfer.",
+    "Test cash records are manually confirmed local fixtures, not actual bank transactions."
+  ],
+  "evidence": [
+    {
+      "path": "apps/admin-web/src/commandRecovery.ts",
+      "bytes": 6016,
+      "sha256": "1b5b358fe6320476f4bdc661b5375386708571cb70ea911d5fe7cfffb5cbf309"
+    },
+    {
+      "path": "apps/admin-web/src/CommandRecovery.vue",
+      "bytes": 4052,
+      "sha256": "46e00799a7edace7f276a37f2db42312a6b2655c8ce25923b5d26e68c5cd226a"
+    },
+    {
+      "path": "apps/admin-web/src/business.ts",
+      "bytes": 3647,
+      "sha256": "ee25afdc0e5037e381754493b6cdc1ba37f034998aff491f393950f8644147f9"
+    },
+    {
+      "path": "apps/admin-web/src/api.ts",
+      "bytes": 2223,
+      "sha256": "4f8ab735608fbfa3e0c1b0a6dc48b2c7616d8e9d39ba60eedab377fdc9e4cc4e"
+    },
+    {
+      "path": "apps/admin-web/src/App.vue",
+      "bytes": 31789,
+      "sha256": "b1556c415a0921c70bf5bd9b8742e7fc23a0ba5d7cbd0c941f9922402a7a09aa"
+    },
+    {
+      "path": "apps/admin-web/tests/command-recovery.spec.ts",
+      "bytes": 13159,
+      "sha256": "7d705c30994fd740eb8cd709c36636e46f2c766098335ac3f059ac5367ec6962"
+    },
+    {
+      "path": "backend/src/medinv/modules/sales/application/fulfillment.py",
+      "bytes": 12650,
+      "sha256": "8d970a33d6e2f9ff297abf58d909b2987f5f6daf2a518bbfcad32870ba578485"
+    },
+    {
+      "path": "backend/tests/integration/test_channel_recovery.py",
+      "bytes": 7674,
+      "sha256": "d3ebfabdd7804bf70c1739c1b64a024562af893f37638b0cf4c676e0ed1899b2"
+    },
+    {
+      "path": "artifacts/backend-command-recovery.xml",
+      "bytes": 23368,
+      "sha256": "520fa24b255f8c247cd34530c293473870720c23f52d590f0a3d6b024b78f21f"
+    },
+    {
+      "path": "artifacts/browser-command-recovery.json",
+      "bytes": 6675,
+      "sha256": "8e122285dc495eed4687f434cfa1d682405e3079e6a74fb400cc5dba704ff1f9"
+    },
+    {
+      "path": "artifacts/browser-recovery-regression.json",
+      "bytes": 31998,
+      "sha256": "260251dd8fa75afba8c2c1de30f6c9bddeb21011fc249088f910311ce6a7e0bb"
+    },
+    {
+      "path": "artifacts/browser-recovery-mainline.json",
+      "bytes": 5710,
+      "sha256": "7d8a3f8c994db8fda9065e10f4a023d0841f6e84b0811cbfdb6aea3c3703eecd"
+    },
+    {
+      "path": "artifacts/command-recovery-pending.png",
+      "bytes": 223062,
+      "sha256": "b1cc530a2792fbfbf2b16731f9646e54e954976fbc9bc3b2bfd78b5f5290f6bf"
+    },
+    {
+      "path": "artifacts/container-command-recovery.log",
+      "bytes": 801,
+      "sha256": "fea9835ceb870d5def08c6f76e199ad664ac397be8cb46ec788919debbd35842"
+    },
+    {
+      "path": "artifacts/mainline-trial-reconciliation.json",
+      "bytes": 14494,
+      "sha256": "e09642de32a81ce7f3ef83c31abecfcec86ba987915e8821377d0e0f3a4b0b66"
+    },
+    {
+      "path": "artifacts/mainline-trial-db.json",
+      "bytes": 2357,
+      "sha256": "80cfc7b565bc26bad51f2f7feda39529bb30b1547e49fa78bf2c141b4e62fee3"
+    }
+  ],
+  "next_three_steps": [
+    "三类退货岗位交接",
+    "调拨、盘点及差异处理岗位作业",
+    "首期试用部署、开通、备份恢复与验收包"
+  ]
+}
