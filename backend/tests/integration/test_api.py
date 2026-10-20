@@ -215,7 +215,13 @@ def test_published_openapi_has_only_implemented_operations_and_contract_cookie(a
     response = client.get("/openapi.json")
     assert response.status_code == 200
     schema = response.json()
-    assert len(schema["paths"]) == 153
+    published = json.loads(
+        (Path(__file__).parents[3] / "contracts/openapi/implemented-core-openapi.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert schema["paths"] == published["paths"]
+    assert set(schema["paths"]["/api/v1/catalog/parties/{id}/certificates"]) == {"get", "post"}
     assert set(schema["paths"]["/api/v1/catalog/field-rules/{category}"]) == {"get", "post"}
     assert schema["components"]["securitySchemes"]["SessionCookie"]["name"] == "MED_SESSION"
     assert "/api/v1/receipts/{id}/post" not in schema["paths"]

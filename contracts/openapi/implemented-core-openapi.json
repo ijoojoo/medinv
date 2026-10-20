@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "药械进销存 · 核心 API",
-    "version": "0.25.0"
+    "version": "0.26.0"
   },
   "paths": {
     "/api/v1/context": {
@@ -26891,6 +26891,698 @@
           }
         }
       }
+    },
+    "/api/v1/catalog/parties/{id}/certificates": {
+      "get": {
+        "summary": "Party Certificates",
+        "operationId": "party_certificates_api_v1_catalog_parties__id__certificates_get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Party Certificates Api V1 Catalog Parties  Id  Certificates Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Party Certificate",
+        "operationId": "create_party_certificate_api_v1_catalog_parties__id__certificates_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartyCertificateCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Party Certificate Api V1 Catalog Parties  Id  Certificates Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/parties/{id}/certificates/{certificate_id}": {
+      "get": {
+        "summary": "Party Certificate Detail",
+        "operationId": "party_certificate_detail_api_v1_catalog_parties__id__certificates__certificate_id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "certificate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Certificate Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Party Certificate Detail Api V1 Catalog Parties  Id  Certificates  Certificate Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/parties/{id}/certificates/{certificate_id}/revise": {
+      "post": {
+        "summary": "Revise Party Certificate",
+        "operationId": "revise_party_certificate_api_v1_catalog_parties__id__certificates__certificate_id__revise_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "certificate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Certificate Id"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartyCertificateRevision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Revise Party Certificate Api V1 Catalog Parties  Id  Certificates  Certificate Id  Revise Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/parties/{id}/certificates/{certificate_id}/review": {
+      "post": {
+        "summary": "Review Party Certificate",
+        "operationId": "review_party_certificate_api_v1_catalog_parties__id__certificates__certificate_id__review_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "certificate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Certificate Id"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartyCertificateReview"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Review Party Certificate Api V1 Catalog Parties  Id  Certificates  Certificate Id  Review Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -32777,6 +33469,350 @@
           "data",
           "request_id"
         ]
+      },
+      "PartyCertificateCreate": {
+        "properties": {
+          "certificate_type": {
+            "type": "string",
+            "enum": [
+              "BUSINESS_LICENSE",
+              "DRUG_BUSINESS_LICENSE",
+              "DRUG_PRODUCTION_LICENSE",
+              "DEVICE_BUSINESS_LICENSE",
+              "DEVICE_BUSINESS_FILING",
+              "DEVICE_PRODUCTION_LICENSE",
+              "DEVICE_PRODUCTION_FILING",
+              "MEDICAL_INSTITUTION_LICENSE",
+              "AUTHORIZATION",
+              "OTHER"
+            ],
+            "title": "Certificate Type"
+          },
+          "number": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Number"
+          },
+          "holder_name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Holder Name",
+            "default": ""
+          },
+          "issuer": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Issuer",
+            "default": ""
+          },
+          "business_uses": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "SUPPLY",
+                "PURCHASE"
+              ]
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Business Uses"
+          },
+          "scope_text": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Scope Text",
+            "default": ""
+          },
+          "authorized_name": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Authorized Name",
+            "default": ""
+          },
+          "authorized_phone": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "^[0-9+()（） .转分机-]*$",
+            "title": "Authorized Phone",
+            "default": ""
+          },
+          "authorization_duties": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Authorization Duties",
+            "default": ""
+          },
+          "issued_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued On"
+          },
+          "validity_mode": {
+            "type": "string",
+            "enum": [
+              "FIXED",
+              "LONG_TERM",
+              "NOT_STATED",
+              "UNCONFIRMED"
+            ],
+            "title": "Validity Mode",
+            "default": "UNCONFIRMED"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid From"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Until"
+          },
+          "evidence_ref": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Evidence Ref",
+            "default": ""
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "certificate_type",
+          "number",
+          "business_uses",
+          "reason"
+        ],
+        "title": "PartyCertificateCreate"
+      },
+      "PartyCertificateReview": {
+        "properties": {
+          "expected_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "title": "Expected Version"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "VERIFY",
+              "INACTIVATE"
+            ],
+            "title": "Decision"
+          },
+          "evidence_ref": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Evidence Ref"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "decision",
+          "evidence_ref",
+          "reason"
+        ],
+        "title": "PartyCertificateReview"
+      },
+      "PartyCertificateRevision": {
+        "properties": {
+          "certificate_type": {
+            "type": "string",
+            "enum": [
+              "BUSINESS_LICENSE",
+              "DRUG_BUSINESS_LICENSE",
+              "DRUG_PRODUCTION_LICENSE",
+              "DEVICE_BUSINESS_LICENSE",
+              "DEVICE_BUSINESS_FILING",
+              "DEVICE_PRODUCTION_LICENSE",
+              "DEVICE_PRODUCTION_FILING",
+              "MEDICAL_INSTITUTION_LICENSE",
+              "AUTHORIZATION",
+              "OTHER"
+            ],
+            "title": "Certificate Type"
+          },
+          "number": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Number"
+          },
+          "holder_name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Holder Name",
+            "default": ""
+          },
+          "issuer": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Issuer",
+            "default": ""
+          },
+          "business_uses": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "SUPPLY",
+                "PURCHASE"
+              ]
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Business Uses"
+          },
+          "scope_text": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Scope Text",
+            "default": ""
+          },
+          "authorized_name": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Authorized Name",
+            "default": ""
+          },
+          "authorized_phone": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "^[0-9+()（） .转分机-]*$",
+            "title": "Authorized Phone",
+            "default": ""
+          },
+          "authorization_duties": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Authorization Duties",
+            "default": ""
+          },
+          "issued_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued On"
+          },
+          "validity_mode": {
+            "type": "string",
+            "enum": [
+              "FIXED",
+              "LONG_TERM",
+              "NOT_STATED",
+              "UNCONFIRMED"
+            ],
+            "title": "Validity Mode",
+            "default": "UNCONFIRMED"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid From"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Until"
+          },
+          "evidence_ref": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Evidence Ref",
+            "default": ""
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "expected_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "certificate_type",
+          "number",
+          "business_uses",
+          "reason",
+          "expected_version"
+        ],
+        "title": "PartyCertificateRevision"
       }
     },
     "securitySchemes": {

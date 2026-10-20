@@ -7,6 +7,7 @@ import CatalogCodes from "./CatalogCodes.vue";
 import CatalogOperations from "./CatalogOperations.vue";
 import CatalogPrices from "./CatalogPrices.vue";
 import ProductCertificates from "./ProductCertificates.vue";
+import PartyCertificates from "./PartyCertificates.vue";
 import ProductImport from "./ProductImport.vue";
 import DictionaryValue from "./DictionaryValue.vue";
 import PartyProfileFields from "./PartyProfileFields.vue";
@@ -1388,6 +1389,15 @@ onMounted(() => load());
           v-if="product && visitedTabs.includes('quality')"
           :key="selected.id"
           :product="selected.id"
+          :active="activeTab === 'quality'"
+          @editing="codeEditing.certificates = $event"
+          @failure="emit('failure', $event)"
+          @saved="detail(selected)"
+        />
+        <PartyCertificates
+          v-if="!product && visitedTabs.includes('quality')"
+          :key="selected.id"
+          :party="selected.id"
           :active="activeTab === 'quality'"
           @editing="codeEditing.certificates = $event"
           @failure="emit('failure', $event)"

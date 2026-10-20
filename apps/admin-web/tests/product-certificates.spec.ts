@@ -47,6 +47,72 @@ test("certificate drafts, independent verification, retained edits and audit rem
   page.on("pageerror", (e) => errors.push(e.message));
   try {
     const checker = await wholesale(reviewer, "demo.quality");
+    // Current admission requires the MDM identity and a verified business certificate.
+    // Keep that base certificate separate from the supplemental record exercised below.
+    const schema = await read(context, "/api/v1/catalog/master/schema");
+    const baseCertificate = await command(
+      context,
+      owner,
+      `/api/v1/catalog/products/${product.id}/certificates`,
+      {
+        certificate_type: "DEVICE_FILING",
+        number: "LEGACY-TEST",
+        holder_name: "软件测试厂家",
+        issuer: "软件测试机关",
+        validity_mode: "FIXED",
+        valid_from: `${year}-01-01`,
+        valid_until: `${year + 2}-12-31`,
+        evidence_ref: "BASE-TEST",
+        reason: "软件验收准入资料",
+      },
+    );
+    const verifiedBase = await command(
+      reviewer,
+      checker,
+      `/api/v1/catalog/products/${product.id}/certificates/${baseCertificate.id}/review`,
+      {
+        expected_version: baseCertificate.version,
+        decision: "VERIFY",
+        evidence_ref: "BASE-REVIEW",
+        reason: "软件验收独立核对",
+      },
+    );
+    const current = (
+      await read(context, `/api/v1/catalog/products/${product.id}`)
+    ).record;
+    const master = await command(
+      context,
+      owner,
+      "/api/v1/catalog/master/products",
+      {
+        product_id: product.id,
+        category_node_id: schema.payload.nodes.find(
+          (n: any) => n.node_code === "device",
+        ).node_id,
+        form_revision: schema.revision,
+        expected_version: Number(current.version),
+        values: {
+          regulatory_subtype: "MEDICAL_DEVICE",
+          device_class: "I",
+          regulatory_subject: [
+            { organization_name: "软件测试厂家", role_code: "DEVICE_FILER" },
+          ],
+          manufacturer: [
+            { organization_name: "软件测试厂家", role_code: "MANUFACTURER" },
+          ],
+          product_certificates: [
+            {
+              certificate_id: baseCertificate.id,
+              certificate_version: Number(verifiedBase.version),
+              business_use: true,
+            },
+          ],
+        },
+        reason: "软件验收补齐监管身份",
+      },
+    );
+    product.version = String(master.version);
+
     await command(
       reviewer,
       checker,
@@ -136,15 +202,15 @@ test("certificate drafts, independent verification, retained edits and audit rem
       context,
       `/api/v1/catalog/products/${product.id}/certificates`,
     );
-    expect(records.items).toHaveLength(1);
-    expect(records.items[0].state).toBe("DRAFT");
+    expect(records.items).toHaveLength(2);
+    const cert = records.items.find((r: any) => r.number === "TEST-" + suffix);
+    expect(cert.state).toBe("DRAFT");
     expect(writes).toBe(1);
-    expect(records.items[0]).toMatchObject({
+    expect(cert).toMatchObject({
       issued_on: "2024-02-29",
       valid_from: "2026-01-01",
       valid_until: "2028-12-31",
     });
-    const cert = records.items[0];
     await card
       .getByRole("button", { name: "核验 / 停用", exact: true })
       .click();
@@ -167,6 +233,8 @@ test("certificate drafts, independent verification, retained edits and audit rem
       qualityCard.getByRole("button", { name: "新增证照", exact: true }),
     ).toHaveCount(0);
     await qualityCard
+      .locator("tbody tr")
+      .filter({ hasText: "TEST-" + suffix })
       .getByRole("button", { name: "查看证照", exact: true })
       .click();
     await qualityCard

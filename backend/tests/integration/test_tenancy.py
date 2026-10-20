@@ -1,4 +1,6 @@
+import json
 from dataclasses import replace
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -28,8 +30,11 @@ def test_rls_covers_every_business_table(engine):
             FROM pg_class c JOIN pg_namespace n ON c.relnamespace=n.oid
             WHERE n.nspname='med' AND c.relkind='r' AND c.relname<>'alembic_version'""")
         ).all()
-    # b0035 adds seven product-master tables, b0038 adds entity settings.
-    assert len(rows) == 91
+    compatibility = json.loads(
+        (Path(__file__).parents[3] / "deploy/trial/compatibility.json").read_text(encoding="utf-8")
+    )
+    assert len(rows) == compatibility["business_rls_tables"]
+    assert "party_certificate" in {name for name, _, _ in rows}
     assert all(enabled and forced for _, enabled, forced in rows)
 
 

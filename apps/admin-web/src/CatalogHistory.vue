@@ -5,6 +5,10 @@ import { deviceClasses, profileFieldNames } from "./productProfile";
 import { partyFieldNames, organizationTypes } from "./partyProfile";
 import { operationalNames } from "./catalogDictionaries";
 import { certificateNames, certificateValue } from "./productCertificates";
+import {
+  partyCertificateNames,
+  partyCertificateValue,
+} from "./partyCertificates";
 export interface CatalogEvent {
   id: string;
   created_by: string;
@@ -32,7 +36,13 @@ const names: Record<string, string> = {
   retail_price: "建议零售价",
   note: "价格备注",
 };
-function value(v: any, key?: string, certificate = false): string {
+function value(
+  v: any,
+  key?: string,
+  certificate = false,
+  party = false,
+): string {
+  if (certificate && party) return partyCertificateValue(v, key || "");
   if (certificate) return certificateValue(v, key || "");
   if (key === "organization_type")
     return organizationTypes[String(v)] || String(v || "未填写");
@@ -131,7 +141,9 @@ function changes(event: CatalogEvent) {
             <td>
               {{
                 (event.action.startsWith("catalog.certificate_")
-                  ? certificateNames[key]
+                  ? (event.detail.certificate_domain === "party"
+                      ? partyCertificateNames
+                      : certificateNames)[key]
                   : names[key]) || key
               }}
             </td>
@@ -141,6 +153,7 @@ function changes(event: CatalogEvent) {
                   event.detail.before[key],
                   key,
                   event.action.startsWith("catalog.certificate_"),
+                  event.detail.certificate_domain === "party",
                 )
               }}
             </td>
@@ -150,6 +163,7 @@ function changes(event: CatalogEvent) {
                   event.detail.after[key],
                   key,
                   event.action.startsWith("catalog.certificate_"),
+                  event.detail.certificate_domain === "party",
                 )
               }}
             </td>

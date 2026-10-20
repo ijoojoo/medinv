@@ -1,0 +1,194 @@
+{
+  "recorded_at": "2026-10-20T18:38:23.724984+08:00",
+  "scope": "N04 party certificates and authorized contacts; targeted regression, not full P0 acceptance",
+  "application": "0.26.0",
+  "business_revision": "b0045",
+  "control_revision": "c0017",
+  "business_rls_tables": 93,
+  "core_api_paths": 165,
+  "backend": {
+    "tests": 99,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "backend_by_suite": {
+    "tests.integration.test_party_certificates": 31,
+    "tests.integration.test_party_identity": 7,
+    "tests.integration.test_catalog_revisions": 13,
+    "tests.integration.test_product_certificates": 15,
+    "tests.integration.test_tenancy": 5,
+    "tests.integration.test_api": 12,
+    "tests.architecture.test_boundaries": 2,
+    "tests.contracts.test_contract": 2,
+    "tests.unit.test_trial_deployment": 12
+  },
+  "frontend": {
+    "startTime": "2026-10-20T10:33:50.696Z",
+    "duration": 73097.97300000001,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "static_checks": {
+    "ruff": "passed",
+    "mypy_strict": {
+      "source_files": 159,
+      "result": "passed"
+    },
+    "frontend_production_build": "passed",
+    "selected_browser_types": "passed",
+    "selected_frontend_format": "passed"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0045",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "readiness": {
+    "web": true,
+    "core": true,
+    "auth": true,
+    "identity": true,
+    "expiry_running": true,
+    "containers_running": true
+  },
+  "images": {
+    "core": {
+      "tag": "medinv-core:0.26.0",
+      "id": "sha256:55a700cf8c4f2a0b3f3cd5431220d95be4efb5f4ecdc505b9b28b8387c9dd5f7"
+    },
+    "web": {
+      "tag": "medinv-web:0.26.0",
+      "id": "sha256:5726e9e17b22629f4f751a5d45f688a55a2758e57467ee9cdbb8d64990b33d9b"
+    }
+  },
+  "running_images": {
+    "core": {
+      "running_image": "sha256:55a700cf8c4f2a0b3f3cd5431220d95be4efb5f4ecdc505b9b28b8387c9dd5f7",
+      "expected_image": "sha256:55a700cf8c4f2a0b3f3cd5431220d95be4efb5f4ecdc505b9b28b8387c9dd5f7",
+      "matches": true
+    },
+    "auth": {
+      "running_image": "sha256:55a700cf8c4f2a0b3f3cd5431220d95be4efb5f4ecdc505b9b28b8387c9dd5f7",
+      "expected_image": "sha256:55a700cf8c4f2a0b3f3cd5431220d95be4efb5f4ecdc505b9b28b8387c9dd5f7",
+      "matches": true
+    },
+    "expiry": {
+      "running_image": "sha256:55a700cf8c4f2a0b3f3cd5431220d95be4efb5f4ecdc505b9b28b8387c9dd5f7",
+      "expected_image": "sha256:55a700cf8c4f2a0b3f3cd5431220d95be4efb5f4ecdc505b9b28b8387c9dd5f7",
+      "matches": true
+    },
+    "web": {
+      "running_image": "sha256:5726e9e17b22629f4f751a5d45f688a55a2758e57467ee9cdbb8d64990b33d9b",
+      "expected_image": "sha256:5726e9e17b22629f4f751a5d45f688a55a2758e57467ee9cdbb8d64990b33d9b",
+      "matches": true
+    }
+  },
+  "runtime_openapi_matches_snapshot": true,
+  "container_smoke": {
+    "runtime_uid": 10001,
+    "database_connections": 2,
+    "api_paths": 165,
+    "bounded_expiry_scan_errors": 0
+  },
+  "backup": {
+    "scope": "Business database before additive migration",
+    "encrypted": true,
+    "encryption_roundtrip_verified": true,
+    "restore_drill": false
+  },
+  "coverage": [
+    "Entity-scoped ownership with shared organization identity; tenant RLS and read/write permissions.",
+    "Multiple certificates, business uses and authorized contacts; independent review and audit snapshots.",
+    "Inclusive validity boundaries, expired/upcoming display and incomplete-evidence rejection.",
+    "Idempotency, concurrent duplicate/revision rejection and commit-authorization rollback.",
+    "Ordinary contact changes preserve certificate versions; supplemental evidence does not replace parent trade admission.",
+    "UI lifecycle, viewer restrictions, retained edits across tabs and party exit guard.",
+    "Existing party identity/overview/purchase-sale lookup and modern product-certificate regression."
+  ],
+  "issues_resolved_during_validation": [
+    "Adjusted test expectation for existing non-shrinking party role rule; incompatible legacy-state defense also covered.",
+    "Fixed a list-method/type-annotation name collision and registered unsaved changes in the parties workspace scope.",
+    "Replaced stale fixed API/table counts with delivery snapshot and compatibility checks.",
+    "Corrected accessible browser selectors and upgraded the product regression fixture to current MDM admission requirements."
+  ],
+  "warnings": [
+    "Starlette/httpx TestClient deprecation warning.",
+    "Vite chunk larger than 500 kB; build passed."
+  ],
+  "limits": [
+    "Full project suites not rerun; no remote CI or production release.",
+    "Attachment upload and history binding remain N05; evidence references currently point to paper/internal archives.",
+    "Structured business scope/admission matching remain N06; no automatic parent approval, reminder or external certificate verification.",
+    "No cross-machine deployment or restore drill; browser checks used synthetic demo data."
+  ],
+  "artifacts": {
+    "artifacts/party-certificates/backend.xml": {
+      "bytes": 14722,
+      "sha256": "89975a46bfdfca2e5f5f05b9101c5a011bde39960a5934147ee5f98b06778401"
+    },
+    "artifacts/party-certificates/browser.json": {
+      "bytes": 11785,
+      "sha256": "0d5742ccec168214915d824ddd4a3f35a2784d3fb1cf28711e3ba950121c0670"
+    },
+    "artifacts/party-certificates/container.log": {
+      "bytes": 807,
+      "sha256": "493e0bbff16f38266872adc2663a82b2569939855b1a1e79681ac24fdf806289"
+    },
+    "artifacts/party-certificates/mypy.log": {
+      "bytes": 46,
+      "sha256": "625ecc28d11f1617f5c855c1c62883950ae3ec10e444c50275172ed0d3b45be7"
+    },
+    "artifacts/party-certificates/runtime-check.json": {
+      "bytes": 613,
+      "sha256": "bc4bcc37eccf29a9526596d2c78e98c54f5dca3d5973ab911b7805657d5c937d"
+    },
+    "artifacts/party-certificates/runtime-status.json": {
+      "bytes": 644,
+      "sha256": "7176efcdf4899c49c87594c30b4b8fc28e3324cce865b98f7d02830448b2573b"
+    },
+    "artifacts/party-certificates/running-images.json": {
+      "bytes": 946,
+      "sha256": "12a682ed3d33392eadf2c9db8701c97e0198ab67d32d729e1bbf832953d9375c"
+    },
+    "artifacts/party-certificates/pre-migration-backup.json": {
+      "bytes": 486,
+      "sha256": "b3d53e462e37765f02eba886a5b66478c29bd580c57a19a812ee0828f40f2c21"
+    },
+    "outputs/party-certificates/多证照与授权历史.png": {
+      "bytes": 125354,
+      "sha256": "ad363fcc137a1db8611c8ceb14e816ec97ab897f8cacbccba30f9d592844c78f"
+    }
+  }
+}

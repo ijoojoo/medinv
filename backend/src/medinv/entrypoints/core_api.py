@@ -38,6 +38,11 @@ from medinv.modules.catalog.api.master import (
 )
 from medinv.modules.catalog.api.operations import MasterKind, OperationsUpdate
 from medinv.modules.catalog.api.packaging import PackagingCreate
+from medinv.modules.catalog.api.party_certificates import (
+    PartyCertificateCreate,
+    PartyCertificateReview,
+    PartyCertificateRevision,
+)
 from medinv.modules.catalog.api.prices import ReferencePricesUpdate
 from medinv.modules.catalog.api.schemas import (
     PartyCreate,
@@ -59,6 +64,7 @@ from medinv.modules.catalog.application.master import ProductMaster
 from medinv.modules.catalog.application.master_config import MasterConfiguration
 from medinv.modules.catalog.application.operations import CatalogOperations
 from medinv.modules.catalog.application.packaging import PackagingService
+from medinv.modules.catalog.application.party_certificates import PartyCertificates
 from medinv.modules.catalog.application.party_lookup import PartyLookup
 from medinv.modules.catalog.application.prices import ReferencePrices
 from medinv.modules.catalog.application.service import CatalogService
@@ -209,7 +215,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.25.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.26.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1235,6 +1241,59 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return envelope(
                 request,
                 ProductCertificates(catalog.uow).review(
+                    ctx, id, certificate_id, body, key(request)
+                ),
+            )
+
+    @app.get("/api/v1/catalog/parties/{id}/certificates")
+    def party_certificates(request: Request, id: UUID) -> dict[str, Any]:
+        return envelope(request, PartyCertificates(catalog.uow).list(auth(request), id))
+
+    @app.post("/api/v1/catalog/parties/{id}/certificates")
+    def create_party_certificate(
+        request: Request, id: UUID, body: PartyCertificateCreate
+    ) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request, PartyCertificates(catalog.uow).save(ctx, id, body, key(request))
+            )
+
+    @app.get("/api/v1/catalog/parties/{id}/certificates/{certificate_id}")
+    def party_certificate_detail(
+        request: Request,
+        id: UUID,
+        certificate_id: UUID,
+        offset: int = Query(default=0, ge=0, le=100000),
+    ) -> dict[str, Any]:
+        return envelope(
+            request,
+            PartyCertificates(catalog.uow).detail(auth(request), id, certificate_id, offset),
+        )
+
+    @app.post("/api/v1/catalog/parties/{id}/certificates/{certificate_id}/revise")
+    def revise_party_certificate(
+        request: Request,
+        id: UUID,
+        certificate_id: UUID,
+        body: PartyCertificateRevision,
+    ) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request,
+                PartyCertificates(catalog.uow).save(ctx, id, body, key(request), certificate_id),
+            )
+
+    @app.post("/api/v1/catalog/parties/{id}/certificates/{certificate_id}/review")
+    def review_party_certificate(
+        request: Request,
+        id: UUID,
+        certificate_id: UUID,
+        body: PartyCertificateReview,
+    ) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request,
+                PartyCertificates(catalog.uow).review(
                     ctx, id, certificate_id, body, key(request)
                 ),
             )
