@@ -31,6 +31,7 @@ from medinv.modules.procurement.application.document_projection import (
     project_detail,
     public_documents,
 )
+from medinv.modules.workspace import approvals
 from medinv.modules.workspace.drafts import finish_draft
 from medinv.platform.database.commands import command
 from medinv.platform.database.events import audit
@@ -438,6 +439,7 @@ class ProcurementService:
                             "order": {**order, "version": str(order["version"])},
                             "lines": lines,
                             "receipts": receipts,
+                            "approval_workflow": approvals.details(repo, ctx, order),
                         }
                     )
                 ),
@@ -554,6 +556,7 @@ class ProcurementService:
                 ),
             },
         )
+        approvals.bind(repo, ctx, oid, body.entity_id, 1)
         finish_draft(repo, ctx, body.editor_draft, "purchase", body.entity_id, oid)
         return {"id": str(oid), "number": number, "version": "1"}
 
@@ -583,6 +586,26 @@ class ProcurementService:
                 body.reason,
                 200,
             )
+            if approve and not approvals.vote(repo, ctx, order, note):
+                repo.execute(
+                    "UPDATE med.purchase_order SET version=version+1 WHERE id=:id", {"id": order_id}
+                )
+                audit(
+                    repo,
+                    ctx,
+                    "purchase_order",
+                    order_id,
+                    "purchase.approval_step",
+                    {
+                        **body.model_dump(mode="json"),
+                        "revision_no": order["revision_no"],
+                        "reason": note,
+                        "agreement": snapshot(repo, order_id),
+                    },
+                )
+                return {"id": str(order_id), "version": str(order["version"] + 1), "state": "DRAFT"}
+            if not approve:
+                approvals.cancel(repo, ctx, order, note)
             state = "APPROVED" if approve else "CANCELLED"
             repo.execute(
                 """UPDATE med.purchase_order SET approval_state=:state,version=version+1,

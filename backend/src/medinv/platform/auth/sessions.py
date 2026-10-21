@@ -77,7 +77,7 @@ class SessionStore:
         row = (
             conn.execute(
                 text("""
-            SELECT s.*, m.entity_ids, m.permissions
+            SELECT s.*, m.entity_ids, m.permissions, m.role_codes
             FROM control.web_session s JOIN control.membership m
               USING (tenant_id,principal_id)
             JOIN control.tenant t ON t.id=s.tenant_id
@@ -109,4 +109,5 @@ class SessionStore:
             row["permission_version"],
             frozenset(row["entity_ids"]),
             frozenset(row["permissions"]),
+            frozenset(row["role_codes"]),
         )

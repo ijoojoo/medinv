@@ -7,6 +7,7 @@ from fastapi.encoders import jsonable_encoder
 
 from medinv.modules.procurement.api.schemas import OrderRevision
 from medinv.modules.procurement.application.document_projection import public_documents
+from medinv.modules.workspace import approvals
 from medinv.modules.workspace.drafts import finish_draft
 from medinv.platform.database.events import audit
 from medinv.platform.database.sql import SqlSession
@@ -138,6 +139,7 @@ def revise(
         )
         repo.execute("DELETE FROM med.purchase_order_line WHERE order_id=:id", {"id": target})
         svc.insert_lines(repo, ctx, target, body.lines, skus)
+        approvals.bind(repo, ctx, target, order["entity_id"], order["revision_no"] + 1)
         after = snapshot(repo, target)
         result = {
             "id": str(target),

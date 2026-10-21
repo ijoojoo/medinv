@@ -6,6 +6,7 @@ import { activeEntity } from "./entityScope";
 import { can, useCommand } from "./business";
 import { registerCatalogChanges } from "./catalogChanges";
 import type { CatalogDictionary } from "./catalogDictionaries";
+import ApprovalPublisher from "./ApprovalPublisher.vue";
 import DateInput from "./DateInput.vue";
 import { localTime } from "./sales";
 type Kind = "staff" | "maintenance" | "approval_design";
@@ -109,9 +110,13 @@ const locked = computed(
       selected.value.payload.state !== "DRAFT"),
 );
 const { busy, execute } = useCommand((e) => emit("failure", e));
+const publisher = ref<InstanceType<typeof ApprovalPublisher> | null>(null);
 onUnmounted(
   registerCatalogChanges(
-    () => ({ dirty: dirty.value, busy: busy.value }),
+    () => ({
+      dirty: dirty.value || !!publisher.value?.dirty,
+      busy: busy.value || !!publisher.value?.busy,
+    }),
     pages[props.kind],
   ),
 );
@@ -242,8 +247,8 @@ async function open(row?: Row) {
   }
 }
 async function close() {
-  if (busy.value) return;
-  if (dirty.value) {
+  if (busy.value || publisher.value?.busy) return;
+  if (dirty.value || publisher.value?.dirty) {
     try {
       await ElMessageBox.confirm(
         "当前资料有未保存修改，是否放弃？",
@@ -365,10 +370,13 @@ onMounted(() => {
             ? "职员档案与登录账号分开维护；离职不自动撤销账号权限。"
             : kind === "maintenance"
               ? "养护检查与处理留痕；记录本身不改变库存或购销状态。"
-              : "设计稿保存、节点排序与流程预览。设计稿尚未接管业务审批。"
+              : "设计稿保存、节点排序、流程发布与采购审批执行。"
         }}</small>
       </div>
-      <el-button v-if="editing" :disabled="busy" @click="close"
+      <el-button
+        v-if="editing"
+        :disabled="busy || publisher?.busy"
+        @click="close"
         >返回查询</el-button
       ><el-button v-else-if="writable" type="primary" @click="open()">{{
         kind === "staff"
@@ -455,7 +463,7 @@ onMounted(() => {
           }}{{ dirty ? " · 未保存" : "" }}</span
         >
       </div>
-      <fieldset :disabled="busy || locked">
+      <fieldset :disabled="busy || locked || publisher?.busy">
         <div v-if="kind === 'staff'" class="form-grid">
           <label
             >职员编码<input
@@ -633,7 +641,12 @@ onMounted(() => {
             ><span class="approval-arrow">↓</span>
             <div class="approval-terminal">审批完成 · 交回原业务办理</div>
           </div>
-          <el-button :disabled="approval.steps.length >= 10" @click="newStep"
+          <el-button
+            :disabled="
+              approval.steps.length >=
+              (['PRODUCT', 'PARTY'].includes(approval.business) ? 1 : 10)
+            "
+            @click="newStep"
             >＋ 添加审批节点</el-button
           ><label
             >设计说明<textarea
@@ -642,7 +655,7 @@ onMounted(() => {
             ></textarea>
           </label>
           <p class="form-note">
-            当前可保存设计、查看节点和审计记录。运行时人员分配、条件分支、催办、流程版本绑定及业务切换将在审批引擎接入时启用。
+            采购可发布顺序或签流程，按节点角色在原采购单办理；会签、条件分支和其他业务执行继续后续接入。商品与往来单位只设置一个统一审核节点。
           </p>
         </div>
       </fieldset>
@@ -652,12 +665,13 @@ onMounted(() => {
             v-model="reason"
             required
             maxlength="200"
-            :disabled="busy" /></label
+            :disabled="busy || publisher?.busy" /></label
         ><el-button
           v-if="!locked"
           type="primary"
           native-type="submit"
           :loading="busy"
+          :disabled="publisher?.busy"
           >{{
             kind === "approval_design" ? "保存设计稿" : "保存资料"
           }}</el-button
@@ -679,6 +693,16 @@ onMounted(() => {
         </p>
       </details>
     </form>
+    <ApprovalPublisher
+      ref="publisher"
+      v-if="kind === 'approval_design' && editing && selected"
+      :id="selected.id"
+      :version="selected.version"
+      :business="approval.business"
+      :dirty="dirty"
+      :disabled="busy"
+      @failure="emit('failure', $event)"
+    />
   </section>
 </template>
 <style scoped>

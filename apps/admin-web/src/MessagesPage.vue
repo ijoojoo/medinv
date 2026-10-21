@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { request } from "./api";
+import { localTime } from "./sales";
 import { activeEntity } from "./entityScope";
 import { can, useCommand } from "./business";
 import { showReference } from "./workspace";
@@ -106,7 +107,7 @@ const actionNames: Record<string, string> = {
   CLOSE: "核查并关闭",
 };
 const dateText = (value: string | null) =>
-  value?.replace("T", " ").slice(0, 16) || "—";
+  value ? (value.includes("T") ? localTime(value) : value) : "—";
 onUnmounted(
   registerCatalogChanges(
     () => ({ dirty: dialog.value && !!reason.value.trim(), busy: busy.value }),

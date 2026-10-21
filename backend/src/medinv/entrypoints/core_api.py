@@ -169,6 +169,7 @@ from medinv.modules.settlement.application import allocation as settlement_alloc
 from medinv.modules.settlement.application.service import SettlementService
 from medinv.modules.workspace.application.dashboard import WorkDashboard
 from medinv.modules.workspace.application.queue import WorkKind, WorkQueue
+from medinv.modules.workspace.approvals import ApprovalWorkflows, PolicyPublish
 from medinv.modules.workspace.document_columns import ColumnSave as DocumentColumnSave
 from medinv.modules.workspace.drafts import (
     Channel,
@@ -229,7 +230,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.31.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.32.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1269,6 +1270,27 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with guarded(request, quality_write=kind == "maintenance") as ctx:
             return envelope(
                 request, Management(catalog.uow).save(ctx, kind, id, body, key(request))
+            )
+
+    @app.get("/api/v1/approval-policies/purchase")
+    def purchase_approval_policy(request: Request, entity_id: UUID) -> dict[str, Any]:
+        return envelope(request, ApprovalWorkflows(catalog.uow).get(auth(request), entity_id))
+
+    @app.post("/api/v1/approval-policies/purchase")
+    def publish_purchase_approval_policy(request: Request, body: PolicyPublish) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request, ApprovalWorkflows(catalog.uow).publish(ctx, body, key(request))
+            )
+
+    @app.post("/api/v1/purchase-orders/{id}/approval/{action}")
+    def purchase_approval_transition(
+        request: Request, id: UUID, action: Literal["reject", "resubmit"], body: Transition
+    ) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request,
+                ApprovalWorkflows(catalog.uow).transition(ctx, id, body, key(request), action),
             )
 
     @app.get("/api/v1/quality-records")

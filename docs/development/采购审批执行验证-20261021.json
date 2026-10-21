@@ -1,0 +1,68 @@
+{
+  "version": "0.32.0",
+  "date": "2026-10-21",
+  "business_revision": "b0054",
+  "control_revision": "c0017",
+  "rls_tables": 102,
+  "api_paths": 190,
+  "backend_full": {
+    "passed": 1083,
+    "seconds": 578.26,
+    "log": "artifacts/approvals/backend-full-regression.log"
+  },
+  "after_decision_role_display_fix": {
+    "targeted_backend_passed": 8,
+    "browser_final_passed": 1
+  },
+  "browser_unique_scenarios_passed": 5,
+  "browser_reports": [
+    "artifacts/approvals/browser-final.json",
+    "artifacts/approvals/browser-regression.json",
+    "artifacts/approvals/purchase-regression.json"
+  ],
+  "repaired_validation_runs": [
+    "Initial full run: 1081 passed, 2 API snapshot failures because contract refresh followed test startup; refreshed snapshot and reran full suite.",
+    "Initial browser regression: 3 passed, 1 historical fixture failure on separate certificate review; updated fixture to unified parent review and reran purchase flow."
+  ],
+  "ui_evidence": {
+    "tenant_id": "b3066d0f-5b4f-58a1-8f4b-323f1ac762c1",
+    "order_id": "5a6f185b-9789-424a-9068-6ece614e0192",
+    "policy_version": "1",
+    "round": 2,
+    "approval_state": "APPROVED",
+    "actions": [
+      "APPROVE",
+      "REJECT",
+      "RESUBMIT",
+      "APPROVE",
+      "APPROVE"
+    ],
+    "errors": []
+  },
+  "checks": [
+    "strict mypy 172 source files",
+    "Vue TypeScript",
+    "Ruff",
+    "modified frontend Prettier",
+    "trial build/start/check",
+    "Linux non-root API and expiry smoke"
+  ],
+  "screenshots": {
+    "outputs/approvals/采购审批发布.png": "6df198049e4faaa8070852870b9ba8c9f650c90012539d046c2498356ae306b7",
+    "outputs/approvals/采购审批窄屏.png": "c4f6bce9cda2a1707065aac67f2840491f47f7a06f9c9ca4169bcef06e438a85",
+    "outputs/approvals/采购审批退回.png": "566e0d27456b10d3f5037c33a36b166c129e8823105580ff54e490877fef5d6c",
+    "outputs/approvals/采购审批通过.png": "503eaa2d43a5c855f05f5136aeca59877dddd85796cb0d45d1d2a89f7915e09d"
+  },
+  "backup": {
+    "scope": "consistent business database snapshot only",
+    "encrypted": true,
+    "bytes": 185536451
+  },
+  "boundaries": [
+    "purchase sequential ANY execution only",
+    "ALL designs can save but cannot publish",
+    "existing orders retain their bound workflow",
+    "product and party remain single parent review",
+    "no standalone approval inbox or active push delivery"
+  ]
+}

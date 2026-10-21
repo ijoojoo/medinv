@@ -79,6 +79,8 @@ class ApprovalDesign(DTO):
 
     @model_validator(mode="after")
     def unique_steps(self) -> ApprovalDesign:
+        if self.business in {"PRODUCT", "PARTY"} and len(self.steps) != 1:
+            raise ValueError("商品及往来单位资料随主体一次审核，仅保留一个统一审核节点")
         if len({s.id for s in self.steps}) != len(self.steps):
             raise ValueError("审批节点身份不可重复")
         return self

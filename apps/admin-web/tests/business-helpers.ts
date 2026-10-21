@@ -228,17 +228,6 @@ export async function stockedCustomer(
       reason: "仅供软件测试的虚拟证件",
     },
   );
-  const verified = await command(
-    reviewer,
-    checker,
-    `/api/v1/catalog/products/${product.id}/certificates/${certificate.id}/review`,
-    {
-      expected_version: certificate.version,
-      decision: "VERIFY",
-      evidence_ref: "DEMO-EVIDENCE",
-      reason: "软件验收核对",
-    },
-  );
   const current = (
     await read(context, `/api/v1/catalog/products/${product.id}`)
   ).record;
@@ -265,7 +254,7 @@ export async function stockedCustomer(
         product_certificates: [
           {
             certificate_id: certificate.id,
-            certificate_version: Number(verified.version),
+            certificate_version: Number(certificate.version),
             business_use: true,
           },
         ],

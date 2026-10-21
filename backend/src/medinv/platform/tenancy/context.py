@@ -13,6 +13,7 @@ class TenantContext:
     permission_version: int
     entity_ids: frozenset[UUID]
     permissions: frozenset[str]
+    role_codes: frozenset[str] = frozenset()
 
     def require(self, permission: str, entity_id: UUID | None = None) -> None:
         if permission not in self.permissions:

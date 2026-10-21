@@ -124,7 +124,7 @@ test("unreceived packaging purchase revision preserves units, requires independe
       .click();
     await quality
       .getByRole("dialog")
-      .getByLabel("操作说明", { exact: true })
+      .getByLabel("补充说明", { exact: true })
       .fill("独立核对修改前后数量及单价");
     await quality
       .getByRole("button", { name: "确认审核", exact: true })

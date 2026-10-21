@@ -86,7 +86,8 @@ const links = [
   {
     tab: "purchase",
     title: "审批流设计",
-    description: "按业务设计审核节点、角色、会签或或签；保存设计稿。",
+    description:
+      "设计审核节点与角色；采购支持发布顺序或签流程，原单保留绑定版本。",
     page: "approval-design",
     permission: "catalog.configure",
   },

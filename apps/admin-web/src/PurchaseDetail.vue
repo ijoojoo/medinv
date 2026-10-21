@@ -15,6 +15,8 @@ import { registerCatalogChanges } from "./catalogChanges";
 import { onUnmounted as disposeGuard } from "vue";
 import { createEditor } from "./workspace";
 import { purchaseTask, purchaseChanged } from "./purchaseWorkflow";
+import PurchaseApprovalPanel from "./PurchaseApprovalPanel.vue";
+import type { PurchaseApprovalFlow } from "./approvalWorkflow";
 import PurchaseHistory from "./PurchaseHistory.vue";
 import PurchaseRejectedHandover from "./PurchaseRejectedHandover.vue";
 import type { PackageSnapshot } from "./business";
@@ -105,6 +107,7 @@ interface Receipt {
   postings: Segment[];
 }
 interface Detail {
+  approval_workflow: PurchaseApprovalFlow | null;
   order: {
     id: string;
     number: string;
@@ -734,6 +737,10 @@ disposeGuard(
             >仅未登记到货时可修改，保存后须独立审核。</span
           >
         </div>
+        <PurchaseApprovalPanel
+          v-if="doc.approval_workflow"
+          :flow="doc.approval_workflow"
+        />
         <div class="form-actions" v-if="doc.order.approval_state === 'DRAFT'">
           <span v-if="selfReview" class="form-note"
             >制单人及本轮修改人员不能审核通过，请交由其他成员审核。</span
@@ -747,9 +754,28 @@ disposeGuard(
           <el-button
             v-if="can('purchase.approve')"
             type="primary"
-            :disabled="busy || selfReview"
+            :disabled="
+              busy ||
+              selfReview ||
+              !!(doc.approval_workflow && !doc.approval_workflow.can_approve)
+            "
             @click="transition('approve')"
-            >审核采购单</el-button
+            >{{
+              doc.approval_workflow ? "通过当前审批节点" : "审核采购单"
+            }}</el-button
+          >
+          <el-button
+            v-if="doc.approval_workflow?.can_approve"
+            :disabled="busy"
+            @click="transition('approval/reject')"
+            >退回修改</el-button
+          >
+          <el-button
+            v-if="doc.approval_workflow?.can_resubmit"
+            type="primary"
+            :disabled="busy"
+            @click="transition('approval/resubmit')"
+            >重新提交审批</el-button
           >
         </div>
         <div
@@ -904,6 +930,8 @@ disposeGuard(
       (
         {
           approve: '审核采购单',
+          'approval/reject': '退回采购单修改',
+          'approval/resubmit': '重新提交采购审批',
           cancel: '取消采购单',
           close: '关闭未收余量',
           receive: '登记到货',
@@ -933,7 +961,15 @@ disposeGuard(
     destroy-on-close
   >
     <form
-      v-if="['approve', 'cancel', 'close'].includes(dialog)"
+      v-if="
+        [
+          'approve',
+          'cancel',
+          'close',
+          'approval/reject',
+          'approval/resubmit',
+        ].includes(dialog)
+      "
       class="business-form"
       @keydown="formEnter"
       @submit.prevent="saveTransition"
@@ -980,7 +1016,11 @@ disposeGuard(
           </select></label
         >
         <p class="form-note">
-          确认审核后通过本单；字典只维护意见用语，不改变审核权限。补充说明可留空。
+          {{
+            doc?.approval_workflow
+              ? "确认后通过当前节点，全部节点完成后采购单审核通过。"
+              : "确认审核后通过本单。"
+          }}字典只维护意见用语，不改变审核权限。补充说明可留空。
           <el-button
             link
             :disabled="busy || reviewLoading"
@@ -1014,9 +1054,13 @@ disposeGuard(
           >{{
             dialog === "approve"
               ? "确认审核"
-              : dialog === "close"
-                ? "确认关闭余量"
-                : "确认取消"
+              : dialog === "approval/reject"
+                ? "确认退回"
+                : dialog === "approval/resubmit"
+                  ? "确认重新提交"
+                  : dialog === "close"
+                    ? "确认关闭余量"
+                    : "确认取消"
           }}</el-button
         >
       </div>

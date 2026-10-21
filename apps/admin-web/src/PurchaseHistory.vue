@@ -19,6 +19,9 @@ const labels: Record<string, string> = {
   "purchase.created": "创建采购单",
   "purchase.revised": "修改采购单",
   "purchase.approved": "审核通过",
+  "purchase.approval_step": "通过审批节点",
+  "purchase.approval_reject": "退回采购审批",
+  "purchase.approval_resubmit": "重新提交采购审批",
   "purchase.cancelled": "取消采购单",
   "purchase.closed": "关闭未收余量",
 };
