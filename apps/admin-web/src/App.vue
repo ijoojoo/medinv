@@ -22,6 +22,7 @@ import {
   activeEditor,
   activeRecord,
   recordTabs,
+  referenceNavigation,
   closeRecordTab,
   showRecord,
   openedEditors,
@@ -865,10 +866,17 @@ onUnmounted(() => {
               v-if="moduleTabs.includes(item.page)"
               v-show="page === item.page"
               :kind="item.kind"
+              :initial-target="
+                referenceNavigation?.page === item.page
+                  ? referenceNavigation
+                  : undefined
+              "
               @failure="failure"
           /></template>
           <MessagesPage
-            v-if="page === 'messages'"
+            v-if="moduleTabs.includes('messages')"
+            v-show="page === 'messages'"
+            :active="page === 'messages'"
             @failure="failure"
             @open="
               (item) =>
@@ -920,6 +928,11 @@ onUnmounted(() => {
           >
             <ProductMasterWorkspace
               v-if="kind === 'products' && moduleTabs.includes(kind)"
+              :initial-target="
+                referenceNavigation?.page === kind
+                  ? referenceNavigation
+                  : undefined
+              "
               :key="`${session.tenant_id}:${session.context_generation}:master`"
               @failure="failure"
             />
@@ -927,6 +940,11 @@ onUnmounted(() => {
               v-if="kind === 'parties' && moduleTabs.includes(kind)"
               :key="`${session.tenant_id}:${session.context_generation}:${kind}`"
               :kind="kind"
+              :initial-target="
+                referenceNavigation?.page === kind
+                  ? referenceNavigation
+                  : undefined
+              "
               @failure="failure"
             />
           </div>

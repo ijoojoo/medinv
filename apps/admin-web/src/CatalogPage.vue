@@ -45,7 +45,11 @@ import {
 import CatalogHistory, { type CatalogEvent } from "./CatalogHistory.vue";
 import { request, session } from "./api";
 import { can, labels, useCommand, type PageData } from "./business";
-const props = defineProps<{ kind: "products" | "parties" }>();
+import { clearReference, type ReferenceTarget } from "./workspace";
+const props = defineProps<{
+  kind: "products" | "parties";
+  initialTarget?: ReferenceTarget;
+}>();
 const emit = defineEmits<{ failure: [error: unknown] }>();
 interface RecordData extends Partial<ProductProfile>, Partial<PartyProfile> {
   has_changes?: boolean;
@@ -319,6 +323,7 @@ async function backToList() {
   detailEpoch++;
   detailLoading.value = false;
   selected.value = null;
+  clearReference(props.kind);
   await load();
   await listReturn.restore();
 }
@@ -608,7 +613,30 @@ async function saveReview() {
   );
   if (returned) await listReturn.restore();
 }
-onMounted(() => load());
+async function locateReference() {
+  const target = props.initialTarget;
+  if (!target) return;
+  await openExistingParty(target.id);
+  await nextTick();
+  if (selected.value?.id === target.id)
+    selectTab(
+      target.tab === "certificates" || target.tab === "review"
+        ? "quality"
+        : target.tab === "scopes"
+          ? "scopes"
+          : "basic",
+    );
+}
+watch(
+  () => props.initialTarget?.token,
+  () => {
+    if (props.initialTarget) void locateReference();
+  },
+);
+onMounted(() => {
+  void load();
+  void locateReference();
+});
 </script>
 <template>
   <div :class="{ 'master-workspace party-workspace': !product }">

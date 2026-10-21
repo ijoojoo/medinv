@@ -198,26 +198,32 @@ test("management workspaces: real dictionaries, staff, designs, messages and qua
       .getByRole("navigation", { name: "具体字典" })
       .getByRole("button", { name: /职员状态/ })
       .click();
-    await expect(
-      dict.getByRole("button", { name: "保存配置", exact: true }),
-    ).toHaveCount(0);
-    const protectedData = await read(
+    const standard = await read(
       context,
       "/api/v1/catalog/dictionaries/staff_status",
     );
-    const denied = await context.request.post(
-      origin + "/api/v1/catalog/dictionaries/staff_status",
+    const changed = await command(
+      context,
+      owner,
+      "/api/v1/catalog/dictionaries/staff_status",
       {
-        headers: { ...headers(owner), "Idempotency-Key": randomUUID() },
-        data: {
-          expected_version: protectedData.version,
-          mode: "STRICT",
-          items: protectedData.items.map((i: any) => ({ ...i, active: false })),
-          reason: "测试拒绝修改系统值",
-        },
+        expected_version: standard.version,
+        mode: standard.mode,
+        items: standard.items.map((i: any) => ({ ...i, active: false })),
+        reason: "验证内置业务规则可调整",
       },
     );
-    expect(denied.status()).toBe(422);
+    expect(
+      (
+        await read(context, "/api/v1/catalog/dictionaries/staff_status")
+      ).items.every((i: any) => !i.active),
+    ).toBe(true);
+    await command(context, owner, "/api/v1/catalog/dictionaries/staff_status", {
+      expected_version: changed.version,
+      mode: standard.mode,
+      items: standard.items,
+      reason: "恢复测试职员状态选项",
+    });
     await nav(page, "职员资料");
     const staff = page.getByRole("region", { name: "职员资料", exact: true });
     await staff.getByRole("button", { name: "新增职员" }).click();

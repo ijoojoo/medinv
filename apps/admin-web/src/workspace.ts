@@ -53,6 +53,34 @@ export interface EditorState {
   continuation?: { order_id: string; carry_header: boolean };
 }
 export const workspacePage = ref("overview");
+export interface ReferenceTarget {
+  page: string;
+  id: string;
+  tab: string;
+  entity: string;
+  token: number;
+}
+export const referenceNavigation = ref<ReferenceTarget | null>(null);
+export function clearReference(page: string) {
+  if (referenceNavigation.value?.page !== page) return;
+  referenceNavigation.value = null;
+  rememberRoute(true);
+}
+
+export async function showReference(page: string, id: string, tab = "") {
+  if (!["products", "parties", "quality-ledgers"].includes(page)) return;
+  if (!(await guardCatalogLeave(page))) return;
+  goPage(page);
+  if (workspacePage.value !== page) return;
+  referenceNavigation.value = {
+    page,
+    id,
+    tab,
+    entity: activeEntity.value,
+    token: Date.now(),
+  };
+  rememberRoute();
+}
 export const activeEditor = ref("");
 export const activeRecord = ref("");
 export const recordTabs = ref<
@@ -165,6 +193,16 @@ function rememberRoute(replace = false) {
   if (activeEditor.value) path += `/drafts/${activeEditor.value}`;
   const params = new URLSearchParams({ tenant: session.value.tenant_id });
   const target = recordNavigation.value;
+  const reference = referenceNavigation.value;
+  if (
+    !activeEditor.value &&
+    reference?.page === workspacePage.value &&
+    reference.entity === activeEntity.value
+  ) {
+    params.set("record", reference.id);
+    params.set("tab", reference.tab);
+    params.set("entity", reference.entity);
+  }
   if (
     !activeEditor.value &&
     target &&
@@ -200,6 +238,7 @@ export function goPage(page: string) {
   )
     return;
   activeRecord.value = "";
+  referenceNavigation.value = null;
   if (!moduleTabs.value.includes(page)) moduleTabs.value.push(page);
   navigating = true;
   workspacePage.value = page;
@@ -702,6 +741,7 @@ async function readRoute() {
   activeEditor.value = "";
   activeRecord.value = "";
   recordNavigation.value = null;
+  referenceNavigation.value = null;
   navigating = false;
   if (
     parts[2] === "drafts" &&
@@ -730,6 +770,24 @@ async function readRoute() {
       url.searchParams.get("order")!,
       entity,
     );
+  } else if (
+    ["products", "parties", "quality-ledgers"].includes(page) &&
+    uuid.test(url.searchParams.get("record") || "") &&
+    uuid.test(url.searchParams.get("entity") || "")
+  ) {
+    const entity = url.searchParams.get("entity")!;
+    if (
+      entity !== activeEntity.value &&
+      (!(await guardCatalogLeave()) || !selectEntity(entity))
+    ) {
+      goPage("overview");
+      return;
+    }
+    await showReference(
+      page,
+      url.searchParams.get("record")!,
+      url.searchParams.get("tab") || "",
+    );
   }
   rememberRoute(true);
 }
@@ -752,6 +810,7 @@ export function resetWorkspace() {
   activeEditor.value = "";
   recordNavigation.value = null;
   recordSaved.value = null;
+  referenceNavigation.value = null;
   workbenchReturn.value = null;
   editorLoading.value = false;
   editorError.value = "";

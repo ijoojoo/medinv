@@ -2,6 +2,7 @@
 
 import json
 from datetime import date
+from hashlib import sha256
 from typing import Annotated, Any, Literal
 from uuid import UUID, uuid4
 
@@ -18,7 +19,6 @@ from pydantic import (
 
 from medinv.modules.catalog.api.schemas import DTO, Text
 from medinv.modules.catalog.application.dictionaries import current_dictionary, dictionary_lock
-from medinv.modules.workspace.application.queue import WorkKind, WorkQueue
 from medinv.platform.database.commands import command
 from medinv.platform.database.events import audit
 from medinv.platform.database.sql import SqlSession
@@ -56,6 +56,10 @@ class Staff(DTO):
 class EnterpriseSettings(DTO):
     reminders_enabled: StrictBool = True
     work_queue_enabled: StrictBool = True
+    certificate_reminders_enabled: StrictBool = True
+    scope_reminders_enabled: StrictBool = True
+    catalog_review_reminders_enabled: StrictBool = True
+    maintenance_reminders_enabled: StrictBool = True
     certificate_notice_days: Annotated[int, Field(strict=True, ge=0, le=365)] = 30
     maintenance_notice_days: Annotated[int, Field(strict=True, ge=0, le=365)] = 7
 
@@ -110,8 +114,8 @@ class ManagementSave(DTO):
 
 class MessageRead(DTO):
     entity_id: UUID
-    source: Literal["work", "certificate", "maintenance"]
-    message_id: Annotated[StrictStr, Field(min_length=1, max_length=110)]
+    source: Literal["work", "certificate", "scope", "catalog_review", "maintenance"]
+    message_id: Annotated[StrictStr, Field(min_length=1, max_length=250)]
 
 
 MODELS: dict[str, type[BaseModel]] = {
@@ -339,104 +343,9 @@ med.management_record(tenant_id,id,entity_id,kind,record_key,payload,created_by,
     def messages(
         self, ctx: TenantContext, entity: UUID, source: str, offset: int, target: str = ""
     ) -> dict[str, Any]:
-        ctx.require("tenant.read", entity)
-        with self.uow.open(ctx, readonly=True) as session:
-            repo = SqlSession(session)
-            require_entity(repo, entity)
-            settings = repo.rows(
-                "SELECT payload FROM med.management_record WHERE entity_id=:e AND kind='settings'",
-                {"e": entity},
-            )
-            config = EnterpriseSettings.model_validate(
-                settings[0]["payload"] if settings else {}
-            ).model_dump()
-            if not config["reminders_enabled"]:
-                return {"items": [], "has_more": False, "disabled": True}
-            if source == "work":
-                rows = []
-            elif source == "certificate":
-                ctx.require("catalog.read", entity)
-                rows = repo.rows(
-                    """SELECT 'certificate:'||c.id||':'||c.version AS message_id,
-                  p.name||' · '||c.number AS title,c.valid_until AS due,'parties' AS
-                  page,c.party_id AS target_id
-                  FROM med.party_certificate c JOIN med.party p ON
-                  (p.tenant_id,p.id)=(c.tenant_id,c.party_id)
-                  WHERE p.entity_id=:e AND c.state<>'INACTIVE' AND c.validity_mode='FIXED'
-                  AND c.valid_until <= (now() AT TIME ZONE 'Asia/Shanghai')::date + :days
-                  AND (:target='' OR 'certificate:'||c.id||':'||c.version=:target)
-                  ORDER BY c.valid_until,c.id LIMIT 51 OFFSET :o""",
-                    {
-                        "e": entity,
-                        "days": config["certificate_notice_days"],
-                        "o": offset,
-                        "target": target,
-                    },
-                )
-            else:
-                ctx.require("quality.read", entity)
-                rows = repo.rows(
-                    """WITH latest AS (
-                  SELECT DISTINCT ON (payload->>'product_id',payload->>'lot_no') * FROM
-                  med.management_record
-                  WHERE entity_id=:e AND kind='maintenance' AND payload->>'state'='COMPLETED'
-                  ORDER BY payload->>'product_id',payload->>'lot_no',payload->>'checked_on'
-                  DESC,updated_at DESC,id)
-                  SELECT 'maintenance:'||r.id||':'||r.version AS
-                  message_id,p.name||' · '||(r.payload->>'lot_no') AS title,
-                  r.payload->>'next_due' AS due,'quality-ledgers' AS page,r.id AS target_id
-                  FROM latest r JOIN med.product p ON p.id=(r.payload->>'product_id')::uuid AND
-                  p.tenant_id=r.tenant_id
-                  WHERE (r.payload->>'next_due')::date <= (now() AT TIME ZONE
-                  'Asia/Shanghai')::date + :days
-                  AND (:target='' OR 'maintenance:'||r.id||':'||r.version=:target)
-                  ORDER BY r.payload->>'next_due',r.id LIMIT 51 OFFSET :o""",
-                    {
-                        "e": entity,
-                        "days": config["maintenance_notice_days"],
-                        "o": offset,
-                        "target": target,
-                    },
-                )
-        more = len(rows) > 50
-        if source == "work" and config["work_queue_enabled"]:
-            queue = WorkQueue(self.uow).listing(ctx, entity, WorkKind.ALL, "", offset)
-            names = {k["code"]: k["name"] for k in queue["kinds"]}
-            rows = [
-                {
-                    "message_id": "work:" + r["kind"] + ":" + r["item_id"],
-                    "title": names[r["kind"]] + " · " + r["number"],
-                    "due": r["document_time"],
-                    "page": r["page"],
-                    "target_id": r["target_id"],
-                    "work_item": r,
-                }
-                for r in queue["items"]
-            ]
-            if target:
-                rows = [r for r in rows if r["message_id"] == target]
-            more = queue["has_more"]
-        with self.uow.open(ctx, readonly=True) as session:
-            read_rows = SqlSession(session).rows(
-                "SELECT payload->>'message_id' AS id FROM med.management_record WHERE "
-                "entity_id=:e AND kind='notification_read' AND created_by=:a "
-                "AND record_key=ANY(:keys)",
-                {
-                    "e": entity,
-                    "a": ctx.principal_id,
-                    "keys": [str(ctx.principal_id) + ":" + r["message_id"] for r in rows[:50]],
-                },
-            )
-            read = {r["id"] for r in read_rows}
-        return dict(
-            jsonable_encoder(
-                {
-                    "items": [{**r, "read": r["message_id"] in read} for r in rows[:50]],
-                    "has_more": more,
-                    "disabled": False,
-                }
-            )
-        )
+        from medinv.modules.workspace.reminders import Reminders
+
+        return Reminders(self.uow).listing(ctx, entity, source, offset, target)
 
     def mark_read(self, ctx: TenantContext, body: MessageRead, key: str) -> dict[str, Any]:
         ctx.require("tenant.read", body.entity_id)
@@ -463,5 +372,13 @@ med.management_record(tenant_id,id,entity_id,kind,record_key,payload,created_by,
             return {"read": True}
 
         return command(
-            self.uow, ctx, "message.read", body.message_id, key, body.model_dump(mode="json"), run
+            self.uow,
+            ctx,
+            "message.read",
+            body.message_id
+            if len(body.message_id) <= 100
+            else sha256(body.message_id.encode()).hexdigest(),
+            key,
+            body.model_dump(mode="json"),
+            run,
         )

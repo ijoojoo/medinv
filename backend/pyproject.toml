@@ -1,6 +1,6 @@
 [project]
 name = "medinv"
-version = "0.30.0"
+version = "0.31.0"
 description = "Multi-tenant medicine and medical device inventory core"
 requires-python = ">=3.14,<3.15"
 dependencies = [

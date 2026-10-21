@@ -27,6 +27,10 @@ const tab = ref("catalog"),
 const values = ref({
   reminders_enabled: true,
   work_queue_enabled: true,
+  certificate_reminders_enabled: true,
+  scope_reminders_enabled: true,
+  catalog_review_reminders_enabled: true,
+  maintenance_reminders_enabled: true,
   certificate_notice_days: 30,
   maintenance_notice_days: 7,
 });
@@ -138,7 +142,7 @@ async function load() {
     if (data.items[0]) {
       id.value = data.items[0].id;
       version.value = data.items[0].version;
-      values.value = data.items[0].payload;
+      values.value = { ...values.value, ...data.items[0].payload };
     }
     baseline.value = JSON.stringify(values.value);
     loaded.value = true;
@@ -220,6 +224,26 @@ onMounted(load);
           ><input v-model="values.work_queue_enabled" type="checkbox" />
           汇总业务待办提醒</label
         ><label
+          ><input
+            v-model="values.certificate_reminders_enabled"
+            type="checkbox"
+          />证件到期提醒（商品、往来单位）</label
+        ><label
+          ><input
+            v-model="values.scope_reminders_enabled"
+            type="checkbox"
+          />经营范围异常提醒</label
+        ><label
+          ><input
+            v-model="values.catalog_review_reminders_enabled"
+            type="checkbox"
+          />主体资料待审提醒</label
+        ><label
+          ><input
+            v-model="values.maintenance_reminders_enabled"
+            type="checkbox"
+          />养护到期提醒</label
+        ><label
           >资质到期提前提醒天数<input
             v-model.number="values.certificate_notice_days"
             type="number"
@@ -235,7 +259,7 @@ onMounted(load);
             required
         /></label>
         <p class="form-note">
-          过期事项仍会显示。已读只记录个人阅读状态，处理完成以原业务单据为准。
+          过期事项仍会显示。关闭提醒开关不会关闭已有处理事项，也不改变业务准入规则。消息中心打开或刷新时重新核查；处理记录中的“确认关闭”仍校验原资料或原单。
         </p>
         <label
           >变更原因<input v-model="reason" maxlength="200" required /></label

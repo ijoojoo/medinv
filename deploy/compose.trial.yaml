@@ -3,7 +3,7 @@
 # from auth without relaxing issuer validation or exposing core/auth ports to the host.
 services:
   web:
-    image: medinv-web:0.30.0
+    image: medinv-web:0.31.0
     ports:
       - "127.0.0.1:5173:5173"
     read_only: true
@@ -21,7 +21,7 @@ services:
       timeout: 5s
       retries: 30
   core:
-    image: medinv-core:0.30.0
+    image: medinv-core:0.31.0
     network_mode: service:web
     env_file:
       - path: ../.cache/trial/core.env
@@ -43,7 +43,7 @@ services:
       timeout: 5s
       retries: 20
   auth:
-    image: medinv-core:0.30.0
+    image: medinv-core:0.31.0
     network_mode: service:web
     env_file:
       - path: ../.cache/trial/auth.env
@@ -65,7 +65,7 @@ services:
       timeout: 5s
       retries: 20
   expiry:
-    image: medinv-core:0.30.0
+    image: medinv-core:0.31.0
     network_mode: service:web
     env_file:
       - path: ../.cache/trial/core.env

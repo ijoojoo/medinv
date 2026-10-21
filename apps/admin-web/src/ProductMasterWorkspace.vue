@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MasterChangeSummary from "./MasterChangeSummary.vue";
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { request, session } from "./api";
 import { can, labels, useCommand } from "./business";
@@ -42,6 +42,8 @@ import {
   type Organization,
   type RoleLink,
 } from "./productMaster";
+import { clearReference, type ReferenceTarget } from "./workspace";
+const props = defineProps<{ initialTarget?: ReferenceTarget }>();
 const emit = defineEmits<{ failure: [error: unknown] }>();
 const schema = ref<SchemaResponse | null>(null),
   list = ref<MasterList | null>(null),
@@ -260,9 +262,23 @@ function beforeUnload(e: BeforeUnloadEvent) {
 }
 onMounted(() => {
   window.addEventListener("beforeunload", beforeUnload);
-  void init();
+  void init().then(locateReference);
 });
 onUnmounted(() => window.removeEventListener("beforeunload", beforeUnload));
+async function locateReference() {
+  const target = props.initialTarget;
+  if (!target || !schema.value) return;
+  if (await open(target.id)) {
+    if (target.tab === "certificates")
+      await openRelation("product_certificates");
+  }
+}
+watch(
+  () => props.initialTarget?.token,
+  () => {
+    if (props.initialTarget) void locateReference();
+  },
+);
 async function init() {
   try {
     schema.value = await request<SchemaResponse>(
@@ -439,6 +455,7 @@ async function open(id: string, afterSave = false) {
 async function close() {
   if (await guard()) {
     editing.value = false;
+    clearReference("products");
     savedRefreshId.value = "";
     record.value = null;
     childDirty.value = false;

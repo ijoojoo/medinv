@@ -1,0 +1,41 @@
+{
+  "version": "0.31.0",
+  "date": "2026-10-21",
+  "business_revision": "b0053",
+  "control_revision": "c0017",
+  "rls_tables": 100,
+  "api_paths": 188,
+  "backend_full": {
+    "passed": 1075,
+    "seconds": 558.6,
+    "log": "artifacts/reminders/backend-full-regression.log"
+  },
+  "after_long_message_fix": {
+    "targeted_backend_passed": 7,
+    "browser_final_passed": 2,
+    "browser_unique_scenarios_passed": 3
+  },
+  "checks": [
+    "strict mypy 171 source files",
+    "Vue TypeScript",
+    "Ruff",
+    "modified frontend Prettier",
+    "trial build/start/check",
+    "Linux non-root API and expiry smoke"
+  ],
+  "screenshots": [
+    "outputs/reminders/处理记录与责任分派.png",
+    "outputs/reminders/核查关闭.png",
+    "outputs/reminders/窄屏提醒.png"
+  ],
+  "backup": {
+    "scope": "consistent business database snapshot only",
+    "encrypted": true,
+    "bytes": 176760821
+  },
+  "boundaries": [
+    "on-open/on-refresh in-app evaluation; no scheduled pushes",
+    "scope source scans at most 250 combinations per request with cursor",
+    "staff assignment separate from account claim"
+  ]
+}

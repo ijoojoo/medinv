@@ -179,6 +179,8 @@ from medinv.modules.workspace.drafts import (
 )
 from medinv.modules.workspace.management import Kind as ManagementKind
 from medinv.modules.workspace.management import Management, ManagementSave, MessageRead
+from medinv.modules.workspace.reminder_sources import Source as ReminderSource
+from medinv.modules.workspace.reminders import ReminderAction, Reminders
 from medinv.modules.workspace.templates import EntryTemplates, TemplateSave
 from medinv.platform.auth.sessions import SessionStore
 from medinv.platform.config import Settings
@@ -227,7 +229,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.30.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.31.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1285,12 +1287,43 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def messages(
         request: Request,
         entity_id: UUID,
-        source: Literal["work", "certificate", "maintenance"] = "work",
+        source: ReminderSource = "work",
         offset: int = Query(default=0, ge=0, le=100000),
     ) -> dict[str, Any]:
         return envelope(
             request, Management(catalog.uow).messages(auth(request), entity_id, source, offset)
         )
+
+    @app.get("/api/v1/messages/cases")
+    def reminder_cases(
+        request: Request,
+        entity_id: UUID,
+        state: Literal["PROCESSING", "CLOSED"] = "PROCESSING",
+        mine: bool = False,
+        source: ReminderSource | None = None,
+        offset: int = Query(default=0, ge=0, le=100000),
+    ) -> dict[str, Any]:
+        return envelope(
+            request,
+            Reminders(catalog.uow).cases(
+                auth(request), entity_id, state, mine, offset, source or ""
+            ),
+        )
+
+    @app.get("/api/v1/messages/cases/{id}")
+    def reminder_case(request: Request, id: UUID, entity_id: UUID) -> dict[str, Any]:
+        return envelope(request, Reminders(catalog.uow).detail(auth(request), entity_id, id))
+
+    @app.get("/api/v1/messages/responsible-staff")
+    def reminder_staff(
+        request: Request, entity_id: UUID, search: str = Query(default="", max_length=100)
+    ) -> dict[str, Any]:
+        return envelope(request, Reminders(catalog.uow).staff(auth(request), entity_id, search))
+
+    @app.post("/api/v1/messages/actions")
+    def reminder_action(request: Request, body: ReminderAction) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(request, Reminders(catalog.uow).act(ctx, body, key(request)))
 
     @app.post("/api/v1/messages/read")
     def message_read(request: Request, body: MessageRead) -> dict[str, Any]:

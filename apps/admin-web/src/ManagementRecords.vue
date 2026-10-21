@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessageBox } from "element-plus";
 import { request } from "./api";
 import { activeEntity } from "./entityScope";
@@ -9,7 +9,8 @@ import type { CatalogDictionary } from "./catalogDictionaries";
 import DateInput from "./DateInput.vue";
 import { localTime } from "./sales";
 type Kind = "staff" | "maintenance" | "approval_design";
-const props = defineProps<{ kind: Kind }>();
+import { clearReference, type ReferenceTarget } from "./workspace";
+const props = defineProps<{ kind: Kind; initialTarget?: ReferenceTarget }>();
 const emit = defineEmits<{ failure: [error: unknown] }>();
 const titles = {
   staff: "职员资料",
@@ -254,6 +255,7 @@ async function close() {
     }
   }
   editing.value = false;
+  clearReference(pages[props.kind]);
   reason.value = "";
 }
 async function save() {
@@ -337,7 +339,14 @@ const columns = computed(() =>
           ["note", "设计说明"],
         ],
 );
+watch(
+  () => props.initialTarget?.token,
+  () => {
+    if (props.initialTarget) void open({ id: props.initialTarget.id } as Row);
+  },
+);
 onMounted(() => {
+  if (props.initialTarget) void open({ id: props.initialTarget.id } as Row);
   void load();
   void loadDictionary();
 });
