@@ -95,6 +95,7 @@ from medinv.modules.inventory.application import (
     location_move_posting,
     opening_posting,
     quality_posting,
+    sale_stops,
     transfer_posting,
 )
 from medinv.modules.inventory.application.counts import CountService
@@ -172,6 +173,8 @@ from medinv.modules.workspace.drafts import (
     DraftDiscard,
     DraftSave,
 )
+from medinv.modules.workspace.management import Kind as ManagementKind
+from medinv.modules.workspace.management import Management, ManagementSave, MessageRead
 from medinv.modules.workspace.templates import EntryTemplates, TemplateSave
 from medinv.platform.auth.sessions import SessionStore
 from medinv.platform.config import Settings
@@ -220,7 +223,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.28.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.29.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1177,6 +1180,83 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return envelope(
             request, AdmissionPolicies(catalog.uow).products(auth(request), entity_id, search)
         )
+
+    @app.post("/api/v1/quality-sale-stops/{id}")
+    def quality_sale_stop(
+        request: Request, id: UUID, body: sale_stops.SaleStopSave
+    ) -> dict[str, Any]:
+        with guarded(request, quality_write=True) as ctx:
+            return envelope(request, sale_stops.save(catalog.uow, ctx, id, body, key(request)))
+
+    @app.get("/api/v1/catalog/dictionary-navigation")
+    def dictionary_navigation(request: Request) -> dict[str, Any]:
+        return envelope(request, CatalogDictionaries(catalog.uow).navigation(auth(request)))
+
+    @app.get("/api/v1/catalog/dictionary-options/{dictionary_key}")
+    def dictionary_options(request: Request, dictionary_key: DictionaryKey) -> dict[str, Any]:
+        data = CatalogDictionaries(catalog.uow).detail(auth(request), dictionary_key)
+        return envelope(request, {**data, "items": [i for i in data["items"] if i["active"]]})
+
+    @app.get("/api/v1/catalog/dictionary-search")
+    def dictionary_search(
+        request: Request, search: str = Query(default="", max_length=100)
+    ) -> dict[str, Any]:
+        return envelope(request, CatalogDictionaries(catalog.uow).search(auth(request), search))
+
+    @app.get("/api/v1/management/{kind}")
+    def management_list(
+        request: Request,
+        kind: ManagementKind,
+        entity_id: UUID,
+        search: str = Query(default="", max_length=100),
+        offset: int = Query(default=0, ge=0, le=100000),
+    ) -> dict[str, Any]:
+        return envelope(
+            request, Management(catalog.uow).listing(auth(request), kind, entity_id, search, offset)
+        )
+
+    @app.get("/api/v1/management/{kind}/{id}")
+    def management_detail(
+        request: Request, kind: ManagementKind, id: UUID, entity_id: UUID
+    ) -> dict[str, Any]:
+        return envelope(request, Management(catalog.uow).detail(auth(request), kind, entity_id, id))
+
+    @app.post("/api/v1/management/{kind}/{id}")
+    def management_save(
+        request: Request, kind: ManagementKind, id: UUID, body: ManagementSave
+    ) -> dict[str, Any]:
+        with guarded(request, quality_write=kind == "maintenance") as ctx:
+            return envelope(
+                request, Management(catalog.uow).save(ctx, kind, id, body, key(request))
+            )
+
+    @app.get("/api/v1/quality-records")
+    def quality_records(
+        request: Request,
+        entity_id: UUID,
+        search: str = Query(default="", max_length=100),
+        offset: int = Query(default=0, ge=0, le=100000),
+    ) -> dict[str, Any]:
+        return envelope(
+            request,
+            Management(catalog.uow).quality_records(auth(request), entity_id, search, offset),
+        )
+
+    @app.get("/api/v1/messages")
+    def messages(
+        request: Request,
+        entity_id: UUID,
+        source: Literal["work", "certificate", "maintenance"] = "work",
+        offset: int = Query(default=0, ge=0, le=100000),
+    ) -> dict[str, Any]:
+        return envelope(
+            request, Management(catalog.uow).messages(auth(request), entity_id, source, offset)
+        )
+
+    @app.post("/api/v1/messages/read")
+    def message_read(request: Request, body: MessageRead) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(request, Management(catalog.uow).mark_read(ctx, body, key(request)))
 
     @app.get("/api/v1/catalog/dictionaries")
     def catalog_dictionaries(request: Request) -> dict[str, Any]:

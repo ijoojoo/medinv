@@ -21,6 +21,7 @@ interface Values {
 const entity = ref(activeEntity.value),
   version = ref(0),
   inherited = ref(true),
+  qualityStopped = ref(false),
   baseline = ref(""),
   reason = ref("维护经营主体设置");
 const values = ref<Values>({
@@ -51,6 +52,7 @@ async function load() {
     const r = await request<{
       version: number;
       inherited: boolean;
+      quality_stopped: boolean;
       values: Values;
     }>(
       `/api/v1/catalog/master/products/${props.product}/entity-settings?entity_id=${entity.value}`,
@@ -58,6 +60,7 @@ async function load() {
     values.value = r.values;
     version.value = r.version;
     inherited.value = r.inherited;
+    qualityStopped.value = r.quality_stopped;
     baseline.value = JSON.stringify(values.value);
     emit("editing", false);
   } catch (e) {
@@ -85,6 +88,9 @@ async function save() {
 </script>
 <template>
   <section class="entity-product-settings">
+    <p v-if="qualityStopped" class="form-note" role="status">
+      该商品在当前主体已质量停售；经营设置不能解除质量停售，请由质量人员在“质量处置”中办理。
+    </p>
     <div class="master-search">
       <span
         >{{
@@ -113,7 +119,7 @@ async function save() {
         >推荐级别
         <input
           v-model="values.recommendation_level"
-          placeholder="按商品字典填写"
+          placeholder="按数据字典填写"
           maxlength="60" /></label
       ><label
         >ABC 分类 <input v-model="values.abc_class" maxlength="60" /></label

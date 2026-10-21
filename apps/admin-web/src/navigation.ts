@@ -3,6 +3,7 @@ export interface NavigationItem {
   name: string;
   icon: string;
   permission: string;
+  menu?: boolean;
 }
 export interface NavigationGroup {
   id: string;
@@ -30,7 +31,7 @@ export const navigationGroups: NavigationGroup[] = [
     items: [
       {
         page: "selling",
-        name: "批发销售",
+        name: "销售出库",
         icon: "⇡",
         permission: "sales.read",
       },
@@ -100,6 +101,18 @@ export const navigationGroups: NavigationGroup[] = [
         icon: "◇",
         permission: "quality.read",
       },
+      {
+        page: "quality-ledgers",
+        name: "质量台账",
+        icon: "▤",
+        permission: "quality.read",
+      },
+      {
+        page: "quality-records",
+        name: "质量记录",
+        icon: "≡",
+        permission: "quality.read",
+      },
     ],
   },
   {
@@ -120,7 +133,7 @@ export const navigationGroups: NavigationGroup[] = [
     items: [
       {
         page: "dictionaries",
-        name: "商品字典",
+        name: "数据字典",
         icon: "▤",
         permission: "catalog.read",
       },
@@ -135,6 +148,12 @@ export const navigationGroups: NavigationGroup[] = [
         name: "往来单位",
         icon: "♙",
         permission: "catalog.read",
+      },
+      {
+        page: "staff",
+        name: "职员资料",
+        icon: "♙",
+        permission: "members.read",
       },
       {
         page: "warehouses",
@@ -162,21 +181,46 @@ export const navigationGroups: NavigationGroup[] = [
       },
     ],
   },
-  { id: "operations", name: "运营", items: [] },
+  {
+    id: "operations",
+    name: "消息",
+    items: [
+      {
+        page: "messages",
+        name: "消息和提醒",
+        icon: "♧",
+        permission: "tenant.read",
+      },
+    ],
+  },
   { id: "insurance", name: "医保", items: [] },
   {
     id: "settings",
     name: "设置",
     items: [
+      {
+        page: "enterprise-settings",
+        name: "企业设置",
+        icon: "⚙",
+        permission: "catalog.read",
+      },
+      {
+        page: "approval-design",
+        name: "审批流设计",
+        icon: "⇢",
+        permission: "catalog.configure",
+      },
       { page: "appearance", name: "界面与操作", icon: "◧", permission: "" },
       {
         page: "productFields",
+        menu: false,
         name: "商品字段设置",
         icon: "▤",
         permission: "catalog.configure",
       },
       {
         page: "members",
+        menu: false,
         name: "成员与权限",
         icon: "♧",
         permission: "members.read",

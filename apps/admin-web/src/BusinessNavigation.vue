@@ -2,12 +2,6 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { navigationGroups } from "./navigation";
 import { appearance } from "./appearance";
-import {
-  openPurchaseView,
-  purchaseStages,
-  type PurchaseStage,
-  type PurchaseView,
-} from "./purchaseWorkflow";
 const props = defineProps<{
   modelValue: string;
   permissions: string[];
@@ -36,7 +30,9 @@ const groups = computed(() =>
     .map((g) => ({
       ...g,
       items: g.items.filter(
-        (i) => !i.permission || props.permissions.includes(i.permission),
+        (i) =>
+          i.menu !== false &&
+          (!i.permission || props.permissions.includes(i.permission)),
       ),
     }))
     .filter((g) => g.items.length),
@@ -71,15 +67,6 @@ function select(page: string) {
     close();
     emit("update:modelValue", page);
   }
-}
-function selectPurchase(
-  stage: PurchaseStage,
-  view: PurchaseView = "pending",
-  drafts = false,
-) {
-  if (props.disabled) return;
-  close();
-  openPurchaseView(stage, view, drafts);
 }
 function position(button: HTMLElement) {
   anchor = button;
@@ -297,60 +284,7 @@ onUnmounted(() => {
         "
       >
         <p>{{ menu.name }}</p>
-        <div v-if="menu.id === 'purchase'" class="purchase-menu-groups">
-          <section aria-label="采购业务办理">
-            <h4>业务办理</h4>
-            <button
-              v-for="s in purchaseStages"
-              :key="s.key"
-              :disabled="disabled"
-              @click="selectPurchase(s.key)"
-            >
-              <span aria-hidden="true">{{
-                s.key === "orders"
-                  ? "▤"
-                  : s.key === "receiving"
-                    ? "↓"
-                    : s.key === "inspection"
-                      ? "◇"
-                      : "✓"
-              }}</span
-              >{{ s.name }}
-            </button>
-            <button
-              v-if="permissions.includes('purchase.write')"
-              :disabled="disabled"
-              @click="selectPurchase('orders', 'pending', true)"
-            >
-              <span aria-hidden="true">✎</span>我的草稿
-            </button>
-          </section>
-          <section aria-label="采购记录查询">
-            <h4>记录查询</h4>
-            <button :disabled="disabled" @click="selectPurchase('orders')">
-              <span aria-hidden="true">≡</span>订单执行记录
-            </button>
-            <button
-              :disabled="disabled"
-              @click="selectPurchase('receiving', 'history')"
-            >
-              <span aria-hidden="true">≡</span>收货记录
-            </button>
-            <button
-              :disabled="disabled"
-              @click="selectPurchase('inspection', 'history')"
-            >
-              <span aria-hidden="true">≡</span>验收记录
-            </button>
-            <button
-              :disabled="disabled"
-              @click="selectPurchase('posting', 'history')"
-            >
-              <span aria-hidden="true">≡</span>入库记录
-            </button>
-          </section>
-        </div>
-        <div v-else>
+        <div>
           <button
             v-for="item in menu.items"
             :key="item.page"

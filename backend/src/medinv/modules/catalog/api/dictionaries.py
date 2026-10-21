@@ -1,4 +1,5 @@
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import Field, StrictBool, StrictStr, StringConstraints
 
@@ -17,10 +18,26 @@ DictionaryKey = Literal[
     "inspection_qualified",
     "inspection_mixed",
     "inspection_rejected",
+    "supplier_grade",
+    "customer_grade",
+    "delivery_method",
+    "payment_method",
+    "department",
+    "staff_status",
+    "maintenance_type",
 ]
 
 
 class DictionaryItem(DTO):
+    is_default: StrictBool = False
+    id: UUID | None = None
+    code: Annotated[StrictStr, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,59}$")] | None = None
+    description: Annotated[
+        StrictStr,
+        StringConstraints(strip_whitespace=True, max_length=300, pattern=r"^[^\x00-\x1f\x7f]*$"),
+    ] = ""
+    parent_id: UUID | None = None
+    origin: Literal["SYSTEM", "TENANT"] | None = None
     value: Annotated[
         StrictStr,
         StringConstraints(

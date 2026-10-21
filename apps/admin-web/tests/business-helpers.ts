@@ -117,6 +117,30 @@ export async function read(context: BrowserContext, path: string) {
   return { ...result, has_more: false, next_offset: null };
 }
 export async function nav(page: Page, name: string) {
+  name =
+    ({ 商品字典: "数据字典", 批发销售: "销售出库" } as Record<string, string>)[
+      name
+    ] || name;
+  if (["商品字段设置", "成员与权限"].includes(name)) {
+    await nav(page, "企业设置");
+    const settings = page.getByRole("region", {
+      name: "企业设置",
+      exact: true,
+    });
+    await settings
+      .getByRole("navigation", { name: "设置功能分组" })
+      .getByRole("button", {
+        name: name === "成员与权限" ? "人员与权限" : "基础资料",
+        exact: true,
+      })
+      .click();
+    await settings
+      .getByRole("button", {
+        name: name === "成员与权限" ? /成员与权限/ : /商品字段与分类规则/,
+      })
+      .click();
+    return;
+  }
   const primary = page.getByRole("navigation", {
     name: "主要功能",
     exact: true,
@@ -132,7 +156,7 @@ export async function nav(page: Page, name: string) {
       .getByRole("navigation", { name: group.name + "功能", exact: true })
       // Legacy callers navigate to the purchasing workspace's orders list.
       .getByRole("button", {
-        name: name === "采购入库" ? "采购订单" : name,
+        name,
         exact: true,
       })
       .click();

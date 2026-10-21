@@ -1,0 +1,205 @@
+{
+  "recorded_at": "2026-10-21T11:12:25.613362+08:00",
+  "scope": "Management workspaces, dictionary hierarchy, staff, enterprise settings, approval design drafts, messages and quality; targeted regression only",
+  "application": "0.29.0",
+  "business_revision": "b0049",
+  "control_revision": "c0017",
+  "business_rls_tables": 96,
+  "core_api_paths": 180,
+  "backend": {
+    "tests": 101,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "deployment_checks": {
+    "tests": 12,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "backend_by_suite": {
+    "tests.integration.test_management_workspaces": 9,
+    "tests.integration.test_catalog_cards_dictionaries": 13,
+    "tests.integration.test_sales": 23,
+    "tests.integration.test_inventory": 13,
+    "tests.integration.test_admission": 22,
+    "tests.integration.test_product_master": 19,
+    "tests.contracts.test_contract": 2
+  },
+  "frontend": {
+    "startTime": "2026-10-21T03:09:24.903Z",
+    "duration": 98325.028,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "frontend_scope": {
+    "browser_scenarios": 10,
+    "pure_allocation_checks": 2
+  },
+  "static_checks": {
+    "ruff": "passed",
+    "python_format": "passed",
+    "mypy_strict": {
+      "source_files": 165,
+      "result": "passed"
+    },
+    "frontend_production_build": "passed",
+    "selected_browser_types": "passed",
+    "selected_frontend_format": "passed"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0049",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "readiness": {
+    "web": true,
+    "core": true,
+    "auth": true,
+    "identity": true,
+    "expiry_running": true,
+    "containers_running": true
+  },
+  "images": {
+    "core": {
+      "tag": "medinv-core:0.29.0",
+      "id": "sha256:08295c18e544dc7fe3bb3e306ec1a49fc2780df9a719da4be1803a168bcc8dbe"
+    },
+    "web": {
+      "tag": "medinv-web:0.29.0",
+      "id": "sha256:df01252fb3ba0536820f88f0d8babaa84e493ebb30e700931e917c899f38e42b"
+    }
+  },
+  "pre_migration_backup": {
+    "backup_id": "769a4e698b7b4f83abd2af5ed78caa13",
+    "sha256": "98ee7a0fb8054a5f5f77fff0ab7f9629331cacf6d857d248ab8d08bf3278b5cf",
+    "scope": "encrypted three-database backup; no new b0049 restore drill"
+  },
+  "original_demo_enabled_admission_policies": 0,
+  "regression_screenshots_copied_and_historical_files_restored": [
+    "outputs/catalog-interaction/party-return.png",
+    "outputs/catalog-interaction/product-return.png",
+    "outputs/party-overview/分组经营信息.png",
+    "outputs/party-overview/窄屏经营信息.png",
+    "outputs/party-overview/窄屏资料首页.png",
+    "outputs/party-overview/资料首页.png",
+    "outputs/purchase-efficiency/多行收货.png",
+    "outputs/purchase-efficiency/多行验收.png",
+    "outputs/workbench/linked-original-1440.png"
+  ],
+  "artifacts": {
+    "artifacts/management-workspaces/backend-final.xml": {
+      "bytes": 15426,
+      "sha256": "74c514e9451af11168c2563737749326d955864f04d2b195f851b797fdcbc93a"
+    },
+    "artifacts/management-workspaces/deployment-tests.xml": {
+      "bytes": 1909,
+      "sha256": "e46c9c92171190dac9011c1923167814854f53d1168aaa31cde64b9c903cc389"
+    },
+    "artifacts/management-workspaces/browser-verified.json": {
+      "bytes": 17303,
+      "sha256": "4bb2de254352c67597b964073f53ade7f099cb383e4aef486a5d462dbe288755"
+    },
+    "artifacts/management-workspaces/ruff-final.log": {
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    "artifacts/management-workspaces/python-format-final.log": {
+      "bytes": 28,
+      "sha256": "689ce80a1676de4e0ad2502483bf02ffa7a507b60a05443f2d580753716ea2e1"
+    },
+    "artifacts/management-workspaces/mypy-final.log": {
+      "bytes": 46,
+      "sha256": "91d8ccfb9e2058d688ed078435912a71eefb27f204b4aa20293bd4b09a10a9aa"
+    },
+    "artifacts/management-workspaces/browser-types-final.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/management-workspaces/frontend-format-final.log": {
+      "bytes": 68,
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    "artifacts/management-workspaces/final-image-build.log": {
+      "bytes": 139,
+      "sha256": "4cc4367247e23162e3a83153b7282923115a8b05f9e9def4b5d1fd6b7eb0153c"
+    },
+    "artifacts/management-workspaces/runtime.json": {
+      "bytes": 613,
+      "sha256": "2213bf7c69d5ee1df6f9bf22e2477004fe0c29bf06aaeb9348e307388a84b116"
+    },
+    "artifacts/management-workspaces/readiness.json": {
+      "bytes": 644,
+      "sha256": "7176efcdf4899c49c87594c30b4b8fc28e3324cce865b98f7d02830448b2573b"
+    },
+    "artifacts/management-workspaces/smoke.log": {
+      "bytes": 807,
+      "sha256": "efd42fd0cad8473cd682a26a710a3f331a3487f98a161a7ec80061d50f670907"
+    },
+    "outputs/management-workspaces/供应商信息卡.png": {
+      "bytes": 128636,
+      "sha256": "91c85c91609fa368cc88c70af3411d1e500715e1d28e3bfd0fd59cf9b9e7d65a"
+    },
+    "outputs/management-workspaces/商品信息卡.png": {
+      "bytes": 137863,
+      "sha256": "bed1cb743aec4ff2259ebe92afecf7d0674e59e37f32e637dd674164768b9956"
+    },
+    "outputs/management-workspaces/审批流设计.png": {
+      "bytes": 117017,
+      "sha256": "77025d8e3304addf690c65eaf83a8ec653277a5df1523ea02d48cf2d583f53b8"
+    },
+    "outputs/management-workspaces/数据字典-窄屏.png": {
+      "bytes": 62423,
+      "sha256": "efe307b9e2c7634ea13d250cd90d18cea2e0b1ceefe1b3f1e151c6d981a99008"
+    },
+    "outputs/management-workspaces/数据字典.png": {
+      "bytes": 136616,
+      "sha256": "a08f07357e945514eda79d992d127113c9a200761a6a57e5b99ecabb93c45c24"
+    },
+    "outputs/management-workspaces/职员资料.png": {
+      "bytes": 95191,
+      "sha256": "35239693e025a07b0e31fe325a4b6b914d917bab31f71b4e4c83ce2f5d8949ad"
+    }
+  },
+  "limitations": [
+    "Approval designs do not execute or override existing approvals.",
+    "System administrator workspace remains deferred.",
+    "Dictionary usage counts exclude historical snapshots and unsupported reference domains.",
+    "New classification definitions are not all wired to transactional fields.",
+    "No external notification delivery or full reminder resolution workflow.",
+    "No full-project test run, remote CI, production deployment or b0049 restore drill.",
+    "Reference HTML was read initially but later unavailable; no rendered reference pixel comparison."
+  ]
+}

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "药械进销存 · 核心 API",
-    "version": "0.28.0"
+    "version": "0.29.0"
   },
   "paths": {
     "/api/v1/context": {
@@ -13617,7 +13617,14 @@
                 "purchase_approval",
                 "inspection_qualified",
                 "inspection_mixed",
-                "inspection_rejected"
+                "inspection_rejected",
+                "supplier_grade",
+                "customer_grade",
+                "delivery_method",
+                "payment_method",
+                "department",
+                "staff_status",
+                "maintenance_type"
               ],
               "type": "string",
               "title": "Dictionary Key"
@@ -13738,7 +13745,14 @@
                 "purchase_approval",
                 "inspection_qualified",
                 "inspection_mixed",
-                "inspection_rejected"
+                "inspection_rejected",
+                "supplier_grade",
+                "customer_grade",
+                "delivery_method",
+                "payment_method",
+                "department",
+                "staff_status",
+                "maintenance_type"
               ],
               "type": "string",
               "title": "Dictionary Key"
@@ -28765,6 +28779,1335 @@
           }
         }
       }
+    },
+    "/api/v1/quality-sale-stops/{id}": {
+      "post": {
+        "summary": "Quality Sale Stop",
+        "operationId": "quality_sale_stop_api_v1_quality_sale_stops__id__post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaleStopSave"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Quality Sale Stop Api V1 Quality Sale Stops  Id  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/dictionary-navigation": {
+      "get": {
+        "summary": "Dictionary Navigation",
+        "operationId": "dictionary_navigation_api_v1_catalog_dictionary_navigation_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Dictionary Navigation Api V1 Catalog Dictionary Navigation Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/catalog/dictionary-options/{dictionary_key}": {
+      "get": {
+        "summary": "Dictionary Options",
+        "operationId": "dictionary_options_api_v1_catalog_dictionary_options__dictionary_key__get",
+        "parameters": [
+          {
+            "name": "dictionary_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "dosage_form",
+                "trade_name",
+                "storage_conditions",
+                "base_unit",
+                "recommendation_level",
+                "abc_class",
+                "drug_business_scope",
+                "device_business_scope",
+                "purchase_approval",
+                "inspection_qualified",
+                "inspection_mixed",
+                "inspection_rejected",
+                "supplier_grade",
+                "customer_grade",
+                "delivery_method",
+                "payment_method",
+                "department",
+                "staff_status",
+                "maintenance_type"
+              ],
+              "type": "string",
+              "title": "Dictionary Key"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Dictionary Options Api V1 Catalog Dictionary Options  Dictionary Key  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/dictionary-search": {
+      "get": {
+        "summary": "Dictionary Search",
+        "operationId": "dictionary_search_api_v1_catalog_dictionary_search_get",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Dictionary Search Api V1 Catalog Dictionary Search Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/management/{kind}": {
+      "get": {
+        "summary": "Management List",
+        "operationId": "management_list_api_v1_management__kind__get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "staff",
+                "settings",
+                "approval_design",
+                "maintenance"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Management List Api V1 Management  Kind  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/management/{kind}/{id}": {
+      "get": {
+        "summary": "Management Detail",
+        "operationId": "management_detail_api_v1_management__kind___id__get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "staff",
+                "settings",
+                "approval_design",
+                "maintenance"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Management Detail Api V1 Management  Kind   Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Management Save",
+        "operationId": "management_save_api_v1_management__kind___id__post",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "staff",
+                "settings",
+                "approval_design",
+                "maintenance"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManagementSave"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Management Save Api V1 Management  Kind   Id  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quality-records": {
+      "get": {
+        "summary": "Quality Records",
+        "operationId": "quality_records_api_v1_quality_records_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Quality Records Api V1 Quality Records Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/messages": {
+      "get": {
+        "summary": "Messages",
+        "operationId": "messages_api_v1_messages_get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "work",
+                "certificate",
+                "maintenance"
+              ],
+              "type": "string",
+              "default": "work",
+              "title": "Source"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Messages Api V1 Messages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/messages/read": {
+      "post": {
+        "summary": "Message Read",
+        "operationId": "message_read_api_v1_messages_read_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageRead"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Message Read Api V1 Messages Read Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "标准业务错误；敏感请求内容不会回显",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Context-Generation",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -29792,6 +31135,69 @@
             "maximum": 9999.0,
             "minimum": 0.0,
             "title": "Order"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "default": false
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,59}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 300,
+            "pattern": "^[^\\x00-\\x1f\\x7f]*$",
+            "title": "Description",
+            "default": ""
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "SYSTEM",
+                  "TENANT"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin"
           }
         },
         "additionalProperties": false,
@@ -35262,6 +36668,105 @@
           "evidence_ref"
         ],
         "title": "ScopeGrant"
+      },
+      "ManagementSave": {
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entity Id"
+          },
+          "expected_version": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$",
+            "title": "Expected Version"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "entity_id",
+          "expected_version",
+          "payload",
+          "reason"
+        ],
+        "title": "ManagementSave"
+      },
+      "MessageRead": {
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entity Id"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "work",
+              "certificate",
+              "maintenance"
+            ],
+            "title": "Source"
+          },
+          "message_id": {
+            "type": "string",
+            "maxLength": 110,
+            "minLength": 1,
+            "title": "Message Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "entity_id",
+          "source",
+          "message_id"
+        ],
+        "title": "MessageRead"
+      },
+      "SaleStopSave": {
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entity Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "stopped": {
+            "type": "boolean",
+            "title": "Stopped"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "entity_id",
+          "expected_version",
+          "stopped",
+          "reason"
+        ],
+        "title": "SaleStopSave"
       }
     },
     "securitySchemes": {

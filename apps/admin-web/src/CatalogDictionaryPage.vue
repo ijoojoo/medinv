@@ -1,43 +1,67 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { ElMessageBox, ElMessage } from "element-plus";
 import { request } from "./api";
 import { can, useCommand } from "./business";
 import { registerCatalogChanges } from "./catalogChanges";
 import { localTime } from "./sales";
 import { checkDictionary, type CatalogDictionary } from "./catalogDictionaries";
-import { validationOptions } from "./productFieldRules";
 const props = defineProps<{ initialKey?: string; embedded?: boolean }>();
 const emit = defineEmits<{
   failure: [error: unknown];
   editing: [value: boolean];
   saved: [];
 }>();
-const dictionaries = ref<CatalogDictionary[]>([]),
-  selected = ref<CatalogDictionary | null>(null),
-  loading = ref(false);
-const form = ref({
-    mode: "SUGGEST" as "SUGGEST" | "STRICT",
-    items: [] as CatalogDictionary["items"],
-  }),
-  baseline = ref(""),
+type Item = CatalogDictionary["items"][number];
+type Group = { key: string; name: string; icon: string; description: string };
+const root = ref<HTMLElement>();
+const groups = ref<Group[]>([]),
+  definitions = ref<CatalogDictionary[]>([]);
+const selected = ref<CatalogDictionary | null>(null),
+  group = ref("product"),
+  loading = ref(false),
+  failed = ref(false);
+const groupSearch = ref(""),
+  search = ref(""),
+  status = ref("all"),
   reason = ref("");
-const signature = () => JSON.stringify(form.value);
+const form = ref({
+  mode: "SUGGEST" as "SUGGEST" | "STRICT",
+  items: [] as Item[],
+});
+const baseline = ref("");
+const drawer = ref(false),
+  editIndex = ref(-1),
+  draft = ref<Item>({ value: "", active: true, order: 10 }),
+  draftBaseline = ref("");
+const drawerDirty = computed(
+  () => drawer.value && JSON.stringify(draft.value) !== draftBaseline.value,
+);
 const dirty = computed(
-  () => !!selected.value && (signature() !== baseline.value || !!reason.value),
+  () =>
+    !!selected.value &&
+    (JSON.stringify(form.value) !== baseline.value ||
+      !!reason.value ||
+      drawerDirty.value),
 );
+const writable = computed(
+  () => can("catalog.configure") && selected.value?.kind !== "SYSTEM",
+);
+const kindNames = {
+  SYSTEM: "系统标准",
+  HYBRID: "系统与企业扩展",
+  TENANT: "企业可维护",
+  TREE: "企业分级字典",
+};
 const { busy, execute } = useCommand((e) => emit("failure", e));
-watch(
-  () => dirty.value || busy.value || loading.value,
-  (value) => emit("editing", value),
-  { immediate: true },
-);
 const checks = computed(() =>
-  (selected.value?.bindings || []).map((binding) => ({
-    ...binding,
-    ...checkDictionary(form.value, binding),
+  (selected.value?.bindings || []).map((b) => ({
+    ...b,
+    ...checkDictionary(form.value, b),
   })),
 );
-const purchaseDictionary = computed(() =>
+const blocked = computed(() => checks.value.some((c) => c.blocked));
+const defaultEnabled = computed(() =>
   [
     "purchase_approval",
     "inspection_qualified",
@@ -45,10 +69,83 @@ const purchaseDictionary = computed(() =>
     "inspection_rejected",
   ].includes(selected.value?.key || ""),
 );
-const blocked = computed(
+const defaultValue = computed({
+  get: () => form.value.items.find((i) => i.is_default)?.id || "",
+  set: (id: string) => {
+    form.value.items.forEach((i) => (i.is_default = i.id === id));
+  },
+});
+const fixed = computed(
   () =>
-    checks.value.some((c) => c.blocked) ||
-    (purchaseDictionary.value && !form.value.items.some((i) => i.active)),
+    !["dosage_form", "trade_name", "storage_conditions", "base_unit"].includes(
+      selected.value?.key || "",
+    ),
+);
+const currentGroup = computed(() =>
+  groups.value.find((g) => g.key === group.value),
+);
+const tabs = computed(() =>
+  definitions.value.filter((d) => d.group_key === group.value),
+);
+const visibleGroups = computed(() =>
+  groups.value.filter((g) =>
+    (
+      g.name +
+      definitions.value
+        .filter((d) => d.group_key === g.key)
+        .map((d) => d.name)
+        .join(" ")
+    ).includes(groupSearch.value.trim()),
+  ),
+);
+const remembered = new Map<string, string>();
+const collapsed = ref(new Set<string>()),
+  highlighted = ref("");
+const rows = computed(() => {
+  const result: {
+    item: Item;
+    index: number;
+    depth: number;
+    children: boolean;
+  }[] = [];
+  function walk(parent: string | null, depth: number) {
+    form.value.items
+      .map((item, index) => ({ item, index }))
+      .filter((r) => (r.item.parent_id || null) === parent)
+      .sort(
+        (a, b) =>
+          a.item.order - b.item.order ||
+          a.item.value.localeCompare(b.item.value),
+      )
+      .forEach((r) => {
+        const matches = [r.item.value, r.item.code, r.item.description]
+          .join(" ")
+          .toLocaleLowerCase()
+          .includes(search.value.toLocaleLowerCase());
+        const children = form.value.items.some(
+          (i) => i.parent_id === r.item.id && !!i.parent_id,
+        );
+        if (
+          matches &&
+          (status.value === "all" ||
+            r.item.active === (status.value === "active"))
+        )
+          result.push({ ...r, depth, children });
+        if (
+          r.item.id &&
+          (search.value || !collapsed.value.has(r.item.id)) &&
+          depth < 5
+        )
+          walk(r.item.id, depth + 1);
+      });
+  }
+  walk(null, 0);
+  return result;
+});
+watch(
+  () => dirty.value || busy.value || loading.value,
+  (v) => emit("editing", v),
+  { immediate: true },
 );
 onUnmounted(
   registerCatalogChanges(
@@ -56,21 +153,12 @@ onUnmounted(
     "dictionaries",
   ),
 );
-const fixed = computed(() =>
-  [
-    "abc_class",
-    "recommendation_level",
-    "drug_business_scope",
-    "device_business_scope",
-    "purchase_approval",
-    "inspection_qualified",
-    "inspection_mixed",
-    "inspection_rejected",
-  ].includes(selected.value?.key || ""),
-);
-let epoch = 0;
+let epoch = 0,
+  searchEpoch = 0;
 onUnmounted(() => {
   epoch++;
+  searchEpoch++;
+  document.removeEventListener("keydown", shortcut);
 });
 function reset() {
   if (!selected.value) return;
@@ -78,41 +166,141 @@ function reset() {
     mode: selected.value.mode,
     items: selected.value.items.map((i) => ({ ...i })),
   };
-  baseline.value = signature();
+  baseline.value = JSON.stringify(form.value);
   reason.value = "";
+  drawer.value = false;
+}
+async function discard() {
+  if (busy.value || loading.value) return false;
+  if (!dirty.value) return true;
+  try {
+    await ElMessageBox.confirm("当前字典有未保存修改，是否放弃？", "切换字典", {
+      confirmButtonText: "放弃修改",
+      cancelButtonText: "继续编辑",
+      closeOnClickModal: false,
+    });
+    reset();
+    return true;
+  } catch {
+    return false;
+  }
 }
 async function load(key?: string) {
   const current = ++epoch;
   loading.value = true;
+  failed.value = false;
   try {
-    const list = await request<{ items: CatalogDictionary[] }>(
-      "/api/v1/catalog/dictionaries",
+    const nav = await request<{ groups: Group[]; items: CatalogDictionary[] }>(
+      "/api/v1/catalog/dictionary-navigation",
     );
     const detail = await request<CatalogDictionary>(
-      `/api/v1/catalog/dictionaries/${key || list.items[0].key}`,
+      `/api/v1/catalog/dictionaries/${key || nav.items.find((d) => d.group_key === "product")?.key || nav.items[0].key}`,
     );
     if (current !== epoch) return;
-    dictionaries.value = list.items;
+    groups.value = nav.groups;
+    definitions.value = nav.items;
     selected.value = detail;
+    group.value = detail.group_key || "product";
+    remembered.set(group.value, detail.key);
     reset();
   } catch (e) {
-    if (current === epoch) emit("failure", e);
+    if (current === epoch) {
+      failed.value = true;
+      emit("failure", e);
+    }
   } finally {
     if (current === epoch) loading.value = false;
   }
 }
-function add() {
-  form.value.items.push({
-    value: "",
-    active: true,
-    order: Math.min(
-      9999,
-      Math.max(0, ...form.value.items.map((i) => i.order)) + 10,
-    ),
-  });
+async function choose(key: string) {
+  if (key === selected.value?.key || !(await discard())) return;
+  search.value = "";
+  status.value = "all";
+  highlighted.value = "";
+  collapsed.value = new Set();
+  await load(key);
+}
+async function chooseGroup(key: string) {
+  const d =
+    remembered.get(key) ||
+    definitions.value.find((d) => d.group_key === key)?.key;
+  if (d) await choose(d);
+  else if (await discard()) {
+    group.value = key;
+    selected.value = null;
+  }
+}
+function edit(index: number) {
+  editIndex.value = index;
+  const id = crypto.randomUUID();
+  draft.value =
+    index >= 0
+      ? { ...form.value.items[index] }
+      : {
+          id,
+          code: "V_" + id.replaceAll("-", "").toUpperCase(),
+          value: "",
+          description: "",
+          parent_id: null,
+          active: true,
+          order: Math.min(
+            9999,
+            Math.max(0, ...form.value.items.map((i) => i.order)) + 10,
+          ),
+          origin: "TENANT",
+        };
+  draftBaseline.value = JSON.stringify(draft.value);
+  drawer.value = true;
+}
+async function closeDrawer(done: () => void) {
+  if (drawerDirty.value) {
+    try {
+      await ElMessageBox.confirm("尚未应用当前字典值，是否放弃？", "关闭编辑", {
+        confirmButtonText: "放弃",
+        cancelButtonText: "继续编辑",
+      });
+    } catch {
+      return;
+    }
+  }
+  done();
+}
+function applyItem() {
+  if (!draft.value.value.trim()) return;
+  if (
+    form.value.items.some(
+      (i, n) =>
+        n !== editIndex.value &&
+        (i.value === draft.value.value.trim() || i.code === draft.value.code),
+    )
+  ) {
+    ElMessage.warning("名称或编码重复");
+    return;
+  }
+  const item = { ...draft.value, value: draft.value.value.trim() };
+  if (editIndex.value < 0) form.value.items.push(item);
+  else form.value.items[editIndex.value] = item;
+  drawer.value = false;
+}
+function move(index: number, delta: number) {
+  const item = form.value.items[index];
+  const siblings = form.value.items
+    .filter((i) => (i.parent_id || null) === (item.parent_id || null))
+    .sort((a, b) => a.order - b.order);
+  const at = siblings.indexOf(item),
+    to = at + delta;
+  if (to < 0 || to >= siblings.length) return;
+  [siblings[at], siblings[to]] = [siblings[to], siblings[at]];
+  siblings.forEach((i, n) => (i.order = (n + 1) * 10));
+}
+function toggleTree(id: string) {
+  const next = new Set(collapsed.value);
+  next.has(id) ? next.delete(id) : next.add(id);
+  collapsed.value = next;
 }
 async function save() {
-  if (!selected.value || blocked.value) return;
+  if (!selected.value || blocked.value || !writable.value || drawer.value)
+    return;
   const key = selected.value.key;
   await execute(
     `/api/v1/catalog/dictionaries/${key}`,
@@ -123,329 +311,442 @@ async function save() {
     },
     async () => {
       await load(key);
+      document.dispatchEvent(
+        new CustomEvent("catalog-dictionary-saved", { detail: key }),
+      );
       emit("saved");
     },
   );
 }
-onMounted(() => load(props.initialKey));
+const globalOpen = ref(false),
+  globalQuery = ref(""),
+  globalLoading = ref(false);
+const results = ref<{ key: string; path: string; value: string; id: string }[]>(
+  [],
+);
+async function globalSearch() {
+  const current = ++searchEpoch;
+  globalLoading.value = true;
+  try {
+    const data = await request<{ items: typeof results.value }>(
+      `/api/v1/catalog/dictionary-search?search=${encodeURIComponent(globalQuery.value)}`,
+    );
+    if (current === searchEpoch) results.value = data.items;
+  } catch (e) {
+    if (current === searchEpoch) emit("failure", e);
+  } finally {
+    if (current === searchEpoch) globalLoading.value = false;
+  }
+}
+async function locate(row: (typeof results.value)[number]) {
+  if (!(await discard())) return;
+  await load(row.key);
+  status.value = "all";
+  search.value = row.value;
+  highlighted.value = row.id;
+  globalOpen.value = false;
+}
+function shortcut(e: KeyboardEvent) {
+  if (
+    (e.ctrlKey || e.metaKey) &&
+    e.key.toLowerCase() === "k" &&
+    root.value?.getClientRects().length &&
+    !props.embedded
+  ) {
+    e.preventDefault();
+    e.stopPropagation();
+    globalOpen.value = true;
+  }
+}
+onMounted(() => {
+  void load(props.initialKey);
+  document.addEventListener("keydown", shortcut);
+});
 </script>
 <template>
   <section
-    class="panel dictionary-page"
-    aria-label="商品字典"
+    ref="root"
+    class="dictionary-workspace"
+    aria-label="数据字典"
     v-loading="loading"
   >
-    <div class="business-toolbar">
-      <h2>{{ embedded ? selected?.name || "维护字典" : "商品字典" }}</h2>
-      <span class="form-note">统一选项 · 按字段绑定 · 保留历史值</span>
-    </div>
-    <p class="form-note">
-      字典统一维护商品、往来单位和采购办理中的常用选项。药品、器械经营范围类别分开维护，请依据企业已核对的范围设置。保存后，新打开的资料或办理窗口使用最新字典。
-    </p>
-    <div class="dictionary-layout" :class="{ embedded }">
-      <nav v-if="!embedded" aria-label="字典字段">
-        <button
-          v-for="d in dictionaries"
-          :key="d.key"
-          type="button"
-          :class="{ active: selected?.key === d.key }"
-          :disabled="busy || loading || (dirty && selected?.key !== d.key)"
-          @click="!dirty && load(d.key)"
-        >
-          {{ d.name
-          }}<small>{{ d.items.filter((i) => i.active).length }} 个启用值</small>
-        </button>
-      </nav>
-      <form
-        v-if="selected"
-        class="business-form dictionary-content"
-        @submit.prevent="save"
+    <header v-if="!embedded" class="dictionary-pagehead">
+      <div>
+        <small>资料 / 基础配置</small>
+        <h2>数据字典</h2>
+        <p>统一选项，清晰分级，让资料维护更有序。</p>
+      </div>
+      <el-button @click="globalOpen = true"
+        >⌕　搜索全部字典 / 字典值　 <kbd>Ctrl K</kbd></el-button
       >
-        <h3 v-if="!embedded">{{ selected.name }}</h3>
-        <p class="form-note">
-          字典值保存后不能改写或删除；可停用后新增。停用不修改历史资料，原值可保留，新录入不能再选。
+    </header>
+    <p v-if="failed" role="alert">
+      字典读取失败，当前修改已保留。<el-button
+        @click="!dirty && load(selected?.key)"
+        :disabled="dirty"
+        >重试读取</el-button
+      >
+    </p>
+    <div class="dictionary-grid" :class="{ embedded }">
+      <aside v-if="!embedded" class="dictionary-sidebar">
+        <div class="dictionary-sidehead">
+          一级大分类 <span>{{ groups.length }}</span>
+        </div>
+        <input
+          v-model="groupSearch"
+          placeholder="搜索分类或字典"
+          aria-label="搜索分类或字典"
+        />
+        <nav aria-label="字典大分类">
+          <button
+            v-for="g in visibleGroups"
+            :key="g.key"
+            :class="{ active: group === g.key }"
+            @click="chooseGroup(g.key)"
+          >
+            <i>{{ g.icon }}</i
+            ><span>{{ g.name }}</span
+            ><small>{{
+              definitions.filter((d) => d.group_key === g.key).length
+            }}</small>
+          </button>
+        </nav>
+        <p class="dictionary-sidebar-note">
+          分类用于查找；字典值用于选项。系统状态与业务审批独立管理。
         </p>
-        <fieldset :disabled="busy || loading || !can('catalog.configure')">
-          <label
-            >选值规则<select
-              v-model="form.mode"
-              :disabled="fixed"
-              aria-label="选值规则"
+      </aside>
+      <main class="dictionary-content">
+        <div v-if="!embedded" class="dictionary-content-top">
+          <small>字典管理 / {{ currentGroup?.name }}</small>
+          <h2>{{ currentGroup?.name }}</h2>
+          <p>{{ currentGroup?.description }}</p>
+          <nav class="dictionary-tabs" aria-label="具体字典">
+            <button
+              v-for="d in tabs"
+              :key="d.key"
+              :class="{ active: selected?.key === d.key }"
+              :aria-current="selected?.key === d.key ? 'page' : undefined"
+              @click="choose(d.key)"
             >
-              <option value="SUGGEST">建议选用，可输入其他值</option>
-              <option value="STRICT">只能选用启用的字典值</option>
-            </select></label
-          >
-          <section
-            v-if="purchaseDictionary"
-            class="dictionary-usage"
-            aria-label="采购结论规则"
-          >
-            <strong>同类结论用语 · 排序靠前的启用项为默认值</strong>
-            <p class="form-note">
-              审核意见仅用于通过审核时的意见表述。验收结论按实际合格、拒收数量分为合格、部分拒收、全部拒收三类，请在对应类别维护同义用语。字典不能改变实际数量、审核结果或操作权限。
-            </p>
-            <p v-if="blocked" role="alert">
-              至少保留一个启用值，保证办理时有可选结论。
-            </p>
-          </section>
-          <section v-else class="dictionary-usage" aria-label="字典适用规则">
-            <strong>适用字段与填写限制</strong>
-            <p class="form-note">
-              同时核对已发布的多品类主数据规则和原有资料规则。字典保存与配置发布都会检查；不符合限制的选项不会出现在对应字段中。
-            </p>
-            <div
-              v-for="c in checks"
-              :key="`${c.category}:${c.field}`"
-              class="binding"
-              :class="{ conflict: c.blocked }"
+              {{ d.name }} <small>{{ d.count }}</small>
+            </button>
+          </nav>
+        </div>
+        <form v-if="selected" class="dictionary-main" @submit.prevent="save">
+          <div class="dictionary-heading">
+            <h3>{{ selected.name }}</h3>
+            <span class="dictionary-kind" :class="selected.kind">{{
+              kindNames[selected.kind || "TENANT"]
+            }}</span
+            ><span v-if="!can('catalog.configure')" class="form-note"
+              >当前账号只读</span
             >
-              <b
-                >{{ c.category_name }} · {{ c.label
-                }}<small
-                  >（{{
-                    c.source === "MDM" ? "主数据规则" : "原有资料规则"
-                  }}）</small
-                ></b
-              >
-              <span
-                >{{
-                  c.required_when.length
-                    ? "含条件必填"
-                    : c.required
-                      ? "必填"
-                      : "选填"
-                }}
-                · {{ c.min_length }}–{{ c.max_length }} 字符 ·
-                {{ validationOptions[c.validator] }}</span
-              >
-              <span>符合规则 {{ c.eligible }} / {{ c.active }} 个启用值</span>
-              <span v-if="c.blocked" role="alert"
-                >无法保存：必填字段没有符合规则的可选值，请启用或补充可用值。</span
-              >
-              <span v-else-if="!c.eligible" class="form-note">{{
-                form.mode === "SUGGEST"
-                  ? "可按字段规则手工填写。"
-                  : "没有可选值，选填字段可留空。"
-              }}</span>
-              <span v-if="c.incompatible.length" class="form-note"
-                >不符合规则：{{ c.incompatible.slice(0, 5).join("、")
-                }}{{
-                  c.incompatible.length > 5 ? " 等" : ""
-                }}。这些值仍保留在字典中。</span
+          </div>
+          <p class="dictionary-code">
+            {{ selected.key }} · v{{ selected.version }}
+          </p>
+          <div class="dictionary-hint">
+            {{
+              selected.kind === "SYSTEM"
+                ? "系统标准值由系统维护，企业可查看。"
+                : "已保存值保持名称和编码；停用不影响历史记录，新业务不再选用。"
+            }}
+          </div>
+          <div class="dictionary-table-panel">
+            <div class="dictionary-toolbar">
+              <strong
+                >字典值
+                <small
+                  >{{ rows.length }} / {{ form.items.length }}</small
+                ></strong
+              ><input
+                v-model="search"
+                aria-label="搜索字典值"
+                placeholder="名称、编码或说明"
+              />
+              <div class="dictionary-status">
+                <button
+                  v-for="s in [
+                    { key: 'all', name: '全部' },
+                    { key: 'active', name: '已启用' },
+                    { key: 'inactive', name: '已停用' },
+                  ]"
+                  :key="s.key"
+                  type="button"
+                  :class="{ active: status === s.key }"
+                  @click="status = s.key"
+                >
+                  {{ s.name }}
+                </button>
+              </div>
+              <el-button
+                v-if="writable && selected.extendable"
+                type="primary"
+                :disabled="busy || form.items.length >= 200"
+                @click="edit(-1)"
+                >＋ 新增字典值</el-button
               >
             </div>
-          </section>
-          <div class="dictionary-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>字典值</th>
-                  <th>排序（小值靠前）</th>
-                  <th>启用</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(item, index) in form.items" :key="index">
-                  <td>
-                    <input
-                      v-model="item.value"
-                      :aria-label="`字典值 ${index + 1}`"
-                      :readonly="index < selected.items.length"
-                      required
-                      :maxlength="selected.capacity"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      v-model.number="item.order"
-                      :aria-label="`排序 ${index + 1}`"
-                      type="number"
-                      min="0"
-                      max="9999"
-                      step="1"
-                      required
-                    />
-                  </td>
-                  <td>
-                    <input
-                      v-model="item.active"
-                      type="checkbox"
-                      :aria-label="`启用 ${index + 1}`"
-                    />
-                  </td>
-                  <td>
-                    <el-button
-                      v-if="index >= selected.items.length"
-                      :disabled="busy"
-                      @click="form.items.splice(index, 1)"
-                      >移除未保存项</el-button
-                    ><span v-else class="form-note">已保留</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="dictionary-table-scroll">
+              <table class="dictionary-table">
+                <thead>
+                  <tr>
+                    <th>排序</th>
+                    <th>字典值 / 说明</th>
+                    <th>稳定编码</th>
+                    <th>来源</th>
+                    <th>启用</th>
+                    <th>当前资料引用</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="r in rows"
+                    :key="r.item.id || r.index"
+                    :class="{ highlight: highlighted === r.item.id }"
+                  >
+                    <td>
+                      <button
+                        type="button"
+                        :disabled="!writable || busy"
+                        :aria-label="`上移${r.item.value}`"
+                        @click="move(r.index, -1)"
+                      >
+                        ↑</button
+                      ><button
+                        type="button"
+                        :disabled="!writable || busy"
+                        :aria-label="`下移${r.item.value}`"
+                        @click="move(r.index, 1)"
+                      >
+                        ↓
+                      </button>
+                    </td>
+                    <td>
+                      <div
+                        class="dictionary-value"
+                        :style="{ paddingLeft: r.depth * 16 + 'px' }"
+                      >
+                        <button
+                          v-if="r.children"
+                          type="button"
+                          :aria-label="`展开或收起${r.item.value}`"
+                          @click="toggleTree(r.item.id!)"
+                        >
+                          {{ collapsed.has(r.item.id!) ? "▸" : "▾" }}</button
+                        ><strong>{{ r.item.value }}</strong>
+                      </div>
+                      <small>{{ r.item.description || "—" }}</small>
+                    </td>
+                    <td>
+                      <code :title="r.item.code">{{ r.item.code }}</code>
+                    </td>
+                    <td>
+                      <span
+                        class="dictionary-origin"
+                        :class="{ tenant: r.item.origin === 'TENANT' }"
+                        >{{
+                          r.item.origin === "SYSTEM" ? "系统内置" : "企业扩展"
+                        }}</span
+                      >
+                    </td>
+                    <td>
+                      <el-switch
+                        v-model="r.item.active"
+                        :disabled="!writable || busy"
+                        :aria-label="`${r.item.value}启用状态`"
+                      /><span class="visually-hidden">{{
+                        r.item.active ? "启用" : "停用"
+                      }}</span>
+                    </td>
+                    <td :title="selected.usage?.scope">
+                      {{
+                        selected.usage?.supported
+                          ? selected.usage.counts[r.item.value] || 0
+                          : "未统计"
+                      }}
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="dictionary-link"
+                        @click="edit(r.index)"
+                      >
+                        {{ writable ? "编辑" : "查看" }}</button
+                      ><button
+                        v-if="!selected.items.some((i) => i.id === r.item.id)"
+                        type="button"
+                        class="dictionary-link"
+                        @click="form.items.splice(r.index, 1)"
+                      >
+                        撤回新增
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="!rows.length">
+                    <td colspan="7" class="dictionary-empty">
+                      {{
+                        form.items.length
+                          ? "没有符合筛选条件的字典值"
+                          : "尚未配置字典值，可按企业业务需要新增。"
+                      }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <footer class="dictionary-tablefoot">
+              <span :class="{ unsaved: dirty }"
+                >{{ dirty ? "● 修改未保存" : "● 配置已载入" }} ·
+                保存后供新业务选用</span
+              ><el-button v-if="dirty" :disabled="busy" @click="discard"
+                >撤销未保存</el-button
+              >
+            </footer>
           </div>
-          <p v-if="!form.items.length" class="form-note">尚未设置字典值。</p>
-          <el-button
-            v-if="can('catalog.configure') && selected.key !== 'abc_class'"
-            :disabled="busy || form.items.length >= 200"
-            @click="add"
-            >新增字典值</el-button
-          >
-          <label v-if="can('catalog.configure')" class="dictionary-reason"
-            >变更说明<input v-model="reason" required maxlength="200"
-          /></label>
-        </fieldset>
-        <div class="form-actions" v-if="can('catalog.configure')">
-          <span class="form-note">{{
-            dirty
-              ? "请先保存或撤销，再切换字典。"
-              : "当前版本 " + selected.version
-          }}</span
-          ><el-button :disabled="busy || !dirty" @click="reset"
-            >撤销字典修改</el-button
-          ><el-button
-            native-type="submit"
-            type="primary"
-            :disabled="!dirty || loading || blocked"
-            :loading="busy"
-            >保存字典</el-button
-          >
-        </div>
-        <details v-if="selected.history?.length">
-          <summary>最近字典变更</summary>
-          <p v-for="(h, index) in selected.history" :key="index">
-            {{ localTime(h.created_at) }} · {{ h.detail.reason }} · 版本
-            {{ h.detail.version }}
-          </p>
-        </details>
-      </form>
+          <details class="dictionary-rules">
+            <summary>选值规则、引用范围与变更记录</summary>
+            <label
+              >选值规则
+              <select
+                v-model="form.mode"
+                :disabled="fixed || !writable || busy"
+              >
+                <option value="SUGGEST">建议选用，可输入其他值</option>
+                <option value="STRICT">只能选用启用值</option>
+              </select></label
+            ><label v-if="defaultEnabled"
+              >默认结论
+              <select v-model="defaultValue" :disabled="!writable || busy">
+                <option value="">请选择一个启用值</option>
+                <option
+                  v-for="i in form.items.filter((i) => i.active)"
+                  :key="i.id"
+                  :value="i.id"
+                >
+                  {{ i.value }}
+                </option>
+              </select>
+              排序不改变默认结论</label
+            >
+            <p>{{ selected.usage?.scope }}；已保存值保留，不提供破坏式删除。</p>
+            <p
+              v-for="c in checks"
+              :key="c.category + ':' + c.field"
+              :class="{ conflict: c.blocked }"
+            >
+              {{ c.category_name }} · {{ c.label }}：符合规则
+              {{ c.eligible }} 项{{
+                c.blocked ? "，必填规则冲突，请处理后保存" : ""
+              }}
+            </p>
+            <p v-for="h in selected.history" :key="h.created_at">
+              {{ localTime(h.created_at) }} · v{{ h.detail.version }} ·
+              {{ h.detail.reason }} · {{ h.created_by }}
+            </p>
+          </details>
+          <div v-if="writable" class="dictionary-savebar">
+            <label
+              >变更原因<input
+                v-model="reason"
+                maxlength="200"
+                required
+                placeholder="填写本次配置调整原因"
+                :disabled="busy" /></label
+            ><el-button
+              type="primary"
+              native-type="submit"
+              :disabled="!dirty || blocked || drawer"
+              :loading="busy"
+              >保存配置</el-button
+            >
+          </div>
+        </form>
+        <div v-else class="dictionary-empty">此分类尚无可见字典</div>
+      </main>
     </div>
+    <el-drawer
+      v-model="drawer"
+      :title="(editIndex < 0 ? '新增' : writable ? '编辑' : '查看') + '字典值'"
+      size="min(440px, 100vw)"
+      :before-close="closeDrawer"
+      :close-on-click-modal="false"
+      class="dictionary-drawer"
+      ><p class="form-note">{{ currentGroup?.name }} / {{ selected?.name }}</p>
+      <form class="business-form" @submit.prevent="applyItem">
+        <fieldset :disabled="!writable || busy">
+          <label
+            >字典值名称<input
+              v-model="draft.value"
+              required
+              :maxlength="selected?.capacity"
+              :disabled="
+                editIndex >= 0 && selected?.items.some((i) => i.id === draft.id)
+              " /></label
+          ><label
+            >稳定编码<input
+              v-model="draft.code"
+              required
+              maxlength="60"
+              pattern="[A-Za-z0-9][A-Za-z0-9_.-]*"
+              :disabled="
+                editIndex >= 0 && selected?.items.some((i) => i.id === draft.id)
+              " /></label
+          ><label
+            >说明<textarea
+              v-model="draft.description"
+              maxlength="300"
+              rows="3"
+            ></textarea></label
+          ><label v-if="selected?.hierarchical"
+            >上级值<select v-model="draft.parent_id">
+              <option :value="null">无上级（根节点）</option>
+              <option
+                v-for="i in form.items.filter((i) => i.id !== draft.id)"
+                :key="i.id"
+                :value="i.id"
+              >
+                {{ i.value }}
+              </option>
+            </select></label
+          ><label>启用状态<el-switch v-model="draft.active" /></label>
+        </fieldset>
+        <p class="form-note">
+          应用后仍需点击“保存配置”。父子层级与引用保护由服务端统一校验。
+        </p>
+        <el-button v-if="writable" type="primary" native-type="submit"
+          >应用到配置</el-button
+        >
+      </form></el-drawer
+    >
+    <el-dialog
+      v-model="globalOpen"
+      title="搜索全部字典 / 字典值"
+      width="min(640px, 94vw)"
+      :close-on-click-modal="false"
+      ><form class="dictionary-global-search" @submit.prevent="globalSearch">
+        <input
+          v-model="globalQuery"
+          aria-label="搜索全部字典"
+          placeholder="输入名称、稳定编码或备注"
+          maxlength="100"
+          autofocus
+        /><el-button native-type="submit" :loading="globalLoading"
+          >搜索</el-button
+        >
+      </form>
+      <div class="dictionary-search-results">
+        <button v-for="(r, i) in results" :key="i" @click="locate(r)">
+          <strong>{{ r.value || r.path.split(" / ").at(-1) }}</strong
+          ><small>{{ r.path }}</small
+          ><span>↗</span>
+        </button>
+        <p v-if="!results.length" class="form-note">
+          输入关键词后搜索，最多显示 50 条；仅检索当前企业可见数据。
+        </p>
+      </div></el-dialog
+    >
   </section>
 </template>
-<style scoped>
-h2,
-h3 {
-  margin: 0;
-}
-h2 {
-  font-size: 19px;
-}
-h3 {
-  font-size: 16px;
-}
-.dictionary-layout {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 24px;
-  margin-top: 20px;
-}
-.dictionary-layout.embedded {
-  grid-template-columns: minmax(0, 1fr);
-}
-.dictionary-usage {
-  margin: 16px 0;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--el-color-primary-light-9);
-}
-.binding {
-  display: grid;
-  gap: 5px;
-  padding: 10px 0;
-}
-.binding + .binding {
-  border-top: 1px solid var(--line);
-}
-.binding.conflict {
-  color: var(--el-color-danger-dark-2);
-}
-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-nav button {
-  border: 1px solid var(--line);
-  background: var(--surface, #fff);
-  color: inherit;
-  padding: 12px;
-  text-align: left;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-nav button.active {
-  border-color: var(--el-color-primary);
-  color: var(--el-color-primary);
-  background: var(--el-color-primary-light-9);
-}
-nav small {
-  display: block;
-  margin-top: 5px;
-  color: var(--muted, #64748b);
-}
-fieldset {
-  padding: 0;
-  border: 0;
-  min-width: 0;
-}
-.dictionary-content {
-  max-width: none;
-  min-width: 0;
-}
-.dictionary-table {
-  overflow-x: auto;
-  margin: 16px 0;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-th,
-td {
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  padding: 8px;
-}
-td:first-child {
-  min-width: 180px;
-}
-td:nth-child(2) {
-  width: 160px;
-}
-td:nth-child(3) {
-  width: 60px;
-}
-td:last-child {
-  width: 150px;
-}
-input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-}
-.dictionary-reason {
-  margin-top: 16px;
-}
-.form-actions {
-  margin: 16px 0;
-}
-summary {
-  cursor: pointer;
-}
-@media (max-width: 800px) {
-  .dictionary-layout {
-    grid-template-columns: 1fr;
-  }
-  nav {
-    flex-direction: row;
-    overflow-x: auto;
-  }
-  nav button {
-    flex-shrink: 0;
-  }
-}
-</style>
+<style scoped src="./dictionary.css"></style>

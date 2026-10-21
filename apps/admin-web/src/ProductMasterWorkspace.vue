@@ -10,6 +10,8 @@ import { catalogSaveKey, useCatalogListReturn } from "./catalogInteraction";
 import MasterFields from "./MasterFields.vue";
 import type { CatalogDictionary } from "./catalogDictionaries";
 import MasterTree from "./MasterTree.vue";
+import InformationCard from "./InformationCard.vue";
+const infoOpen = ref(false);
 import CatalogColumnSettings from "./CatalogColumnSettings.vue";
 import { useCatalogColumns, type ListColumnDefinition } from "./catalogColumns";
 import ProductCertificates from "./ProductCertificates.vue";
@@ -1007,6 +1009,9 @@ async function review() {
             >
           </div>
           <div>
+            <el-button v-if="record" @click="infoOpen = true"
+              >商品信息卡</el-button
+            >
             <el-button :disabled="busy || opening" @click="close"
               >返回查询</el-button
             ><el-button @click="reloadSchema">重载规则并校验</el-button
@@ -1634,6 +1639,15 @@ async function review() {
     :definitions="columnDefinitions"
     :save="listColumns.save"
     @close="columnSettings = false"
+  />
+  <InformationCard
+    v-if="record"
+    v-model="infoOpen"
+    kind="product"
+    :record="record.values"
+    :legacy="record.legacy"
+    :version="record.data_version"
+    :state="record.approval_state"
   />
 </template>
 <style scoped>

@@ -122,7 +122,19 @@ import LedgerPage from "./LedgerPage.vue";
 import SalesPage from "./SalesPage.vue";
 import ReceivablesPage from "./ReceivablesPage.vue";
 import FinancePage from "./FinancePage.vue";
-const QualityPage = defineAsyncComponent(() => import("./QualityPage.vue"));
+const QualityPage = defineAsyncComponent(
+  () => import("./QualityWorkspace.vue"),
+);
+const QualityRecords = defineAsyncComponent(
+  () => import("./QualityRecords.vue"),
+);
+const ManagementRecords = defineAsyncComponent(
+  () => import("./ManagementRecords.vue"),
+);
+const EnterpriseSettings = defineAsyncComponent(
+  () => import("./EnterpriseSettings.vue"),
+);
+const MessagesPage = defineAsyncComponent(() => import("./MessagesPage.vue"));
 const LocationMovesPage = defineAsyncComponent(
   () => import("./LocationMovesPage.vue"),
 );
@@ -833,6 +845,46 @@ onUnmounted(() => {
             :active="page === 'overview' && !activeEditor && !activeRecord"
             v-model="workFilters"
             @open="openWorkItem"
+          />
+          <EnterpriseSettings
+            v-if="moduleTabs.includes('enterprise-settings')"
+            v-show="page === 'enterprise-settings'"
+            @failure="failure"
+          />
+          <template
+            v-for="item in [
+              { page: 'staff', kind: 'staff' },
+              { page: 'quality-ledgers', kind: 'maintenance' },
+              { page: 'approval-design', kind: 'approval_design' },
+            ] as const"
+            :key="item.page"
+            ><ManagementRecords
+              v-if="moduleTabs.includes(item.page)"
+              v-show="page === item.page"
+              :kind="item.kind"
+              @failure="failure"
+          /></template>
+          <MessagesPage
+            v-if="page === 'messages'"
+            @failure="failure"
+            @open="
+              (item) =>
+                openWorkItem({
+                  item,
+                  index: 0,
+                  view: 'operations',
+                  filters: {
+                    entity_id: activeEntity,
+                    kind: item.kind,
+                    search: '',
+                    offset: 0,
+                  },
+                })
+            "
+          />
+          <QualityRecords
+            v-if="page === 'quality-records'"
+            @failure="failure"
           />
           <AppearanceSettings
             v-if="moduleTabs.includes('appearance')"

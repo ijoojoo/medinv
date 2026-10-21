@@ -239,6 +239,9 @@ class InventoryService:
             "SELECT id FROM med.product WHERE id=ANY(:products) ORDER BY id FOR SHARE", params
         )
         # Candidate IDs are read before locks. New receipts are considered on the next request.
+        from medinv.modules.catalog.application.entity_settings import entity_product_allowed
+
+        entity_product_allowed(repo, req.entity_id, params["skus"], "sales")
         candidates = repo.rows(BALANCES + " ORDER BY b.id LIMIT 2001", params)
         if len(candidates) > 2000:
             raise BusinessError("ALLOCATION_TOO_LARGE", "候选库存超过在线分配上限", 422)

@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useId, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useId,
+  watch,
+} from "vue";
+import { request } from "./api";
 import { ElPopover } from "element-plus";
 import {
   matchesDictionaryValue,
@@ -20,6 +29,38 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ "update:modelValue": [value: string] }>();
 const listId = useId();
+const latest = ref<CatalogDictionary | null>(null);
+let refreshEpoch = 0;
+const effectiveDictionary = computed(() => latest.value || props.dictionary);
+async function refreshOptions() {
+  const epoch = ++refreshEpoch;
+  try {
+    const result = await request<CatalogDictionary>(
+      `/api/v1/catalog/dictionary-options/${props.dictionary.key}`,
+    );
+    if (epoch === refreshEpoch) latest.value = result;
+  } catch {
+    /* Saving still enforces the server's current dictionary rules. */
+  }
+}
+function dictionaryChanged(event: Event) {
+  if ((event as CustomEvent).detail === props.dictionary.key)
+    void refreshOptions();
+}
+watch(
+  () => props.dictionary,
+  () => {
+    refreshEpoch++;
+    latest.value = null;
+  },
+);
+onMounted(() =>
+  document.addEventListener("catalog-dictionary-saved", dictionaryChanged),
+);
+onUnmounted(() => {
+  refreshEpoch++;
+  document.removeEventListener("catalog-dictionary-saved", dictionaryChanged);
+});
 const root = ref<HTMLElement>(),
   input = ref<HTMLInputElement>(),
   popup = ref<HTMLElement>();
@@ -30,7 +71,7 @@ const opened = ref(false),
   width = ref(240);
 let restoringFocus = false;
 const active = computed(() =>
-  props.dictionary.items
+  effectiveDictionary.value.items
     .filter(
       (i) =>
         i.active &&
@@ -68,6 +109,7 @@ function close() {
 }
 function focus() {
   if (restoringFocus || props.disabled) return;
+  void refreshOptions();
   all.value = false;
   opened.value = true;
   index.value = -1;

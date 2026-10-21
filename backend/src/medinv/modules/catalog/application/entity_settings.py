@@ -27,9 +27,10 @@ def entity_product_allowed(repo: SqlSession, entity: UUID, ids: list[UUID], chan
     rows = repo.rows(
         f"""SELECT x.product_id FROM med.product_entity_settings x JOIN med.sku s
         ON (s.tenant_id,s.product_id)=(x.tenant_id,x.product_id)
-        WHERE s.id=ANY(:ids) AND x.entity_id=:e AND (NOT x.enabled OR NOT x.{column})
+        WHERE s.id=ANY(:ids) AND x.entity_id=:e
+          AND (NOT x.enabled OR NOT x.{column} OR (:sales AND x.quality_stopped))
         FOR SHARE OF x""",
-        {"ids": ids, "e": entity},
+        {"ids": ids, "e": entity, "sales": column == "sales_enabled"},
     )
     if rows:
         raise BusinessError(
@@ -59,6 +60,7 @@ class ProductEntitySettings:
                 "version": records[0]["version"] if records else 0,
                 "values": {k: source[k] for k in FIELDS},
                 "inherited": not records,
+                "quality_stopped": records[0]["quality_stopped"] if records else False,
                 "entity_id": str(entity),
             }
 

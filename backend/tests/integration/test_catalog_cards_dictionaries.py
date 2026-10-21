@@ -348,7 +348,7 @@ def test_http_dictionary_operations_and_scheme_filter_contract(api, flow):
             ),
             {"t": f.maker.tenant_id, "p": f.maker.principal_id},
         )
-    assert len(client.get("/api/v1/catalog/dictionaries").json()["data"]["items"]) == 12
+    assert len(client.get("/api/v1/catalog/dictionaries").json()["data"]["items"]) == 19
     assert client.get(operations).json()["data"]["state"] == "APPROVED"
     assert client.get("/api/v1/catalog/dictionaries/invalid").status_code == 422
     assert (

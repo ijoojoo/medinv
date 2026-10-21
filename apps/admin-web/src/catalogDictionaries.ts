@@ -18,7 +18,24 @@ export interface CatalogDictionary {
   capacity: number;
   version: string;
   mode: "SUGGEST" | "STRICT";
-  items: { value: string; active: boolean; order: number }[];
+  group_key?: string;
+  dictionary_id?: string;
+  kind?: "SYSTEM" | "HYBRID" | "TENANT" | "TREE";
+  hierarchical?: boolean;
+  extendable?: boolean;
+  count?: number;
+  usage?: { scope: string; supported: boolean; counts: Record<string, number> };
+  items: {
+    value: string;
+    active: boolean;
+    order: number;
+    id?: string;
+    code?: string;
+    description?: string;
+    parent_id?: string | null;
+    origin?: "SYSTEM" | "TENANT";
+    is_default?: boolean;
+  }[];
   bindings?: DictionaryBinding[];
   history?: {
     created_at: string;

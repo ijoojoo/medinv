@@ -5,6 +5,14 @@ from uuid import uuid4
 from fastapi.encoders import jsonable_encoder
 
 from medinv.modules.catalog.api.dictionaries import DictionaryKey, DictionaryUpdate
+from medinv.modules.catalog.application.dictionary_metadata import (
+    GROUPS,
+    enrich,
+    identity,
+    metadata,
+    usage,
+    validate_metadata,
+)
 from medinv.modules.catalog.application.dictionary_rules import (
     dictionary_bindings,
     lock_dictionary_bindings,
@@ -30,6 +38,13 @@ DEFINITIONS = {
     "inspection_qualified": ("验收结论 · 合格", 60, "STRICT", ["合格"]),
     "inspection_mixed": ("验收结论 · 部分拒收", 60, "STRICT", ["部分合格"]),
     "inspection_rejected": ("验收结论 · 全部拒收", 60, "STRICT", ["不合格"]),
+    "supplier_grade": ("供应商分级", 60, "STRICT", []),
+    "customer_grade": ("客户等级", 60, "STRICT", []),
+    "delivery_method": ("配送方式", 60, "STRICT", []),
+    "payment_method": ("结算方式", 60, "STRICT", []),
+    "department": ("职员部门", 100, "STRICT", []),
+    "staff_status": ("职员状态", 30, "STRICT", ["在职", "离职"]),
+    "maintenance_type": ("养护类型", 100, "STRICT", []),
 }
 
 PURCHASE_DICTIONARIES = (
@@ -67,10 +82,13 @@ def current_dictionary(repo: SqlSession, key: str) -> dict[str, Any]:
     return {
         **row,
         "key": key,
+        **metadata(key),
         "name": label,
         "capacity": capacity,
         "version": str(row["version"]),
-        "items": sorted(row["items"], key=lambda i: (i["order"], i["value"])),
+        "items": enrich(
+            repo, key, sorted(row["items"], key=lambda i: (i["order"], i["value"])), values
+        ),
     }
 
 
@@ -106,6 +124,40 @@ class CatalogDictionaries:
             repo = SqlSession(session)
             return {"items": [current_dictionary(repo, k) for k in DEFINITIONS]}
 
+    def navigation(self, ctx: TenantContext) -> dict[str, Any]:
+        data = self.list(ctx)
+        return {
+            "groups": [
+                {"key": k, "id": identity("group", k), "name": n, "icon": i, "description": d}
+                for k, n, i, d in GROUPS
+            ],
+            "items": [
+                {k: v for k, v in d.items() if k != "items"} | {"count": len(d["items"])}
+                for d in data["items"]
+            ],
+        }
+
+    def search(self, ctx: TenantContext, query: str) -> dict[str, Any]:
+        query = query.strip().casefold()
+        if not query:
+            ctx.require("catalog.read")
+            return {"items": []}
+        matches = []
+        groups = {g[0]: g[1] for g in GROUPS}
+        for d in self.list(ctx)["items"]:
+            path = groups[d["group_key"]] + " / " + d["name"]
+            if query in (path + " " + d["key"]).casefold():
+                matches.append({"key": d["key"], "path": path, "value": "", "id": ""})
+            for item in d["items"]:
+                if (
+                    query
+                    in (item["value"] + " " + item["code"] + " " + item["description"]).casefold()
+                ):
+                    matches.append(
+                        {"key": d["key"], "path": path, "value": item["value"], "id": item["id"]}
+                    )
+        return {"items": matches[:50], "has_more": len(matches) > 50}
+
     def detail(self, ctx: TenantContext, key: DictionaryKey) -> dict[str, Any]:
         ctx.require("catalog.read")
         with self.uow.open(ctx, readonly=True) as session:
@@ -124,6 +176,7 @@ class CatalogDictionaries:
                 jsonable_encoder(
                     {
                         **definition,
+                        "usage": usage(repo, key),
                         "bindings": dictionary_bindings(repo, key, definition),
                         "history": [{**r, "detail": json.loads(r["reason"])} for r in rows],
                     }
@@ -163,9 +216,21 @@ class CatalogDictionaries:
                 raise BusinessError(
                     "DICTIONARY_HISTORY_REQUIRED", "已保存的字典值请停用，不可删除或改写", 422
                 )
-            after = sorted(
-                [i.model_dump() for i in body.items], key=lambda i: (i["order"], i["value"])
+            previous = {i["value"]: i for i in before["items"]}
+            raw = []
+            for i in body.items:
+                item = {
+                    **previous.get(i.value, {}),
+                    **i.model_dump(mode="json", exclude_unset=True),
+                }
+                item.setdefault("active", True)
+                raw.append(item)
+            after = enrich(
+                repo, key, sorted(raw, key=lambda i: (i["order"], i["value"])), DEFINITIONS[key][3]
             )
+            validate_metadata(key, before["items"], after)
+            if key == "staff_status" and body.mode != before["mode"]:
+                raise BusinessError("DICTIONARY_PROTECTED", "系统标准字典规则不可修改", 422)
             if before["items"] == after and before["mode"] == body.mode:
                 raise BusinessError("DICTIONARY_UNCHANGED", "字典没有变化", 422)
             reject_dictionary_conflicts(

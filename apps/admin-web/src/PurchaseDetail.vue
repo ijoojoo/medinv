@@ -246,7 +246,8 @@ async function loadReviewOptions() {
     );
     if (!alive || epoch !== reviewEpoch) return;
     reviewDictionaries.value = result.items;
-    approvalConclusion.value = reviewItems("purchase_approval")[0]?.value || "";
+    approvalConclusion.value =
+      reviewItems("purchase_approval").find((i) => i.is_default)?.value || "";
   } catch (e) {
     if (epoch === reviewEpoch)
       reviewError.value = e instanceof Error ? e.message : "结论字典读取失败";
@@ -257,7 +258,7 @@ async function loadReviewOptions() {
 watch([inspectionKey, reviewDictionaries], () => {
   const items = reviewItems(inspectionKey.value);
   if (!items.some((i) => i.value === inspectionConclusion.value))
-    inspectionConclusion.value = items[0]?.value || "";
+    inspectionConclusion.value = items.find((i) => i.is_default)?.value || "";
 });
 watch(dialog, () => {
   entryError.value = "";
@@ -1242,7 +1243,7 @@ disposeGuard(
       </div>
       <p class="form-note">
         结论选项随本次合格、拒收数量联动；各类常用用语可在“资料 →
-        商品字典”维护，排序靠前的启用值为默认值。
+        数据字典”维护，排序靠前的启用值为默认值。
         <el-button
           link
           :disabled="busy || reviewLoading"
