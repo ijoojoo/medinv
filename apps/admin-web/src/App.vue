@@ -109,6 +109,7 @@ const WarehousesPage = defineAsyncComponent(
 const ProductFieldSettings = defineAsyncComponent(
   () => import("./MasterConfiguration.vue"),
 );
+const AdmissionPage = defineAsyncComponent(() => import("./AdmissionPage.vue"));
 const CatalogDictionaryPage = defineAsyncComponent(
   () => import("./CatalogDictionaryPage.vue"),
 );
@@ -845,6 +846,11 @@ onUnmounted(() => {
               @failure="failure"
             />
           </div>
+          <AdmissionPage
+            v-if="moduleTabs.includes('admission')"
+            v-show="page === 'admission'"
+            @failure="failure"
+          />
           <div v-show="page === 'dictionaries'">
             <CatalogDictionaryPage
               v-if="moduleTabs.includes('dictionaries')"

@@ -4,6 +4,7 @@ from decimal import Decimal
 from typing import Any, cast
 from uuid import UUID, uuid4
 
+from medinv.modules.catalog.application.admission import enforce
 from medinv.modules.catalog.application.document_master import attach
 from medinv.modules.catalog.application.entity_settings import entity_product_allowed
 from medinv.modules.catalog.application.packaging import trade
@@ -115,6 +116,7 @@ class SalesService(SalesQueries):
         if any(g["blocked"] for g in gates) or (require_stock_gate and len(gates) != len(set(ids))):
             raise BusinessError("SKU_BLOCKED", "商品已冻结或尚不具备库存作业条件", 409)
         project_business_identity(repo, rows)
+        enforce(repo, entity, "WHOLESALE", customer, rows)
         return {row["id"]: row for row in rows}
 
     def locked_order(

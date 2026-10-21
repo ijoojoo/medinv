@@ -77,5 +77,7 @@ def command_payload(body: BaseModel) -> dict[str, Any]:
 def product_snapshot(row: dict[str, Any]) -> dict[str, Any]:
     fields = ("name", "specification", "approval_number", "manufacturer_name", *PROFILE_FIELDS)
     return {k: row[k] for k in fields} | {
-        k: row[k] for k in ("category", "drug_sale_class", "master_identity") if k in row
+        k: row[k]
+        for k in ("category", "drug_sale_class", "master_identity", "admission")
+        if k in row
     }

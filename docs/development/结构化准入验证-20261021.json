@@ -1,0 +1,208 @@
+{
+  "recorded_at": "2026-10-21T09:47:48.813230+08:00",
+  "scope": "N06 configurable scopes and transaction admission; targeted regression; actual pilot qualification rules still require confirmation",
+  "application": "0.28.0",
+  "business_revision": "b0047",
+  "control_revision": "c0017",
+  "business_rls_tables": 95,
+  "core_api_paths": 171,
+  "backend": {
+    "tests": 224,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "backend_by_suite": {
+    "tests.integration.test_admission": 22,
+    "tests.integration.test_procurement": 19,
+    "tests.integration.test_sales": 23,
+    "tests.integration.test_sales_revisions": 20,
+    "tests.integration.test_sales_before_stock": 10,
+    "tests.integration.test_inventory": 13,
+    "tests.integration.test_catalog_cards_dictionaries": 13,
+    "tests.integration.test_party_certificates": 31,
+    "tests.integration.test_private_attachments": 26,
+    "tests.integration.test_tenancy": 5,
+    "tests.integration.test_api": 12,
+    "tests.architecture.test_boundaries": 2,
+    "tests.contracts.test_contract": 2,
+    "tests.unit.test_trial_deployment": 12,
+    "tests.unit.test_recovery_tools": 14
+  },
+  "frontend": {
+    "startTime": "2026-10-21T01:42:04.520Z",
+    "duration": 66182.06199999999,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "additional_visual_recheck": {
+    "startTime": "2026-10-21T01:45:38.797Z",
+    "duration": 21318.352,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "static_checks": {
+    "ruff": "passed",
+    "mypy_strict": {
+      "source_files": 162,
+      "result": "passed"
+    },
+    "frontend_production_build": "passed",
+    "selected_browser_types": "passed",
+    "selected_frontend_format": "passed"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0047",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "readiness": {
+    "web": true,
+    "core": true,
+    "auth": true,
+    "identity": true,
+    "expiry_running": true,
+    "containers_running": true
+  },
+  "images": {
+    "core": {
+      "tag": "medinv-core:0.28.0",
+      "id": "sha256:4485d8cdadae7f709e17579022af8f1b1dbc37114959bda5532db2ef08977c4f"
+    },
+    "web": {
+      "tag": "medinv-web:0.28.0",
+      "id": "sha256:e3abf196388bc20606438e942f26c43020ea980db94f485d6594e917fc1a4033"
+    }
+  },
+  "restore": {
+    "status": "passed",
+    "backup_id": "d3dbd2fef61e4d698be0b3328733aacb",
+    "isolated_target": "medinv-restore-10d11e461929",
+    "all_policy_snapshots_equal": true,
+    "runtime_policy_reads": 119,
+    "business_revision": "b0047",
+    "control_revision": "c0017",
+    "business_rls_tables": 95,
+    "three_database_restore_and_table_counts": "passed",
+    "application_cutover": false,
+    "cross_machine_restore": false,
+    "target_retained_stopped": true,
+    "all_table_counts_match": true,
+    "rls_tables_verified": 95,
+    "cleanup_note": "Restore data checks passed; corrected local helper cleanup name, then stopped target using supported recovery CLI."
+  },
+  "existing_trial_tenant_enabled_policies": 0,
+  "artifacts": {
+    "artifacts/structured-admission/backend.xml": {
+      "bytes": 33495,
+      "sha256": "b80995061aa46951a489fcf7d25858afad35a9db78e80f490b9b09a88dfcb363"
+    },
+    "artifacts/structured-admission/browser.json": {
+      "bytes": 9163,
+      "sha256": "068b3623ef5693097bbadda4acb66abb8e1aebc5719378583e7b4d709893d8ce"
+    },
+    "artifacts/structured-admission/browser-visual.json": {
+      "bytes": 4446,
+      "sha256": "a771fc04aa1e8331caa2465c529bac0f4f9174eaff36f092a21baaf0921d904e"
+    },
+    "artifacts/structured-admission/ruff.log": {
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    "artifacts/structured-admission/mypy.log": {
+      "bytes": 46,
+      "sha256": "c9f12717140265e3def21d3a4aa96a691ee6346d9b10530ec63e3532a4550fde"
+    },
+    "artifacts/structured-admission/frontend.log": {
+      "bytes": 3935,
+      "sha256": "8f8dfdf51c65bf5d6dbbcfb817584c609769ddf59e168b715967bdebd0289850"
+    },
+    "artifacts/structured-admission/frontend-format.log": {
+      "bytes": 68,
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    "artifacts/structured-admission/browser-types.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/structured-admission/build.log": {
+      "bytes": 139,
+      "sha256": "4cc4367247e23162e3a83153b7282923115a8b05f9e9def4b5d1fd6b7eb0153c"
+    },
+    "artifacts/structured-admission/start.log": {
+      "bytes": 788,
+      "sha256": "861064b998e7cfd682c0c57f9af83f43c6f6feca17552fcf921e42b226d3b005"
+    },
+    "artifacts/structured-admission/migration.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/structured-admission/runtime.json": {
+      "bytes": 613,
+      "sha256": "07e165150aab9fafe04794737df174cb866928e0b2a80fb3e519ec1d525ce3f1"
+    },
+    "artifacts/structured-admission/readiness.json": {
+      "bytes": 644,
+      "sha256": "7176efcdf4899c49c87594c30b4b8fc28e3324cce865b98f7d02830448b2573b"
+    },
+    "artifacts/structured-admission/smoke.log": {
+      "bytes": 807,
+      "sha256": "9343d9dbf1f7476fc393f037d0febfc9c806229fede6b37703b035e900dbb86e"
+    },
+    "artifacts/structured-admission/restore-check.json": {
+      "bytes": 661,
+      "sha256": "4bc5e77dfb3989daa0605907fac981adc0ec3ce3396d47ef61608a02b5fe4cf0"
+    },
+    "artifacts/structured-admission/existing-tenant-check.json": {
+      "bytes": 95,
+      "sha256": "9ba524539c3359381cb11f7921d00c18cc7ae435b1ddd3f67a54432086bf4967"
+    },
+    "outputs/structured-admission/准入配置与拦截.png": {
+      "bytes": 106710,
+      "sha256": "e34a97051c648da3663b50b9d92f566f881b6c461b0660f315ccad9a1ca110a4"
+    },
+    "outputs/structured-admission/范围配置.png": {
+      "bytes": 117414,
+      "sha256": "be5e33210e82a35f2e0d50232f9d712747682ba53f560bc50e0d383c6058e4b9"
+    }
+  },
+  "limitations": [
+    "Actual pilot scope classifications and licence combinations not supplied; no automatic activation on existing trial tenant.",
+    "Ordinary drug/device purchase and wholesale only; existing checks remain active.",
+    "Own-company evidence reference is manually checked; no new own-company licence archive.",
+    "Targeted tests only; no remote CI, production rollout, cross-machine restore or application cutover."
+  ]
+}

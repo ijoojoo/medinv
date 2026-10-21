@@ -220,6 +220,10 @@ class InventoryService:
         )
         if not entities or entities[0]["status"] != "ACTIVE":
             raise BusinessError("ENTITY_UNAVAILABLE", "主体不存在或已停用", 404)
+        if req.source_type == "SALES_ORDER":
+            from medinv.modules.catalog.application.admission import reserve_admission
+
+            reserve_admission(repo, req.entity_id, req.source_id, params["skus"])
         gates = repo.rows(
             """SELECT * FROM med.stock_gate
             WHERE entity_id=:entity AND sku_id=ANY(:skus) ORDER BY sku_id FOR SHARE""",

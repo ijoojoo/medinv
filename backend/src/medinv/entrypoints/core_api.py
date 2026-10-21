@@ -14,6 +14,8 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
+from medinv.modules.catalog.api.admission import AdmissionPreview, AdmissionReview, AdmissionSave
+from medinv.modules.catalog.api.admission import Channel as AdmissionChannel
 from medinv.modules.catalog.api.certificates import (
     CertificateCreate,
     CertificateReview,
@@ -52,6 +54,7 @@ from medinv.modules.catalog.api.schemas import (
     ProductRevision,
     Review,
 )
+from medinv.modules.catalog.application.admission import AdmissionPolicies
 from medinv.modules.catalog.application.attachments import MAX_BYTES, CatalogAttachments
 from medinv.modules.catalog.application.certificates import ProductCertificates
 from medinv.modules.catalog.application.code_rules import ProductCodeRules
@@ -217,7 +220,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.27.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.28.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1126,6 +1129,54 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return envelope(
                 request, ProductFieldRules(catalog.uow).update(ctx, category, body, key(request))
             )
+
+    @app.get("/api/v1/catalog/admission/{entity_id}/{channel}")
+    def admission_detail(
+        request: Request, entity_id: UUID, channel: AdmissionChannel
+    ) -> dict[str, Any]:
+        return envelope(
+            request, AdmissionPolicies(catalog.uow).detail(auth(request), entity_id, channel)
+        )
+
+    @app.post("/api/v1/catalog/admission/{entity_id}/{channel}")
+    def admission_save(
+        request: Request, entity_id: UUID, channel: AdmissionChannel, body: AdmissionSave
+    ) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request,
+                AdmissionPolicies(catalog.uow).save(ctx, entity_id, channel, body, key(request)),
+            )
+
+    @app.post("/api/v1/catalog/admission/{entity_id}/{channel}/review")
+    def admission_review(
+        request: Request, entity_id: UUID, channel: AdmissionChannel, body: AdmissionReview
+    ) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request,
+                AdmissionPolicies(catalog.uow).review(ctx, entity_id, channel, body, key(request)),
+            )
+
+    @app.post("/api/v1/catalog/admission/{entity_id}/{channel}/preview")
+    def admission_preview(
+        request: Request, entity_id: UUID, channel: AdmissionChannel, body: AdmissionPreview
+    ) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request, AdmissionPolicies(catalog.uow).preview(ctx, entity_id, channel, body)
+            )
+
+    @app.get("/api/v1/catalog/admission/{entity_id}/{channel}/products")
+    def admission_products(
+        request: Request,
+        entity_id: UUID,
+        channel: AdmissionChannel,
+        search: str = Query(default="", max_length=100),
+    ) -> dict[str, Any]:
+        return envelope(
+            request, AdmissionPolicies(catalog.uow).products(auth(request), entity_id, search)
+        )
 
     @app.get("/api/v1/catalog/dictionaries")
     def catalog_dictionaries(request: Request) -> dict[str, Any]:

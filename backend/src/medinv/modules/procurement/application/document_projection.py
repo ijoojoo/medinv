@@ -39,6 +39,7 @@ def capture(row: dict[str, Any]) -> dict[str, Any]:
             dict(
                 schema_version=3 if row.get("document_master") else 2,
                 category=row.get("category", ""),
+                admission=row.get("admission"),
                 device_class=row.get("device_class", ""),
                 regulatory_subtype=row.get("regulatory_subtype"),
                 regulatory_role=role,

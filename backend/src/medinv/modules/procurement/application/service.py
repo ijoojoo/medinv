@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from fastapi.encoders import jsonable_encoder
 
 from medinv.modules.catalog.api.schemas import DTO
+from medinv.modules.catalog.application.admission import enforce
 from medinv.modules.catalog.application.document_master import attach
 from medinv.modules.catalog.application.entity_settings import entity_product_allowed
 from medinv.modules.catalog.application.master_config import current_schema
@@ -169,6 +170,8 @@ class ProcurementService:
         if validate and any(g["blocked"] for g in gates):
             raise BusinessError("SKU_BLOCKED", "商品已冻结", 409)
         project_business_identity(repo, rows, enforce_rules=validate)
+        if validate:
+            enforce(repo, entity, "PURCHASE", supplier, rows)
         return {r["id"]: r for r in rows}
 
     def locked_order(

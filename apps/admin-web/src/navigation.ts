@@ -89,6 +89,12 @@ export const navigationGroups: NavigationGroup[] = [
     name: "质量",
     items: [
       {
+        page: "admission",
+        name: "经营范围与准入",
+        icon: "◎",
+        permission: "catalog.read",
+      },
+      {
         page: "quality",
         name: "质量处置",
         icon: "◇",
