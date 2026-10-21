@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "药械进销存 · 核心 API",
-    "version": "0.29.0"
+    "version": "0.29.1"
   },
   "paths": {
     "/api/v1/context": {

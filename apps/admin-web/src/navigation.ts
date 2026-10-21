@@ -235,3 +235,24 @@ export const groupForPage = (page: string) =>
   );
 export const itemForPage = (page: string) =>
   groupForPage(page)?.items.find((item) => item.page === page);
+
+export type WorkspaceWidth = "wide" | "standard" | "compact";
+export function widthForPage(page: string): WorkspaceWidth {
+  if (
+    [
+      "staff",
+      "enterprise-settings",
+      "approval-design",
+      "appearance",
+      "members",
+      "messages",
+    ].includes(page)
+  )
+    return "compact";
+  if (
+    ["data", "settings"].includes(groupForPage(page)?.id || "") ||
+    page === "admission"
+  )
+    return "standard";
+  return "wide";
+}

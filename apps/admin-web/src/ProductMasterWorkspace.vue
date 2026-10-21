@@ -828,7 +828,7 @@ async function review() {
         节点名称切换查询范围；箭头只展开目录。当前编辑商品的品类保持独立。
       </p>
     </aside>
-    <main class="master-main">
+    <div class="master-main">
       <div
         v-if="!editing"
         ref="listRoot"
@@ -1209,7 +1209,7 @@ async function review() {
           >
         </footer>
       </div>
-    </main>
+    </div>
     <el-dialog
       v-model="chooseCategory"
       title="明确选择建档品类"

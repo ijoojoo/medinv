@@ -339,6 +339,44 @@ body,
 .main-shell > main {
   padding: 16px;
 }
+.main-shell > .workspace-content {
+  width: 100%;
+  min-width: 0;
+  max-width: 2560px;
+  margin-inline: auto;
+  position: relative;
+}
+.main-shell > .workspace-content[data-width="standard"] {
+  max-width: 1440px;
+}
+.main-shell > .workspace-content[data-width="compact"] {
+  max-width: 1120px;
+}
+.workspace-content:not([data-width="wide"]) .master-toolbar {
+  padding: 10px 16px;
+  gap: 8px 12px;
+}
+.workspace-content:not([data-width="wide"]) .master-toolbar h2 {
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+.workspace-content:not([data-width="wide"]) .master-toolbar > div:last-child {
+  min-width: 0;
+}
+.workspace-content:not([data-width="wide"])
+  .master-toolbar
+  > div:last-child:has(.el-button) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.workspace-content:not([data-width="wide"])
+  .master-toolbar
+  > div:last-child
+  .el-button
+  + .el-button {
+  margin-left: 0;
+}
 .app-shell:not([data-module="retail"]) .module-content .panel {
   border-radius: 8px;
   padding: 16px;

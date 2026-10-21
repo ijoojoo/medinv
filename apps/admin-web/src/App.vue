@@ -102,7 +102,7 @@ watch(
   { flush: "pre" },
 );
 import { loadOptions as loadPagedOptions } from "./business";
-import { itemForPage } from "./navigation";
+import { itemForPage, widthForPage } from "./navigation";
 const WarehousesPage = defineAsyncComponent(
   () => import("./WarehousesPage.vue"),
 );
@@ -787,7 +787,10 @@ onUnmounted(() => {
       </div>
     </nav>
     <div ref="workArea" class="main-shell">
-      <main>
+      <main
+        class="workspace-content"
+        :data-width="activeEditor || activeRecord ? 'wide' : widthForPage(page)"
+      >
         <CommandRecovery @resolved="recoveredSubmission" @failure="failure" />
         <p v-if="editorError" role="alert" class="editor-route-error">
           {{ editorError }}

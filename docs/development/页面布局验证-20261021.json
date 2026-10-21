@@ -1,0 +1,196 @@
+{
+  "recorded_at": "2026-10-21T11:38:17.833825+08:00",
+  "scope": "Responsive workspace widths and compact dictionary toolbar; targeted UI/contract/deployment verification",
+  "application": "0.29.1",
+  "business_revision": "b0049",
+  "control_revision": "c0017",
+  "database_migration": false,
+  "limits_px": {
+    "business_and_reports": 2560,
+    "reference_workspaces": 1440,
+    "forms_and_settings": 1120,
+    "forced_page_minimum": null
+  },
+  "viewport_widths_verified": [
+    320,
+    390,
+    768,
+    1366,
+    1920,
+    3440
+  ],
+  "layouts_verified": [
+    "horizontal",
+    "sidebar"
+  ],
+  "backend": {
+    "tests": 14,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "backend_scope": "2 OpenAPI/architecture contracts and 12 deployment tool checks",
+  "frontend": {
+    "expected": 10,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "frontend_reports": {
+    "browser-layout.json": {
+      "startTime": "2026-10-21T03:32:45.668Z",
+      "duration": 47837.31,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "browser-regression.json": {
+      "startTime": "2026-10-21T03:33:43.095Z",
+      "duration": 73713.967,
+      "expected": 8,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "checks": {
+    "frontend_types_and_production_build": "passed",
+    "selected_browser_types": "passed",
+    "selected_frontend_format": "passed",
+    "single_main_landmark": "passed",
+    "root_and_main_content_overflow": "passed",
+    "relocated_search_and_shortcut": "passed"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0049",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "readiness": {
+    "web": true,
+    "core": true,
+    "auth": true,
+    "identity": true,
+    "expiry_running": true,
+    "containers_running": true
+  },
+  "images": {
+    "core": {
+      "tag": "medinv-core:0.29.1",
+      "id": "sha256:3ede24194a6dc93f721b6bb7178fc0f6fdaad52861e2c207516616d52485031b"
+    },
+    "web": {
+      "tag": "medinv-web:0.29.1",
+      "id": "sha256:c728d340869f606788a0efdc8d7c1596f4ed44094def3fa5814c41c4ab5f5a30"
+    }
+  },
+  "artifacts": {
+    "artifacts/page-layout/browser-layout.json": {
+      "bytes": 5542,
+      "sha256": "3578d9bd91d9b2aa8782fd98c8e2c2aaa069aa82756082f4a53a72a147c4d643"
+    },
+    "artifacts/page-layout/browser-regression.json": {
+      "bytes": 12447,
+      "sha256": "ad84a53ca55370b5cc17e08c0b3fb8cf9ddc48ba8e277b51c8f05c0a49a2acae"
+    },
+    "artifacts/page-layout/compatibility.xml": {
+      "bytes": 2176,
+      "sha256": "eb9800c552721902cba095f03afc91e24b84ce24eb718923967e885d903ac46d"
+    },
+    "artifacts/page-layout/browser-types.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/page-layout/format-check.log": {
+      "bytes": 68,
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    "artifacts/page-layout/frontend-build.log": {
+      "bytes": 4837,
+      "sha256": "4b68bc42ef0fa7c647a93147a87082199314545dd8614f42f249c42c5e1f26c8"
+    },
+    "artifacts/page-layout/image-build.log": {
+      "bytes": 139,
+      "sha256": "4cc4367247e23162e3a83153b7282923115a8b05f9e9def4b5d1fd6b7eb0153c"
+    },
+    "artifacts/page-layout/runtime.json": {
+      "bytes": 613,
+      "sha256": "2213bf7c69d5ee1df6f9bf22e2477004fe0c29bf06aaeb9348e307388a84b116"
+    },
+    "artifacts/page-layout/readiness.json": {
+      "bytes": 644,
+      "sha256": "7176efcdf4899c49c87594c30b4b8fc28e3324cce865b98f7d02830448b2573b"
+    },
+    "artifacts/page-layout/smoke.log": {
+      "bytes": 807,
+      "sha256": "f1a941e9d3b5079848b23d1f99d22794dc6794b37bc5c510b7993fe100dd36d4"
+    },
+    "outputs/page-layout/企业设置-1920.png": {
+      "bytes": 90604,
+      "sha256": "7143abd6eb6fe88dc2fa8b72e04f4366069661e4142772465020f038feec0f3b"
+    },
+    "outputs/page-layout/企业设置-390.png": {
+      "bytes": 54800,
+      "sha256": "1923d94038dbc7bc9ac9d851926b93626b64e2b19c888f308a4acc64369f6af1"
+    },
+    "outputs/page-layout/商品档案-390.png": {
+      "bytes": 69056,
+      "sha256": "ea7c1e0316d1d3aa2c548d1bea8184e2e531838c3c1955cbf6961d0e859034c5"
+    },
+    "outputs/page-layout/往来单位-390.png": {
+      "bytes": 63022,
+      "sha256": "f833f0047a29dd7113743a943e9da4dd16d5ad665b99f4880c7fa07c86d718f6"
+    },
+    "outputs/page-layout/数据字典-1920.png": {
+      "bytes": 137463,
+      "sha256": "857b774c7c1ee4b40b8f9ea55970b9363d5044b5907e3d5fbb676c5898efccde"
+    },
+    "outputs/page-layout/数据字典-390.png": {
+      "bytes": 62237,
+      "sha256": "d3c30e40d6f98b904ffcd80e69ef25592accf42bbbf6dde25776f03bc31f70f8"
+    },
+    "outputs/page-layout/数据字典-侧栏3440.png": {
+      "bytes": 162791,
+      "sha256": "67724c6e03c07043486f09f86884e9ca999e413fc06e1a189f9edb234baac4c7"
+    },
+    "outputs/page-layout/销售出库-3440.png": {
+      "bytes": 240739,
+      "sha256": "e575a4f174b5e1f4f68cb5f10349f3ce0106e74840c15a0af54a0cfc229b7ff4"
+    }
+  },
+  "limitations": [
+    "No full-project test run.",
+    "No database or workflow semantics changes; approval design runtime remains deferred.",
+    "No new restore or cross-machine deployment drill."
+  ]
+}

@@ -370,16 +370,6 @@ onMounted(() => {
     aria-label="数据字典"
     v-loading="loading"
   >
-    <header v-if="!embedded" class="dictionary-pagehead">
-      <div>
-        <small>资料 / 基础配置</small>
-        <h2>数据字典</h2>
-        <p>统一选项，清晰分级，让资料维护更有序。</p>
-      </div>
-      <el-button @click="globalOpen = true"
-        >⌕　搜索全部字典 / 字典值　 <kbd>Ctrl K</kbd></el-button
-      >
-    </header>
     <p v-if="failed" role="alert">
       字典读取失败，当前修改已保留。<el-button
         @click="!dirty && load(selected?.key)"
@@ -415,11 +405,14 @@ onMounted(() => {
           分类用于查找；字典值用于选项。系统状态与业务审批独立管理。
         </p>
       </aside>
-      <main class="dictionary-content">
+      <div class="dictionary-content">
         <div v-if="!embedded" class="dictionary-content-top">
-          <small>字典管理 / {{ currentGroup?.name }}</small>
-          <h2>{{ currentGroup?.name }}</h2>
-          <p>{{ currentGroup?.description }}</p>
+          <div class="dictionary-sectionbar">
+            <h2>{{ currentGroup?.name }}</h2>
+            <el-button @click="globalOpen = true"
+              >⌕　搜索全部字典 / 字典值　 <kbd>Ctrl K</kbd></el-button
+            >
+          </div>
           <nav class="dictionary-tabs" aria-label="具体字典">
             <button
               v-for="d in tabs"
@@ -664,7 +657,7 @@ onMounted(() => {
           </div>
         </form>
         <div v-else class="dictionary-empty">此分类尚无可见字典</div>
-      </main>
+      </div>
     </div>
     <el-drawer
       v-model="drawer"

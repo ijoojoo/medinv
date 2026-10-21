@@ -624,7 +624,7 @@ onMounted(() => load());
         一个单位可同时作为供应商和客户。共享机构身份，按当前经营主体维护经营资料与准入资质。
       </p>
     </aside>
-    <main :class="{ 'master-main': !product }">
+    <div :class="{ 'master-main': !product }">
       <div v-show="importing">
         <ProductImport
           v-if="product && importVisited"
@@ -1591,7 +1591,7 @@ onMounted(() => load());
         :version="selected.version"
         :state="selected.state || selected.approval_state"
       />
-    </main>
+    </div>
   </div>
 </template>
 <style scoped>
