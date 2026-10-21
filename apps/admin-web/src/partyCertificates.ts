@@ -16,6 +16,7 @@ export const partyCertificateNames: Record<string, string> = {
   valid_until: "有效期截止日期",
   evidence_ref: "原件凭据编号",
   note: "证照备注",
+  attachment_id: "关联附件版本",
   state: "证照核验状态",
 };
 export const partyCertificateLabels: Record<string, string> = {
@@ -52,6 +53,7 @@ export interface PartyCertificateValues {
   valid_until: string | null;
   evidence_ref: string;
   note: string;
+  attachment_id: string | null;
 }
 export interface PartyCertificateRecord extends PartyCertificateValues {
   id: string;
@@ -63,6 +65,8 @@ export interface PartyCertificateRecord extends PartyCertificateValues {
   revision_editors: string[];
 }
 export function partyCertificateValue(value: unknown, key: string): string {
+  if (key === "attachment_id")
+    return value ? "已关联固定附件版本" : "未关联附件";
   if (Array.isArray(value))
     return value
       .map((v) => partyCertificateLabels[String(v)] || String(v))
@@ -92,6 +96,7 @@ export function emptyPartyCertificate(
     valid_until: null,
     evidence_ref: "",
     note: "",
+    attachment_id: null,
   };
 }
 export function partyCertificateValues(

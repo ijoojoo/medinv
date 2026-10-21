@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import date
 from typing import Annotated, Any, Literal
+from urllib.parse import quote
 from uuid import UUID, uuid4
 
 import anyio
@@ -51,6 +52,7 @@ from medinv.modules.catalog.api.schemas import (
     ProductRevision,
     Review,
 )
+from medinv.modules.catalog.application.attachments import MAX_BYTES, CatalogAttachments
 from medinv.modules.catalog.application.certificates import ProductCertificates
 from medinv.modules.catalog.application.code_rules import ProductCodeRules
 from medinv.modules.catalog.application.codes import CatalogCodes
@@ -59,7 +61,7 @@ from medinv.modules.catalog.application.entity_settings import ProductEntitySett
 from medinv.modules.catalog.application.entry import EntryProducts
 from medinv.modules.catalog.application.field_rules import ProductFieldRules
 from medinv.modules.catalog.application.imports import ProductImports
-from medinv.modules.catalog.application.maintenance import CatalogMaintenance
+from medinv.modules.catalog.application.maintenance import CatalogMaintenance, Kind
 from medinv.modules.catalog.application.master import ProductMaster
 from medinv.modules.catalog.application.master_config import MasterConfiguration
 from medinv.modules.catalog.application.operations import CatalogOperations
@@ -215,7 +217,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.26.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.27.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1192,6 +1194,90 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ) -> dict[str, Any]:
         return envelope(request, catalog_maintenance.detail(auth(request), "product", id, offset))
 
+    @app.get("/api/v1/catalog/{area}/{id}/attachments")
+    def catalog_attachments(
+        request: Request, area: Literal["products", "parties"], id: UUID
+    ) -> dict[str, Any]:
+        kind: Kind = "product" if area == "products" else "party"
+        return envelope(request, CatalogAttachments(catalog.uow).listing(auth(request), kind, id))
+
+    @app.post(
+        "/api/v1/catalog/{area}/{id}/attachments",
+        openapi_extra={
+            "requestBody": {
+                "required": True,
+                "content": {
+                    "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        responses={413: {"description": "附件超过 5 MiB"}, 415: {"description": "附件格式不支持"}},
+    )
+    async def upload_catalog_attachment(
+        request: Request,
+        area: Literal["products", "parties"],
+        id: UUID,
+        filename: str = Query(min_length=1, max_length=180),
+        reason: str = Query(min_length=1, max_length=500),
+        previous_id: UUID | None = None,
+    ) -> dict[str, Any]:
+        kind: Kind = "product" if area == "products" else "party"
+        service = CatalogAttachments(catalog.uow)
+
+        def preflight() -> None:
+            service.scope(auth(request, write=True), kind, id, "catalog.write")
+
+        await anyio.to_thread.run_sync(preflight)
+        if request.headers.get("content-type", "").split(";", 1)[0] != "application/octet-stream":
+            raise BusinessError("ATTACHMENT_TYPE", "请使用二进制附件上传", 415)
+        data = bytearray()
+        async for chunk in request.stream():
+            if len(data) + len(chunk) > MAX_BYTES:
+                raise BusinessError("ATTACHMENT_SIZE", "单份附件不能超过 5 MiB", 413)
+            data.extend(chunk)
+
+        def save() -> dict[str, Any]:
+            # Reauthenticate after reading bytes; keep commit guard and transaction in one thread.
+            with guarded(request) as ctx:
+                return service.upload(
+                    ctx, kind, id, filename, bytes(data), reason, key(request), previous_id
+                )
+
+        return envelope(request, await anyio.to_thread.run_sync(save))
+
+    @app.get(
+        "/api/v1/catalog/{area}/{id}/attachments/{attachment_id}/content",
+        response_class=Response,
+        responses={
+            200: {
+                "description": "经过权限与完整性校验的私有文件",
+                "content": {
+                    "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+    )
+    def download_catalog_attachment(
+        request: Request,
+        area: Literal["products", "parties"],
+        id: UUID,
+        attachment_id: UUID,
+    ) -> Response:
+        kind: Kind = "product" if area == "products" else "party"
+        metadata, data = CatalogAttachments(catalog.uow).download(
+            auth(request), kind, id, attachment_id
+        )
+        return Response(
+            data,
+            media_type=metadata["media_type"],
+            headers={
+                "Content-Disposition": "attachment; filename*=UTF-8''"
+                + quote(metadata["filename"], safe=""),
+                "Content-Security-Policy": "sandbox; default-src 'none'",
+                "X-Content-SHA256": metadata["sha256"],
+            },
+        )
+
     @app.get("/api/v1/catalog/products/{id}/certificates")
     def product_certificates(request: Request, id: UUID) -> dict[str, Any]:
         return envelope(request, ProductCertificates(catalog.uow).list(auth(request), id))
@@ -1293,9 +1379,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with guarded(request) as ctx:
             return envelope(
                 request,
-                PartyCertificates(catalog.uow).review(
-                    ctx, id, certificate_id, body, key(request)
-                ),
+                PartyCertificates(catalog.uow).review(ctx, id, certificate_id, body, key(request)),
             )
 
     @app.post("/api/v1/catalog/products/{id}/revise")

@@ -12,6 +12,7 @@ from medinv.modules.catalog.api.party_certificates import (
     PartyCertificateReview,
     PartyCertificateRevision,
 )
+from medinv.modules.catalog.application.attachments import attachment_record
 from medinv.modules.catalog.application.maintenance import CatalogMaintenance
 from medinv.platform.database.commands import command
 from medinv.platform.database.events import audit
@@ -190,7 +191,10 @@ class PartyCertificates:
             # Serialize certificate writes with classification changes, before locking the child.
             parent = CatalogMaintenance.record(repo, "party", party, lock=True)
             self.check_business_uses(parent, body.business_uses)
+            if body.attachment_id:
+                attachment_record(repo, "party", party, body.attachment_id)
             target = certificate or uuid4()
+            values = {k: getattr(body, k) for k in PARTY_CERTIFICATE_FIELDS}
             before = None
             editors = {ctx.principal_id}
             if certificate:
@@ -198,7 +202,9 @@ class PartyCertificates:
                 before = record(repo, party, certificate, lock=True)
                 if str(before["version"]) != body.expected_version:
                     raise BusinessError("VERSION_CONFLICT", "证照已变化，请重新加载后修订", 409)
-                if all(before[k] == getattr(body, k) for k in PARTY_CERTIFICATE_FIELDS):
+                if "attachment_id" not in body.model_fields_set:
+                    values["attachment_id"] = before["attachment_id"]
+                if all(before[k] == values[k] for k in PARTY_CERTIFICATE_FIELDS):
                     raise BusinessError("CERTIFICATE_UNCHANGED", "证照内容没有变化", 422)
                 if before["state"] != "VERIFIED":
                     editors.update(before["revision_editors"])
@@ -211,7 +217,6 @@ class PartyCertificates:
             ):
                 raise BusinessError("CERTIFICATE_LIMIT", "每个往来单位最多维护100份证照记录", 422)
             self.check_duplicate(repo, party, body.certificate_type, body.number, target)
-            values = {k: getattr(body, k) for k in PARTY_CERTIFICATE_FIELDS}
             params = {
                 **values,
                 "t": ctx.tenant_id,
@@ -264,7 +269,12 @@ class PartyCertificates:
             else "catalog.party_certificate.create",
             f"{party}:{certificate or 'new'}",
             key,
-            body.model_dump(mode="json"),
+            body.model_dump(
+                mode="json",
+                exclude={"attachment_id"}
+                if "attachment_id" not in body.model_fields_set
+                else set(),
+            ),
             run,
         )
 

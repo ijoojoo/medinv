@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AttachmentLink from "./AttachmentLink.vue";
 import { session } from "./api";
 import { localTime } from "./sales";
 import { deviceClasses, profileFieldNames } from "./productProfile";
@@ -16,7 +17,11 @@ export interface CatalogEvent {
   action: string;
   detail: Record<string, any>;
 }
-defineProps<{ events: CatalogEvent[] }>();
+defineProps<{
+  events: CatalogEvent[];
+  attachmentArea?: "products" | "parties";
+  attachmentParent?: string;
+}>();
 const names: Record<string, string> = {
   ...profileFieldNames,
   ...partyFieldNames,
@@ -148,6 +153,17 @@ function changes(event: CatalogEvent) {
               }}
             </td>
             <td>
+              <AttachmentLink
+                v-if="
+                  key === 'attachment_id' &&
+                  event.detail.before[key] &&
+                  attachmentArea &&
+                  attachmentParent
+                "
+                :area="attachmentArea"
+                :parent="attachmentParent"
+                :id="event.detail.before[key]"
+              />
               {{
                 value(
                   event.detail.before[key],
@@ -158,6 +174,17 @@ function changes(event: CatalogEvent) {
               }}
             </td>
             <td>
+              <AttachmentLink
+                v-if="
+                  key === 'attachment_id' &&
+                  event.detail.after[key] &&
+                  attachmentArea &&
+                  attachmentParent
+                "
+                :area="attachmentArea"
+                :parent="attachmentParent"
+                :id="event.detail.after[key]"
+              />
               {{
                 value(
                   event.detail.after[key],

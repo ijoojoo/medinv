@@ -206,7 +206,9 @@ test("party multi-certificate and authorization lifecycle preserves admission an
     ).toEqual(before);
     await card.getByText("证照变更记录", { exact: true }).click();
     await card.getByText(/证照修订（待重新核验）/).click();
-    await expect(card.locator("table").last()).toContainText("授权事项");
+    await expect(card.locator(".catalog-history table").first()).toContainText(
+      "授权事项",
+    );
     await page.screenshot({
       path: "../../outputs/party-certificates/多证照与授权历史.png",
       fullPage: true,

@@ -1,0 +1,196 @@
+{
+  "recorded_at": "2026-10-21T09:03:01.706160+08:00",
+  "scope": "N05 private attachments and targeted certificate/security/contract/deployment regression; not complete P0 acceptance",
+  "application": "0.27.0",
+  "business_revision": "b0046",
+  "control_revision": "c0017",
+  "business_rls_tables": 94,
+  "core_api_paths": 167,
+  "backend": {
+    "tests": 119,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "backend_by_suite": {
+    "tests.integration.test_private_attachments": 26,
+    "tests.integration.test_product_certificates": 15,
+    "tests.integration.test_party_certificates": 31,
+    "tests.integration.test_tenancy": 5,
+    "tests.integration.test_api": 12,
+    "tests.architecture.test_boundaries": 2,
+    "tests.contracts.test_contract": 2,
+    "tests.unit.test_trial_deployment": 12,
+    "tests.unit.test_recovery_tools": 14
+  },
+  "frontend": {
+    "startTime": "2026-10-21T00:58:41.274Z",
+    "duration": 69573.227,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "static_checks": {
+    "ruff": "passed",
+    "mypy_strict": {
+      "source_files": 160,
+      "result": "passed"
+    },
+    "frontend_production_build": "passed",
+    "selected_browser_types": "passed",
+    "selected_frontend_format": "passed"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0046",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "readiness": {
+    "web": true,
+    "core": true,
+    "auth": true,
+    "identity": true,
+    "expiry_running": true,
+    "containers_running": true
+  },
+  "images": {
+    "core": {
+      "tag": "medinv-core:0.27.0",
+      "id": "sha256:107d660fccbfb9f2eb57b63cfa3704b461281dcb5595fd9ec65ad91bcf40518c"
+    },
+    "web": {
+      "tag": "medinv-web:0.27.0",
+      "id": "sha256:cddb86a69281f8c55df9b9fe8e6aaa9fb2795d39425c5987bdd343263b2621b2"
+    }
+  },
+  "running_images": {
+    "core": {
+      "running_image": "sha256:107d660fccbfb9f2eb57b63cfa3704b461281dcb5595fd9ec65ad91bcf40518c",
+      "expected_image": "sha256:107d660fccbfb9f2eb57b63cfa3704b461281dcb5595fd9ec65ad91bcf40518c",
+      "matches": true
+    },
+    "auth": {
+      "running_image": "sha256:107d660fccbfb9f2eb57b63cfa3704b461281dcb5595fd9ec65ad91bcf40518c",
+      "expected_image": "sha256:107d660fccbfb9f2eb57b63cfa3704b461281dcb5595fd9ec65ad91bcf40518c",
+      "matches": true
+    },
+    "expiry": {
+      "running_image": "sha256:107d660fccbfb9f2eb57b63cfa3704b461281dcb5595fd9ec65ad91bcf40518c",
+      "expected_image": "sha256:107d660fccbfb9f2eb57b63cfa3704b461281dcb5595fd9ec65ad91bcf40518c",
+      "matches": true
+    },
+    "web": {
+      "running_image": "sha256:cddb86a69281f8c55df9b9fe8e6aaa9fb2795d39425c5987bdd343263b2621b2",
+      "expected_image": "sha256:cddb86a69281f8c55df9b9fe8e6aaa9fb2795d39425c5987bdd343263b2621b2",
+      "matches": true
+    }
+  },
+  "runtime_openapi_matches_snapshot": true,
+  "container_smoke": {
+    "runtime_uid": 10001,
+    "database_connections": 2,
+    "api_paths": 167,
+    "version_and_http_methods_match": true,
+    "expiry_errors": 0
+  },
+  "restore": {
+    "status": "passed",
+    "backup_id": "a2bff2c32b7c4497a015fc6f2be9f7ed",
+    "backup_bytes": 203717540,
+    "backup_sha256": "94f114364594b560e23720a532da2adac06cf8ccb359236cf17bad06915ae9ed",
+    "target": "medinv-restore-932344c61ae8",
+    "all_table_counts_match": true,
+    "rls_tables": 94,
+    "attachment_versions_restored_and_downloaded": 48,
+    "attachment_hashes_match": true,
+    "metadata_and_chain_match": true,
+    "source_overwritten": false,
+    "application_cutover_performed": false
+  },
+  "limitations": [
+    "Local trial only; no remote CI or cross-machine restore.",
+    "Restore validated all table counts and attachment downloads; no application URL cutover or full business continuation drill.",
+    "Format signatures are checked; malware scanning and object storage are deferred.",
+    "Per file 5 MiB; per parent 100 versions and 100 MiB; the existing local backup tool retains its 256 MiB unpacked limit."
+  ],
+  "artifacts": {
+    "artifacts/private-attachments/backend.xml": {
+      "bytes": 17662,
+      "sha256": "8f71edb40b7aebe264202d2bd2f456ac1e01ae4f219300077276f1271647b9f8"
+    },
+    "artifacts/private-attachments/backend.log": {
+      "bytes": 726,
+      "sha256": "5a3173c7ceaa3edcc15031d4b8cd98cb849d7f6b57952cb833207171f204d968"
+    },
+    "artifacts/private-attachments/browser.json": {
+      "bytes": 9214,
+      "sha256": "f97a938791125967a9a9bbf7cc90e0e2d13590ba7b7140f1a89a7943accb1c23"
+    },
+    "artifacts/private-attachments/browser.log": {
+      "bytes": 939,
+      "sha256": "7636c06768644f95c92949f996f06fecff4a2ccda0655c7c2523ce4bf007a98a"
+    },
+    "artifacts/private-attachments/container.log": {
+      "bytes": 807,
+      "sha256": "cb7a9b4df2457b451c4d11c5e9a6f9cbad77905c38caa759ca0a0426baa0be2b"
+    },
+    "artifacts/private-attachments/mypy.log": {
+      "bytes": 46,
+      "sha256": "0ca31fb4a6b0fd92e95cb15a20118731232af2df522435f25badff2d909a762c"
+    },
+    "artifacts/private-attachments/runtime-check.json": {
+      "bytes": 613,
+      "sha256": "cf441398763e818f361594f9ed27d63b4533ef46f2a844158558012c00b2d399"
+    },
+    "artifacts/private-attachments/runtime-status.json": {
+      "bytes": 644,
+      "sha256": "7176efcdf4899c49c87594c30b4b8fc28e3324cce865b98f7d02830448b2573b"
+    },
+    "artifacts/private-attachments/running-images.json": {
+      "bytes": 944,
+      "sha256": "d8b8d7c62bc4655cbf2764dbf06bf89abc771fea485ff42f253f11aca65c958a"
+    },
+    "artifacts/private-attachments/restore-check.json": {
+      "bytes": 498,
+      "sha256": "b768b6fc6b598794b79c67ad6abc46f10ec96e1e410ab395c6af037ab1af1ce5"
+    },
+    "outputs/private-attachments/parties-附件版本.png": {
+      "bytes": 107736,
+      "sha256": "998aaf0682144e01681dd0b63df9ef1462f460466afe7f1cb411c7c104733fad"
+    },
+    "outputs/private-attachments/products-附件版本.png": {
+      "bytes": 113941,
+      "sha256": "a5b72a0f4d660c04909a0603dc8ea5074ab866f57015024ee1abcc72cd4ef677"
+    }
+  }
+}

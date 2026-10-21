@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import Field, StrictStr, StringConstraints, model_validator
 
@@ -42,6 +43,7 @@ class PartyCertificateValues(DTO):
     valid_until: date | None = None
     evidence_ref: Annotated[OptionalText, Field(max_length=120)] = ""
     note: Annotated[OptionalText, Field(max_length=500)] = ""
+    attachment_id: UUID | None = None
 
     @model_validator(mode="after")
     def validate_record(self) -> PartyCertificateValues:

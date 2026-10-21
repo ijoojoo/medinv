@@ -127,7 +127,14 @@ def test_pause_failure_unfences_and_resumes_original_services(workspace, monkeyp
     monkeypatch.setattr(recovery, "limits", lambda _: {d: -1 for d in recovery.DATABASES})
     operations = []
     monkeypatch.setattr(recovery, "set_limits", lambda pg, values: operations.append(values))
-    monkeypatch.setattr(recovery, "run", lambda label, args: operations.append(args) or b"")
+    def stopped_command(label, args):
+        operations.append(args)
+        if "stop" in args:
+            for service in recovery.WRITERS:
+                original[service]["State"]["Running"] = False
+        return b""
+
+    monkeypatch.setattr(recovery, "run", stopped_command)
 
     def busy(_):
         raise recovery.trial.TrialError("other writer")

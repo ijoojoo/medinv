@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CatalogAttachments from "./CatalogAttachments.vue";
 import DateInput from "./DateInput.vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessageBox } from "element-plus";
@@ -41,6 +42,7 @@ const root = computed(
 const data = ref<Listing | null>(null),
   detail = ref<Detail | null>(null),
   loading = ref(false);
+const attachmentEditing = ref(false);
 const mode = ref<"create" | "edit" | "review" | null>(null),
   values = ref(emptyCertificate());
 const baseline = ref(""),
@@ -58,7 +60,7 @@ const dirty = computed(
         JSON.stringify(certificateValues(values.value)) !== baseline.value)),
 );
 watch(
-  () => dirty.value || busy.value,
+  () => dirty.value || busy.value || attachmentEditing.value,
   (value) => emit("editing", value),
 );
 onUnmounted(
@@ -129,6 +131,7 @@ async function cancel() {
   mode.value = null;
 }
 async function save() {
+  if (attachmentEditing.value) return;
   const action = mode.value;
   if (!action || (action !== "create" && !detail.value)) return;
   const path =
@@ -298,7 +301,11 @@ onMounted(load);
       </dl>
       <details>
         <summary>证照变更记录</summary>
-        <CatalogHistory :events="detail.history" />
+        <CatalogHistory
+          :events="detail.history"
+          attachment-area="products"
+          :attachment-parent="product"
+        />
         <div class="pager">
           <el-button
             :disabled="loading || historyOffset === 0"
@@ -442,11 +449,25 @@ onMounted(load);
           type="primary"
           native-type="submit"
           :loading="busy"
-          :disabled="loading || !dirty"
+          :disabled="loading || attachmentEditing || !dirty"
           >{{ mode === "review" ? "提交证照核验" : "保存证照草稿" }}</el-button
         >
       </div>
     </form>
+    <CatalogAttachments
+      area="products"
+      :parent="product"
+      :model-value="
+        mode && mode !== 'review'
+          ? values.attachment_id
+          : detail?.record.attachment_id || null
+      "
+      :selectable="mode === 'create' || mode === 'edit'"
+      :disabled="busy || loading"
+      @update:model-value="values.attachment_id = $event"
+      @editing="attachmentEditing = $event"
+      @failure="emit('failure', $event)"
+    />
   </section>
 </template>
 <style scoped>

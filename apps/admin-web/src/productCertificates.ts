@@ -10,6 +10,7 @@ export const certificateNames: Record<string, string> = {
   valid_until: "有效期截止日期",
   evidence_ref: "原件凭据编号",
   note: "证照备注",
+  attachment_id: "关联附件版本",
   state: "证照核验状态",
 };
 export const certificateLabels: Record<string, string> = {
@@ -40,8 +41,11 @@ export interface CertificateValues {
   valid_until: string | null;
   evidence_ref: string;
   note: string;
+  attachment_id: string | null;
 }
 export function certificateValue(value: unknown, key: string): string {
+  if (key === "attachment_id")
+    return value ? "已关联固定附件版本" : "未关联附件";
   if (["certificate_type", "validity_mode", "state"].includes(key))
     return certificateLabels[String(value)] || String(value ?? "未填写");
   return value === null || value === undefined || value === ""
@@ -70,6 +74,7 @@ export function emptyCertificate(type = "DEVICE_FILING"): CertificateValues {
     valid_until: null,
     evidence_ref: "",
     note: "",
+    attachment_id: null,
   };
 }
 export function certificateValues(row: CertificateValues): CertificateValues {

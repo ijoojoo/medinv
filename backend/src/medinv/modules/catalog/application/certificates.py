@@ -11,6 +11,7 @@ from medinv.modules.catalog.api.certificates import (
     CertificateReview,
     CertificateRevision,
 )
+from medinv.modules.catalog.application.attachments import attachment_record
 from medinv.modules.catalog.application.maintenance import CatalogMaintenance
 from medinv.platform.database.commands import command
 from medinv.platform.database.events import audit
@@ -198,7 +199,10 @@ class ProductCertificates:
             # Serialize certificate writes with classification changes, before locking the child.
             parent = CatalogMaintenance.record(repo, "product", product, lock=True)
             self.check_type(parent, body.certificate_type)
+            if body.attachment_id:
+                attachment_record(repo, "product", product, body.attachment_id)
             target = certificate or uuid4()
+            values = {k: getattr(body, k) for k in CERTIFICATE_FIELDS}
             before = None
             editors = {ctx.principal_id}
             if certificate:
@@ -206,7 +210,9 @@ class ProductCertificates:
                 before = record(repo, product, certificate, lock=True)
                 if str(before["version"]) != body.expected_version:
                     raise BusinessError("VERSION_CONFLICT", "证照已变化，请重新加载后修订", 409)
-                if all(before[k] == getattr(body, k) for k in CERTIFICATE_FIELDS):
+                if "attachment_id" not in body.model_fields_set:
+                    values["attachment_id"] = before["attachment_id"]
+                if all(before[k] == values[k] for k in CERTIFICATE_FIELDS):
                     raise BusinessError("CERTIFICATE_UNCHANGED", "证照内容没有变化", 422)
                 if before["state"] != "VERIFIED":
                     editors.update(before["revision_editors"])
@@ -219,7 +225,6 @@ class ProductCertificates:
             ):
                 raise BusinessError("CERTIFICATE_LIMIT", "每个商品最多维护100份证照记录", 422)
             self.check_duplicate(repo, product, body.certificate_type, body.number, target)
-            values = {k: getattr(body, k) for k in CERTIFICATE_FIELDS}
             params = {
                 **values,
                 "t": ctx.tenant_id,
@@ -269,7 +274,12 @@ class ProductCertificates:
             "catalog.certificate.revise" if certificate else "catalog.certificate.create",
             f"{product}:{certificate or 'new'}",
             key,
-            body.model_dump(mode="json"),
+            body.model_dump(
+                mode="json",
+                exclude={"attachment_id"}
+                if "attachment_id" not in body.model_fields_set
+                else set(),
+            ),
             run,
         )
 
