@@ -1,0 +1,196 @@
+{
+  "date": "2026-10-21",
+  "version": "0.36.0",
+  "scope": [
+    "采购订单",
+    "采购收货",
+    "采购验收",
+    "采购入库",
+    "销售订单",
+    "销售出库",
+    "质量验收查询入口"
+  ],
+  "backend": {
+    "passed": 21,
+    "warnings": 1,
+    "duration_seconds": 16.17,
+    "log": "artifacts/document-reports/backend.log",
+    "files": [
+      "test_document_reports.py",
+      "test_quality_records.py",
+      "test_purchase_workflow.py",
+      "test_contract.py"
+    ],
+    "checks": [
+      "实际阶段粒度与过账金额",
+      "摘要/明细/图表一致",
+      "历史名称留存",
+      "权限/主体/租户隔离",
+      "质量只读金额隐藏",
+      "CSV字段白名单及导出行数限制",
+      "全部筛选结果跨页统计",
+      "其他分组去重及不同单位隔离",
+      "北京时间边界",
+      "查询不产生业务写入"
+    ]
+  },
+  "browser": {
+    "passed_distinct": 6,
+    "latest_outcomes": [
+      {
+        "file": "document-reports.spec.ts",
+        "title": "independent purchase reports drill down, configure columns, link records, export and graph filtered facts",
+        "status": "passed"
+      },
+      {
+        "file": "document-reports.spec.ts",
+        "title": "business record buttons open independent reports and query failures do not expose stale results",
+        "status": "passed"
+      },
+      {
+        "file": "document-reports.spec.ts",
+        "title": "report chart and export HTTP APIs use read permission with no mutation buttons",
+        "status": "passed"
+      },
+      {
+        "file": "procurement.spec.ts",
+        "title": "two roles complete purchase, partial inspection, posting and rejected handback in the UI",
+        "status": "passed"
+      },
+      {
+        "file": "procurement.spec.ts",
+        "title": "viewer can read purchasing and catalog but has no write controls",
+        "status": "passed"
+      },
+      {
+        "file": "quality-records.spec.ts",
+        "title": "inspection report filters, historical CSV download, source navigation and narrow layout",
+        "status": "passed"
+      }
+    ],
+    "batches": [
+      {
+        "report": "artifacts/document-reports/browser-delivery.json",
+        "stats": {
+          "startTime": "2026-10-21T11:48:22.512Z",
+          "duration": 75952.762,
+          "expected": 5,
+          "skipped": 0,
+          "unexpected": 1,
+          "flaky": 0
+        }
+      },
+      {
+        "report": "artifacts/document-reports/browser-procurement-complete.json",
+        "stats": {
+          "startTime": "2026-10-21T11:52:25.356Z",
+          "duration": 26840.796000000002,
+          "expected": 2,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    ],
+    "note": "分批复验：交付批次5通过1失败；旧采购用例按当前主数据和动态字段合同修正后，采购2项全部通过，合计6个独立场景均有通过结果。未将早期失败记为一次全绿。",
+    "fixes": [
+      "图表下拉选择器补齐明确的可访问名称",
+      "窄屏表格取消固定列避免遮挡",
+      "旧采购测试补齐必填监管身份、更新审核补充说明及动态字段定位，不放宽业务规则"
+    ],
+    "widths": [
+      390,
+      768,
+      1440,
+      2560
+    ]
+  },
+  "static": {
+    "vue_tsc": "passed",
+    "production_build": "passed",
+    "ruff": "passed",
+    "mypy": "passed:175 source files",
+    "prettier": "passed:src and changed tests",
+    "git_diff_check": "passed"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0054",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "smoke": {
+    "passed": true,
+    "log": "artifacts/document-reports/smoke.json",
+    "api_paths": 195,
+    "nonroot": true,
+    "expiry_errors": 0
+  },
+  "database": {
+    "business": "b0054",
+    "control": "c0017",
+    "forced_rls_tables": 102,
+    "migration_added": false
+  },
+  "images": {
+    "medinv-web:0.36.0": "e138c0723420",
+    "medinv-core:0.36.0": "b0d731e85d0d"
+  },
+  "cleanup": {
+    "unused_images_removed": [
+      "medinv-web:0.35.0",
+      "medinv-core:0.35.0"
+    ],
+    "volumes_removed": []
+  },
+  "screenshots": [
+    "outputs/document-reports/quality/质量记录-窄屏.png",
+    "outputs/document-reports/quality/质量记录-筛选导出.png",
+    "outputs/document-reports/单据汇总-1440.png",
+    "outputs/document-reports/单据汇总-2560.png",
+    "outputs/document-reports/单据汇总-390.png",
+    "outputs/document-reports/单据汇总-768.png",
+    "outputs/document-reports/窄屏表格.png",
+    "outputs/document-reports/验收图形报表.png"
+  ],
+  "boundaries": [
+    "字段配置仅在当前浏览器按账号/企业/主体/类型/视图保存",
+    "收货和验收金额为参考，不作为应付金额",
+    "查询汇总以匹配的明细为范围",
+    "退货/调拨/盘点/期初/零售/财务查询未在本轮改造",
+    "未进行全站全量测试或完整备份恢复演练"
+  ],
+  "next_three": [
+    "N07 日期与正式备注",
+    "N08 往来单位导入",
+    "N09 更多记录类型与固定打印"
+  ]
+}

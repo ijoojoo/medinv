@@ -1,6 +1,11 @@
-import { chooseParty, command } from "./business-helpers";
+import { chooseParty, command, read } from "./business-helpers";
 import { chooseEntrySku, nav } from "./business-helpers";
-import { test, expect, type BrowserContext } from "@playwright/test";
+import {
+  test,
+  expect,
+  type Locator,
+  type BrowserContext,
+} from "@playwright/test";
 import { login, headers } from "./helpers";
 
 async function wholesale(context: BrowserContext, user: string) {
@@ -20,6 +25,14 @@ async function wholesale(context: BrowserContext, user: string) {
     current = (await response.json()).data;
   }
   return current;
+}
+
+async function assertQuantity(row: Locator, key: string, expected: number) {
+  await expect
+    .poll(async () =>
+      Number(await row.locator(`[data-grid-cell="${key}"]`).innerText()),
+    )
+    .toBe(expected);
 }
 
 test("two roles complete purchase, partial inspection, posting and rejected handback in the UI", async ({
@@ -47,6 +60,7 @@ test("two roles complete purchase, partial inspection, posting and rejected hand
       sku_code: "S-" + suffix,
       name: product,
       category: "DEVICE",
+      device_class: "I",
       manufacturer_name: "软件测试厂家",
       specification: "单件",
       approval_number: "DEMO-ONLY",
@@ -66,12 +80,63 @@ test("two roles complete purchase, partial inspection, posting and rejected hand
       valid_until: `${year + 2}-12-31`,
       categories: ["DEVICE"],
     });
+    // Bring this older purchasing fixture up to the current MDM identity contract.
+    const schema = await read(context, "/api/v1/catalog/master/schema");
+    const cert = await command(
+      context,
+      owner,
+      `/api/v1/catalog/products/${item.id}/certificates`,
+      {
+        certificate_type: "DEVICE_FILING",
+        number: "TEST-FILING-" + suffix,
+        holder_name: "软件测试厂家",
+        issuer: "软件测试机关",
+        validity_mode: "FIXED",
+        valid_from: `${year}-01-01`,
+        valid_until: `${year + 2}-12-31`,
+        evidence_ref: "E2E-DEMO-FILE",
+        reason: "软件测试资质",
+      },
+    );
+    const current = (await read(context, `/api/v1/catalog/products/${item.id}`))
+      .record;
+    const identity = await command(
+      context,
+      owner,
+      "/api/v1/catalog/master/products",
+      {
+        product_id: item.id,
+        category_node_id: schema.payload.nodes.find(
+          (n: any) => n.node_code === "device",
+        ).node_id,
+        form_revision: schema.revision,
+        expected_version: Number(current.version),
+        values: {
+          regulatory_subtype: "MEDICAL_DEVICE",
+          device_class: "I",
+          regulatory_subject: [
+            { organization_name: "软件测试厂家", role_code: "DEVICE_FILER" },
+          ],
+          manufacturer: [
+            { organization_name: "软件测试厂家", role_code: "MANUFACTURER" },
+          ],
+          product_certificates: [
+            {
+              certificate_id: cert.id,
+              certificate_version: Number(cert.version),
+              business_use: true,
+            },
+          ],
+        },
+        reason: "补齐当前监管身份",
+      },
+    );
     for (const [kind, id] of [
       ["products", item.id],
       ["parties", party.id],
     ])
       await command(reviewer, checker, `/api/v1/catalog/${kind}/${id}/review`, {
-        expected_version: "1",
+        expected_version: kind === "products" ? String(identity.version) : "1",
         decision: "APPROVE",
         evidence_ref: "E2E-DEMO-FILE",
         reason: "仅供软件测试的虚拟资质",
@@ -115,7 +180,7 @@ test("two roles complete purchase, partial inspection, posting and rejected hand
       .getByRole("button", { name: "审核采购单", exact: true })
       .click();
     dialog = quality.getByRole("dialog");
-    await dialog.getByLabel("操作说明").fill("商品与供应商资质已核查");
+    await dialog.getByLabel("补充说明").fill("商品与供应商资质已核查");
     await dialog.getByRole("button", { name: "确认审核" }).click();
     await expect(dialog).not.toBeVisible();
     await page.getByRole("button", { name: "刷新单据" }).click();
@@ -151,17 +216,20 @@ test("two roles complete purchase, partial inspection, posting and rejected hand
       .locator("[data-testid^='receipt-lines-']")
       .getByRole("row")
       .filter({ hasText: product });
-    await expect(receiptRow.getByRole("cell").nth(2)).toHaveText("2");
-    await expect(receiptRow.getByRole("cell").nth(5)).toHaveText("0");
+    await assertQuantity(receiptRow, "pending_qty", 2);
+    await assertQuantity(receiptRow, "posted_qty", 0);
     await quality
       .getByRole("button", { name: "合格入库", exact: true })
       .click();
     dialog = quality.getByRole("dialog");
-    await expect(dialog).toContainText("6 个");
+    await assertQuantity(dialog, "qualified_qty", 6);
+    await expect(dialog.locator('[data-grid-cell="base_unit"]')).toHaveText(
+      "个",
+    );
     await dialog.getByRole("button", { name: "确认入库", exact: true }).click();
     await expect(dialog).not.toBeVisible();
-    await expect(receiptRow.getByRole("cell").nth(5)).toHaveText("6");
-    await expect(receiptRow.getByRole("cell").nth(6)).toHaveText("4");
+    await assertQuantity(receiptRow, "posted_qty", 6);
+    await assertQuantity(receiptRow, "custody_qty", 4);
     await expect(quality.locator(".el-message")).toHaveCount(0);
     await quality.screenshot({
       path: "../../artifacts/purchase-partial-inspection.png",
@@ -216,11 +284,9 @@ test("two roles complete purchase, partial inspection, posting and rejected hand
       await dialog.getByLabel("退回说明").fill("破损拒收品已当面清点交接");
       await dialog.getByRole("button", { name: "确认实物已退回" }).click();
       await expect(dialog).not.toBeVisible();
-      await expect(ownerRow.getByRole("cell").nth(5)).toHaveText("6");
-      await expect(ownerRow.getByRole("cell").nth(6)).toHaveText(
-        String(4 - index),
-      );
-      await expect(ownerRow.getByRole("cell").nth(7)).toHaveText(String(index));
+      await assertQuantity(ownerRow, "posted_qty", 6);
+      await assertQuantity(ownerRow, "custody_qty", 4 - index);
+      await assertQuantity(ownerRow, "rejected_returned_qty", index);
     }
     await expect(
       page.getByRole("button", { name: "拒收退回供应商", exact: true }),
@@ -266,9 +332,9 @@ test("two roles complete purchase, partial inspection, posting and rejected hand
       .getByRole("button", { name: "确认入库", exact: true })
       .click();
     await expect(quality.getByRole("dialog")).not.toBeVisible();
-    await expect(receiptRow.getByRole("cell").nth(5)).toHaveText("8");
-    await expect(receiptRow.getByRole("cell").nth(6)).toHaveText("0");
-    await expect(receiptRow.getByRole("cell").nth(7)).toHaveText("2");
+    await assertQuantity(receiptRow, "posted_qty", 8);
+    await assertQuantity(receiptRow, "custody_qty", 0);
+    await assertQuantity(receiptRow, "rejected_returned_qty", 2);
     await quality.getByText("查看拒收退回记录", { exact: true }).click();
     await expect(quality.locator(".el-message")).toHaveCount(0);
     await quality.evaluate(() => window.scrollTo(0, 0));

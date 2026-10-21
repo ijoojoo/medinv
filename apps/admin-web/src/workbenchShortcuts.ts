@@ -36,12 +36,7 @@ const definitions: WorkbenchShortcut[] = [
     .map((i) => ({
       ...i,
       id: i.page,
-      name:
-        i.page === "purchasing"
-          ? "采购记录"
-          : i.page === "selling"
-            ? "销售记录"
-            : i.name,
+      name: i.name,
     })),
 ];
 export const availableShortcuts = computed(() =>

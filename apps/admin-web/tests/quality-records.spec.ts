@@ -25,7 +25,7 @@ test("inspection report filters, historical CSV download, source navigation and 
   const original = { owner, quality },
     suffix = randomUUID().slice(0, 8),
     folder = resolve("../../artifacts/quality-records"),
-    shots = resolve("../../outputs/quality-records");
+    shots = resolve("../../outputs/document-reports/quality");
   await mkdir(folder, { recursive: true });
   await mkdir(shots, { recursive: true });
   const file = resolve(folder, `tenant-${suffix}.json`);
@@ -135,35 +135,42 @@ test("inspection report filters, historical CSV download, source navigation and 
     }
     const url = `/workspace/quality-records?tenant=${tenant.tenant_id}&entity=${tenant.entity_id}`;
     await page.goto(url);
-    const report = page.getByRole("region", { name: "质量记录", exact: true }),
-      summary = report.getByLabel("筛选结果汇总", { exact: true }),
+    const report = page.getByRole("region", {
+        name: "质量记录查询",
+        exact: true,
+      }),
+      summary = report.locator(".report-pager"),
       rows = report.locator("tbody tr"),
       exportButton = report.getByRole("button", {
-        name: "导出筛选结果 CSV",
+        name: "导出全部筛选结果",
         exact: true,
       });
-    await expect(summary).toContainText("4 次验收 · 4 条明细");
+    await expect(summary).toContainText("共 4 张单据");
+    await report.getByRole("tab", { name: "单据明细", exact: true }).click();
+    await expect(summary).toContainText("共 4 条明细");
     await report.getByLabel("批号", { exact: true }).fill(lot);
     await expect(exportButton).toBeDisabled();
     await report.getByRole("button", { name: "查询", exact: true }).click();
-    await expect(summary).toContainText("3 次验收 · 3 条明细");
-    await expect(summary).toContainText("合格 3.000000 / 拒收 3.000000");
+    await expect(summary).toContainText("共 3 条明细");
+    await expect(report.locator(".report-unit-totals")).toContainText(
+      "合格 3.000000 / 拒收 3.000000",
+    );
     await expect(rows).toHaveCount(3);
     await report
-      .getByRole("combobox", { name: "本次行验收结果", exact: true })
+      .getByRole("combobox", { name: "状态／结果", exact: true })
       .selectOption("MIXED");
     await report.getByRole("button", { name: "查询", exact: true }).click();
-    await expect(summary).toContainText("1 次验收 · 1 条明细");
+    await expect(summary).toContainText("共 1 条明细");
     await expect(rows).toContainText("部分拒收");
     const downloadEvent = page.waitForEvent("download");
     await exportButton.click();
     const download = await downloadEvent;
-    expect(download.suggestedFilename()).toMatch(/^采购验收记录-.*\.csv$/);
+    expect(download.suggestedFilename()).toMatch(/^采购验收-明细-.*\.csv$/);
     const csvFile = resolve(folder, "filtered-inspections.csv");
     await download.saveAs(csvFile);
     const csv = await readFile(csvFile, "utf-8");
     expect(csv.startsWith("\ufeff")).toBe(true);
-    expect(csv).toContain("商品名称（订购时）");
+    expect(csv).toContain("商品名称");
     expect(csv).toContain(seeded.name);
     expect(csv).toContain(lot);
     expect(csv).toContain('"\'=软件测试,""含引号""\n第二行"');
@@ -174,20 +181,35 @@ test("inspection report filters, historical CSV download, source navigation and 
       path: resolve(shots, "质量记录-筛选导出.png"),
       fullPage: true,
     });
+    await report.getByRole("tab", { name: "单据汇总", exact: true }).click();
+    await expect(summary).toContainText("共 1 张单据");
     await report
-      .getByRole("button", { name: "查看原采购单", exact: true })
+      .getByRole("button", { name: "查看关联记录", exact: true })
       .click();
-    await expect(page).toHaveURL(new RegExp(`order=${order.id}`));
+    const linked = page.getByRole("dialog", { name: "查看关联记录" });
+    await linked
+      .locator(".report-related")
+      .filter({
+        has: page.getByRole("heading", { name: "采购订单", exact: true }),
+      })
+      .getByRole("button", { name: doc.order.number, exact: true })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`q_document_id=${order.id}`));
+    await expect(
+      page
+        .locator(".document-reports:visible")
+        .getByRole("tab", { name: "单据明细", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
     await page.goto(url);
-    await expect(summary).toContainText("4 次验收 · 4 条明细");
+    await expect(summary).toContainText("共 4 张单据");
     await report.getByRole("button", { name: "近30天", exact: true }).click();
-    await expect(summary).toContainText("4 次验收 · 4 条明细");
-    await report.getByLabel("供应商", { exact: true }).fill("不存在的单位");
+    await expect(summary).toContainText("共 4 张单据");
+    await report.getByLabel("往来单位", { exact: true }).fill("不存在的单位");
     await report.getByRole("button", { name: "查询", exact: true }).click();
-    await expect(summary).toContainText("0 次验收 · 0 条明细");
+    await expect(summary).toContainText("共 0 张单据");
     await expect(exportButton).toBeDisabled();
     await report.getByRole("button", { name: "重置", exact: true }).click();
-    await expect(summary).toContainText("4 次验收 · 4 条明细");
+    await expect(summary).toContainText("共 4 张单据");
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.locator(".main-shell").evaluate((el) => el.scrollTo(0, 0));
     expect(

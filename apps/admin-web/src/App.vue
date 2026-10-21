@@ -126,8 +126,8 @@ import FinancePage from "./FinancePage.vue";
 const QualityPage = defineAsyncComponent(
   () => import("./QualityWorkspace.vue"),
 );
-const QualityRecords = defineAsyncComponent(
-  () => import("./QualityRecords.vue"),
+const DocumentReportsPage = defineAsyncComponent(
+  () => import("./DocumentReportsPage.vue"),
 );
 const ManagementRecords = defineAsyncComponent(
   () => import("./ManagementRecords.vue"),
@@ -894,10 +894,22 @@ onUnmounted(() => {
                 })
             "
           />
-          <QualityRecords
-            v-if="page === 'quality-records'"
-            @failure="failure"
-          />
+          <template
+            v-for="reportPage in [
+              'purchase-reports',
+              'sales-reports',
+              'quality-records',
+            ]"
+            :key="reportPage"
+          >
+            <DocumentReportsPage
+              v-if="moduleTabs.includes(reportPage)"
+              v-show="page === reportPage"
+              :page="reportPage"
+              :active="page === reportPage"
+              @failure="failure"
+            />
+          </template>
           <AppearanceSettings
             v-if="moduleTabs.includes('appearance')"
             v-show="page === 'appearance'"

@@ -172,6 +172,8 @@ from medinv.modules.workspace.application.dashboard import WorkDashboard
 from medinv.modules.workspace.application.queue import WorkKind, WorkQueue
 from medinv.modules.workspace.approvals import ApprovalWorkflows, PolicyPublish
 from medinv.modules.workspace.document_columns import ColumnSave as DocumentColumnSave
+from medinv.modules.workspace.document_reports import DocumentReports, ReportQuery
+from medinv.modules.workspace.document_reports import Kind as ReportKind
 from medinv.modules.workspace.drafts import (
     Channel,
     DocumentDrafts,
@@ -232,7 +234,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.35.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.36.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1314,6 +1316,42 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 request,
                 ApprovalWorkflows(catalog.uow).transition(ctx, id, body, key(request), action),
             )
+
+    @app.get("/api/v1/document-reports/{kind}")
+    def document_report(
+        request: Request, kind: ReportKind, filters: Annotated[ReportQuery, Query()]
+    ) -> dict[str, Any]:
+        return envelope(request, DocumentReports(catalog.uow).listing(auth(request), kind, filters))
+
+    @app.get(
+        "/api/v1/document-reports/{kind}/export",
+        response_class=Response,
+        responses={200: {"content": {"text/csv": {"schema": {"type": "string"}}}}},
+    )
+    def export_document_report(
+        request: Request, kind: ReportKind, filters: Annotated[ReportQuery, Query()]
+    ) -> Response:
+        # Columns belong to the query model so FastAPI keeps all filters flat.
+        content, filename, count = DocumentReports(catalog.uow).export(
+            auth(request), kind, filters, filters.columns
+        )
+        return Response(
+            content=content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": "attachment; filename*=UTF-8''" + quote(filename, safe=""),
+                "Cache-Control": "no-store",
+                "X-Export-Rows": str(count),
+            },
+        )
+
+    @app.get("/api/v1/document-reports/{kind}/{id}/related")
+    def related_document_report(
+        request: Request, kind: ReportKind, id: UUID, entity_id: UUID
+    ) -> dict[str, Any]:
+        return envelope(
+            request, DocumentReports(catalog.uow).related(auth(request), kind, entity_id, id)
+        )
 
     @app.get("/api/v1/quality-records")
     def quality_records(

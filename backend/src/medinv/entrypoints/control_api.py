@@ -60,7 +60,7 @@ def create_app(
         finally:
             engine.dispose()
 
-    app = FastAPI(title="药械进销存 · 身份与企业管理", version="0.35.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 身份与企业管理", version="0.36.0", lifespan=lifespan)
 
     def error(request: Request, exc: BusinessError) -> JSONResponse:
         return JSONResponse(

@@ -124,6 +124,17 @@ export const moduleTabs = ref<string[]>(["overview"]);
 export const editors = reactive<Record<string, EditorState>>({});
 export const editorLoading = ref(false),
   editorError = ref("");
+export const reportRoute = ref<{
+  page: string;
+  entity: string;
+  kind: string;
+  tab: string;
+  filters: Record<string, string>;
+} | null>(null);
+export function setReportRoute(value: NonNullable<typeof reportRoute.value>) {
+  reportRoute.value = value;
+  if (workspacePage.value === value.page) rememberRoute(true);
+}
 export const recordNavigation = ref<{
   channel: EntryChannel;
   id: string;
@@ -210,6 +221,19 @@ function rememberRoute(replace = false) {
   ) {
     params.set("order", target.id);
     params.set("entity", target.entity);
+  }
+  const report = reportRoute.value;
+  if (
+    !activeEditor.value &&
+    !activeRecord.value &&
+    report?.page === workspacePage.value &&
+    report.entity === activeEntity.value
+  ) {
+    params.set("entity", report.entity);
+    params.set("kind", report.kind);
+    params.set("reportTab", report.tab);
+    for (const [key, value] of Object.entries(report.filters))
+      if (value) params.set("q_" + key, value);
   }
   const url = `${path}?${params}`;
   if (location.pathname + location.search !== url)
@@ -789,6 +813,37 @@ async function readRoute() {
       url.searchParams.get("tab") || "",
     );
   }
+  if (["purchase-reports", "sales-reports", "quality-records"].includes(page)) {
+    const entity = url.searchParams.get("entity") || activeEntity.value;
+    if (
+      entity !== activeEntity.value &&
+      (!(await guardCatalogLeave()) || !selectEntity(entity))
+    ) {
+      goPage("overview");
+      return;
+    }
+    const filters: Record<string, string> = {};
+    for (const key of [
+      "search",
+      "party",
+      "product",
+      "warehouse",
+      "lot_no",
+      "state",
+      "date_from",
+      "date_to",
+      "document_id",
+      "order_id",
+    ])
+      filters[key] = url.searchParams.get("q_" + key) || "";
+    reportRoute.value = {
+      page,
+      entity,
+      kind: url.searchParams.get("kind") || "",
+      tab: url.searchParams.get("reportTab") || "summary",
+      filters,
+    };
+  }
   rememberRoute(true);
 }
 export function initializeWorkspace(resetRoute = false) {
@@ -798,6 +853,7 @@ export function initializeWorkspace(resetRoute = false) {
   } else void readRoute();
 }
 export function resetWorkspace() {
+  reportRoute.value = null;
   generation++;
   routeReady = false;
   for (const t of timers.values()) clearTimeout(t);

@@ -23,6 +23,12 @@ export const navigationGroups: NavigationGroup[] = [
         icon: "⇣",
         permission: "purchase.read",
       },
+      {
+        page: "purchase-reports",
+        name: "采购记录查询",
+        icon: "▥",
+        permission: "purchase.read",
+      },
     ],
   },
   {
@@ -33,6 +39,12 @@ export const navigationGroups: NavigationGroup[] = [
         page: "selling",
         name: "销售出库",
         icon: "⇡",
+        permission: "sales.read",
+      },
+      {
+        page: "sales-reports",
+        name: "销售记录查询",
+        icon: "▥",
         permission: "sales.read",
       },
       {

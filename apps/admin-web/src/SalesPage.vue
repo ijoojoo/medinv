@@ -25,6 +25,7 @@ import {
   emptyDocumentSearch,
   type DocumentSearch,
 } from "./documentSearch";
+import { openReport } from "./documentReports";
 import CreditPanel from "./CreditPanel.vue";
 import SalesDetail from "./SalesDetail.vue";
 const props = defineProps<{ initialEntityId?: string; initialId?: string }>();
@@ -186,6 +187,7 @@ onMounted(() => {
     <div class="business-toolbar">
       <h2 class="business-page-title">销售单</h2>
       <el-button @click="load()">刷新销售单</el-button>
+      <el-button @click="openReport('sale')">销售记录查询</el-button>
       <el-button
         v-if="can('sales.write')"
         type="primary"

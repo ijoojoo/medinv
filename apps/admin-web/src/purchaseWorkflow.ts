@@ -1,3 +1,4 @@
+import { openReport } from "./documentReports";
 import { shallowRef, watch } from "vue";
 import { session } from "./api";
 import { goPage, showRecord } from "./workspace";
@@ -58,6 +59,19 @@ export function openPurchaseView(
   view: PurchaseView = "pending",
   drafts = false,
 ) {
+  if (view === "history") {
+    openReport(
+      (
+        {
+          orders: "purchase",
+          receiving: "receipt",
+          inspection: "inspection",
+          posting: "inbound",
+        } as const
+      )[stage],
+    );
+    return;
+  }
   purchaseViewRequest.value = { stage, view, drafts, token: ++sequence };
   goPage("purchasing");
 }

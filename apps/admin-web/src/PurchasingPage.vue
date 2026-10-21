@@ -17,6 +17,7 @@ import {
   type PurchaseStage,
   type PurchaseView,
 } from "./purchaseWorkflow";
+import { openReport } from "./documentReports";
 import PurchaseWorkflowList from "./PurchaseWorkflowList.vue";
 import PurchaseDetail from "./PurchaseDetail.vue";
 import DraftBrowser from "./DraftBrowser.vue";
@@ -58,9 +59,6 @@ try {
   );
   if (purchaseStages.some((s) => s.key === saved?.stage))
     stage.value = saved.stage;
-  for (const s of purchaseStages)
-    if (s.key !== "orders" && saved?.modes?.[s.key] === "history")
-      modes.value[s.key] = "history";
 } catch {
   /* The default orders tab remains available. */
 }
@@ -220,7 +218,16 @@ onUnmounted(() => {
         :active="key === current && !selected"
         @failure="emit('failure', $event)"
         @toggle-view="
-          modes[stage] = modes[stage] === 'pending' ? 'history' : 'pending'
+          openReport(
+            (
+              {
+                orders: 'purchase',
+                receiving: 'receipt',
+                inspection: 'inspection',
+                posting: 'inbound',
+              } as const
+            )[stage],
+          )
         "
       >
         <template #tabs>

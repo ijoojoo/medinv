@@ -277,14 +277,9 @@ onUnmounted(() => epoch++);
           channel="purchase"
           :entity="entity"
         />
-        <el-button
-          v-if="stage !== 'orders'"
-          :aria-pressed="view === 'history'"
-          @click="emit('toggleView')"
-          >{{
-            view === "history" ? "返回" + pendingLabel : historyLabel
-          }}</el-button
-        >
+        <el-button :aria-pressed="false" @click="emit('toggleView')">{{
+          view === "history" ? "返回" + pendingLabel : historyLabel
+        }}</el-button>
       </div>
     </div>
     <DocumentFilters
