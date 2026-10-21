@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MasterDataLayout from "./MasterDataLayout.vue";
-import { copyMasterCode, type MasterTool } from "./masterTools";
+import MasterCoreActions from "./MasterCoreActions.vue";
+import { copyMasterCode, extensionTools, type MasterTool } from "./masterTools";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import { request } from "./api";
@@ -446,7 +447,7 @@ async function toolAction(key: string) {
       :active="active"
       :disabled="embedded"
       label="数据字典"
-      :tools="tools"
+      :tools="extensionTools(tools)"
       @action="toolAction"
     >
       <aside v-if="!embedded" class="dictionary-sidebar">
@@ -480,6 +481,11 @@ async function toolAction(key: string) {
         <div v-if="!embedded" class="dictionary-content-top">
           <div class="dictionary-sectionbar">
             <h2>{{ currentGroup?.name }}</h2>
+            <MasterCoreActions
+              :tools="tools"
+              :keys="['search']"
+              @action="toolAction"
+            />
           </div>
           <nav class="dictionary-tabs" aria-label="具体字典">
             <button
@@ -496,6 +502,12 @@ async function toolAction(key: string) {
         <form v-if="selected" class="dictionary-main" @submit.prevent="save">
           <div class="dictionary-heading">
             <h3>{{ selected.name }}</h3>
+            <MasterCoreActions
+              v-if="!editMode"
+              :tools="tools"
+              :keys="['revise']"
+              @action="toolAction"
+            />
             <span class="dictionary-kind" :class="selected.kind">{{
               kindNames[selected.kind || "TENANT"]
             }}</span
@@ -541,10 +553,13 @@ async function toolAction(key: string) {
                 </button>
               </div>
               <el-button
-                v-if="editMode && writable && selected.extendable"
+                v-if="writable && selected.extendable"
                 type="primary"
-                :disabled="busy || form.items.length >= 200"
-                @click="edit(-1)"
+                :disabled="busy || loading || form.items.length >= 200"
+                @click="
+                  editMode = true;
+                  edit(-1);
+                "
                 >＋ 新增字典值</el-button
               >
             </div>

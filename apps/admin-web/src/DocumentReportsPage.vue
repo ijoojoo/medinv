@@ -16,6 +16,8 @@ import { localTime } from "./sales";
 import { businessToday, moveDay } from "./dates";
 import DateInput from "./DateInput.vue";
 import ReportChart from "./ReportChart.vue";
+import PageExtensionLayout from "./PageExtensionLayout.vue";
+import type { MasterTool } from "./masterTools";
 const narrowQuery = window.matchMedia("(max-width: 799px)");
 const narrow = ref(narrowQuery.matches);
 const updateNarrow = () => {
@@ -76,6 +78,20 @@ const title = computed(() =>
       ? "销售记录查询"
       : "采购记录查询",
 );
+const reportTools = computed<MasterTool[]>(() => [
+  {
+    key: "columns",
+    label: "配置字段",
+    icon: "☷",
+    group: "辅助操作",
+    disabled:
+      tab.value === "charts"
+        ? "请先切换到单据汇总或单据明细"
+        : !data.value || loading.value || exporting.value
+          ? "请等待查询完成"
+          : "",
+  },
+]);
 const metricNames: Record<string, string> = {
   gross_amount: "含税金额",
   net_amount: "未税金额",
@@ -440,419 +456,437 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <section class="document-reports panel" :aria-label="title">
-    <header class="report-heading">
-      <div>
-        <h2>{{ title }}</h2>
-        <small>单据汇总、行级明细和图表使用同一组查询条件</small>
-      </div>
-      <label class="report-kind"
-        >记录类型<select
-          v-model="kind"
-          aria-label="记录类型"
-          :disabled="loading || exporting"
-          @change="switchKind"
-        >
-          <option v-for="value in allowed" :key="value" :value="value">
-            {{ reportKinds[value] }}
-          </option>
-        </select></label
-      >
-    </header>
-    <form class="report-filters" data-date-query @submit.prevent="query">
-      <fieldset :disabled="loading || exporting">
-        <label
-          >综合查询<input
-            v-model="filters.search"
-            maxlength="100"
-            placeholder="单据号、商品、批号或备注"
-        /></label>
-        <label
-          >发生日期从<DateInput
-            v-model="filters.date_from"
-            query
-            :max="filters.date_to || undefined"
-        /></label>
-        <label
-          >发生日期至<DateInput
-            v-model="filters.date_to"
-            query
-            :min="filters.date_from || undefined"
-        /></label>
-        <label
-          >往来单位<input
-            v-model="filters.party"
-            maxlength="100"
-            placeholder="历史单据中的单位名称"
-        /></label>
-        <label
-          >商品<input
-            v-model="filters.product"
-            maxlength="100"
-            placeholder="名称、编码或规格"
-        /></label>
-        <label
-          >仓库<input
-            v-model="filters.warehouse"
-            maxlength="100"
-            placeholder="仓库名称"
-        /></label>
-        <label v-if="!['purchase', 'sale'].includes(kind)"
-          >批号<input v-model="filters.lot_no" maxlength="100"
-        /></label>
-        <label
-          >状态／结果<select aria-label="状态／结果" v-model="filters.state">
-            <option value="">全部</option>
-            <option
-              v-for="(label, key) in data?.states || {}"
-              :key="key"
-              :value="key"
-            >
-              {{ label }}
+  <PageExtensionLayout
+    :label="title"
+    :context-key="`${page}:${session?.tenant_id}:${activeEntity}`"
+    :active="active"
+    :tools="reportTools"
+    :help="[
+      '单据汇总每行代表一张单据；点击单据号进入限定该单据的明细。查看关联记录保留在汇总行操作中。',
+      '单据明细每行代表当前记录类型的一个条目；收货、验收和入库分别查询。',
+      '图形化报表统计完整筛选结果；修改条件后点击查询，各视图同步使用已应用的条件。',
+      '配置字段分别保存汇总和明细视图的显示字段与顺序，按账号、企业和经营主体隔离。导出使用已应用的筛选条件，最多 10000 行。',
+    ]"
+    @action="$event === 'columns' && configureColumns()"
+  >
+    <section class="document-reports panel" :aria-label="title">
+      <header class="report-heading">
+        <div>
+          <h2>{{ title }}</h2>
+          <small>单据汇总、行级明细和图表使用同一组查询条件</small>
+        </div>
+        <label class="report-kind"
+          >记录类型<select
+            v-model="kind"
+            aria-label="记录类型"
+            :disabled="loading || exporting"
+            @change="switchKind"
+          >
+            <option v-for="value in allowed" :key="value" :value="value">
+              {{ reportKinds[value] }}
             </option>
           </select></label
         >
-        <div class="report-query-actions">
-          <el-button type="primary" native-type="submit" :loading="loading"
-            >查询</el-button
-          ><el-button @click="recent">近30天</el-button
-          ><el-button @click="reset">重置</el-button>
-        </div>
-      </fieldset>
-    </form>
-    <div v-if="applied.document_id || applied.order_id" class="report-drill">
-      <span
-        >已定位{{ applied.document_id ? "单据" : "来源订单" }}：{{
-          data?.items[0]?.number || applied.document_id || applied.order_id
-        }}</span
-      ><el-button
-        link
-        type="primary"
-        :disabled="loading || exporting"
-        @click="clearDocument"
-        >解除单据限定</el-button
-      >
-    </div>
-    <div class="report-tabbar">
-      <nav role="tablist" aria-label="记录查询视图" @keydown="tabKeys">
-        <button
-          v-for="item in [
-            { key: 'summary', name: '单据汇总' },
-            { key: 'detail', name: '单据明细' },
-            { key: 'charts', name: '图形化报表' },
-          ]"
-          :key="item.key"
-          role="tab"
-          :aria-selected="tab === item.key"
-          :tabindex="tab === item.key ? 0 : -1"
+      </header>
+      <form class="report-filters" data-date-query @submit.prevent="query">
+        <fieldset :disabled="loading || exporting">
+          <label
+            >综合查询<input
+              v-model="filters.search"
+              maxlength="100"
+              placeholder="单据号、商品、批号或备注"
+          /></label>
+          <label
+            >发生日期从<DateInput
+              v-model="filters.date_from"
+              query
+              :max="filters.date_to || undefined"
+          /></label>
+          <label
+            >发生日期至<DateInput
+              v-model="filters.date_to"
+              query
+              :min="filters.date_from || undefined"
+          /></label>
+          <label
+            >往来单位<input
+              v-model="filters.party"
+              maxlength="100"
+              placeholder="历史单据中的单位名称"
+          /></label>
+          <label
+            >商品<input
+              v-model="filters.product"
+              maxlength="100"
+              placeholder="名称、编码或规格"
+          /></label>
+          <label
+            >仓库<input
+              v-model="filters.warehouse"
+              maxlength="100"
+              placeholder="仓库名称"
+          /></label>
+          <label v-if="!['purchase', 'sale'].includes(kind)"
+            >批号<input v-model="filters.lot_no" maxlength="100"
+          /></label>
+          <label
+            >状态／结果<select aria-label="状态／结果" v-model="filters.state">
+              <option value="">全部</option>
+              <option
+                v-for="(label, key) in data?.states || {}"
+                :key="key"
+                :value="key"
+              >
+                {{ label }}
+              </option>
+            </select></label
+          >
+          <div class="report-query-actions">
+            <el-button type="primary" native-type="submit" :loading="loading"
+              >查询</el-button
+            ><el-button @click="recent">近30天</el-button
+            ><el-button @click="reset">重置</el-button>
+          </div>
+        </fieldset>
+      </form>
+      <div v-if="applied.document_id || applied.order_id" class="report-drill">
+        <span
+          >已定位{{ applied.document_id ? "单据" : "来源订单" }}：{{
+            data?.items[0]?.number || applied.document_id || applied.order_id
+          }}</span
+        ><el-button
+          link
+          type="primary"
           :disabled="loading || exporting"
-          @click="switchTab(item.key)"
-        >
-          {{ item.name }}
-        </button>
-      </nav>
-      <div v-if="tab !== 'charts'" class="report-table-tools">
-        <el-button :disabled="!data || loading" @click="configureColumns"
-          >配置字段</el-button
-        ><el-button
-          :disabled="!data?.total || loading || failed || dirty"
-          :loading="exporting"
-          @click="exportCsv"
-          >导出全部筛选结果</el-button
+          @click="clearDocument"
+          >解除单据限定</el-button
         >
       </div>
-    </div>
-    <p v-if="dirty" class="report-notice" role="status">
-      筛选条件尚未应用，下方仍为上次查询结果；点击“查询”后更新。
-    </p>
-    <el-alert
-      v-if="failed"
-      title="记录查询失败，未展示旧数据；请重新查询。"
-      type="error"
-      :closable="false"
-    />
-    <div
-      v-loading="loading"
-      class="report-results"
-      role="tabpanel"
-      :aria-label="
-        tab === 'summary'
-          ? '单据汇总'
-          : tab === 'detail'
-            ? '单据明细'
-            : '图形化报表'
-      "
-    >
-      <template v-if="data">
-        <div class="report-metrics">
-          <div>
-            <small>单据数</small><strong>{{ data.totals.documents }}</strong>
-          </div>
-          <div>
-            <small>明细条数</small><strong>{{ data.totals.lines }}</strong>
-          </div>
-          <div>
-            <small>商品种数</small><strong>{{ data.totals.products }}</strong>
-          </div>
-          <div v-if="data.money_visible">
-            <small
-              >{{
-                ["receipt", "inspection"].includes(kind)
-                  ? "参考含税金额"
-                  : "含税金额"
-              }}（元）</small
-            ><strong>{{ data.totals.gross_amount }}</strong>
-          </div>
-          <div v-if="data.money_visible">
-            <small>未税金额 / 税额（元）</small
-            ><strong
-              >{{ data.totals.net_amount }} /
-              {{ data.totals.tax_amount }}</strong
-            >
-          </div>
-        </div>
-        <div class="report-context">
-          <span
-            >{{
-              data.money_visible ? data.amount_basis + "。" : ""
-            }}汇总仅统计符合条件的明细，数量按基本单位分开计算。</span
-          ><span>查询时间：{{ localTime(data.generated_at) }}</span>
-        </div>
-        <p
-          v-if="kind === 'inspection' || kind === 'inbound'"
-          class="report-caption"
-        >
-          {{ data.number_basis }}
-        </p>
-        <p v-if="Number(data.totals.incomplete) > 0" class="report-notice">
-          {{ data.totals.incomplete }}
-          条明细的部分历史信息未留存或属于未审核草稿；缺失历史不以今天的主档替代。
-        </p>
-        <template v-if="tab !== 'charts'">
-          <el-table
-            :data="data.items"
-            row-key="id"
-            border
-            :max-height="'calc(var(--ui-workspace-height, 900px) - 390px)'"
-            empty-text="没有符合条件的记录"
-            class="report-table"
+      <div class="report-tabbar">
+        <nav role="tablist" aria-label="记录查询视图" @keydown="tabKeys">
+          <button
+            v-for="item in [
+              { key: 'summary', name: '单据汇总' },
+              { key: 'detail', name: '单据明细' },
+              { key: 'charts', name: '图形化报表' },
+            ]"
+            :key="item.key"
+            role="tab"
+            :aria-selected="tab === item.key"
+            :tabindex="tab === item.key ? 0 : -1"
+            :disabled="loading || exporting"
+            @click="switchTab(item.key)"
           >
-            <el-table-column
-              v-for="column in visible"
-              :key="column.key"
-              :prop="column.key"
-              :label="column.label"
-              :width="column.width"
-              :fixed="!narrow && column.key === 'number' ? 'left' : undefined"
-              show-overflow-tooltip
-            >
-              <template #default="{ row }"
-                ><el-button
-                  v-if="column.key === 'number' && tab === 'summary'"
-                  link
-                  type="primary"
-                  @click="drill(row)"
-                  >{{ row.number }}</el-button
-                ><span v-else>{{ display(row, column.key) }}</span></template
-              >
-            </el-table-column>
-            <el-table-column
-              v-if="tab === 'summary'"
-              label="操作"
-              width="135"
-              :fixed="narrow ? undefined : 'right'"
-              ><template #default="{ row }"
-                ><el-button link type="primary" @click="showRelated(row)"
-                  >查看关联记录</el-button
-                ></template
-              ></el-table-column
-            >
-          </el-table>
-          <footer class="report-pager">
-            <span
-              >共 {{ data.total }}
-              {{ tab === "summary" ? "张单据" : "条明细" }} · 第
-              {{ Math.floor(offset / 50) + 1 }} 页</span
-            ><el-button
-              :disabled="!offset || loading || exporting"
-              @click="
-                offset -= 50;
-                load();
-              "
-              >上一页</el-button
-            ><el-button
-              :disabled="!data.has_more || loading || exporting"
-              @click="
-                offset += 50;
-                load();
-              "
-              >下一页</el-button
-            >
-          </footer>
-        </template>
-        <template v-else>
-          <div class="report-chart-controls">
-            <label
-              >分组维度<select
-                aria-label="分组维度"
-                v-model="dimension"
-                :disabled="loading || dirty"
-                @change="load"
-              >
-                <option value="day">按日</option>
-                <option value="month">按月</option>
-                <option value="party">往来单位</option>
-                <option value="warehouse">仓库</option>
-                <option value="product">商品</option>
-                <option value="state">状态／结果</option>
-              </select></label
-            ><label
-              >统计指标<select
-                aria-label="统计指标"
-                v-model="metric"
-                :disabled="loading || dirty"
-                @change="load"
-              >
-                <option v-for="[key, label] in metrics" :key="key" :value="key">
-                  {{ label }}
-                </option>
-              </select></label
-            ><label v-if="metric === 'qty'"
-              >基本单位<select
-                aria-label="基本单位"
-                v-model="unit"
-                :disabled="loading || dirty"
-                @change="load"
-              >
-                <option value="">请选择单位</option>
-                <option v-for="value in data.units" :key="value.base_unit">
-                  {{ value.base_unit }}
-                </option>
-              </select></label
-            ><label
-              >图形样式<select aria-label="图形样式" v-model="chartType">
-                <option value="bar">条形图</option>
-                <option value="line">折线图</option>
-                <option value="donut">环形图</option>
-                <option value="table">数据表</option>
-              </select></label
-            >
-          </div>
-          <ReportChart
-            :items="data.chart.items"
-            :type="chartType"
-            :unit="data.chart.unit || ''"
-            :metric-label="metricNames[data.chart.metric]"
-            :states="data.states"
-          />
-          <p class="report-caption">{{ data.chart.note }}</p>
-        </template>
-        <div class="report-unit-totals">
-          <span v-for="value in data.units" :key="value.base_unit"
-            >{{ value.base_unit }}：{{ value.qty
-            }}<template v-if="kind === 'inspection'"
-              >（合格 {{ value.qualified_qty }} / 拒收
-              {{ value.rejected_qty }}）</template
-            ></span
+            {{ item.name }}
+          </button>
+        </nav>
+        <div v-if="tab !== 'charts'" class="report-table-tools">
+          <el-button
+            :disabled="!data?.total || loading || failed || dirty"
+            :loading="exporting"
+            @click="exportCsv"
+            >导出全部筛选结果</el-button
           >
         </div>
-      </template>
-    </div>
-    <el-drawer
-      v-model="columnDialog"
-      title="配置查询字段"
-      size="min(640px, 95vw)"
-      append-to-body
-      ><p>
-        配置仅影响当前单据类型及汇总／明细视图，保存在当前浏览器。单据号保留以便定位。
+      </div>
+      <p v-if="dirty" class="report-notice" role="status">
+        筛选条件尚未应用，下方仍为上次查询结果；点击“查询”后更新。
       </p>
+      <el-alert
+        v-if="failed"
+        title="记录查询失败，未展示旧数据；请重新查询。"
+        type="error"
+        :closable="false"
+      />
       <div
-        v-for="(column, index) in columnDraft"
-        :key="column.key"
-        class="report-column-row"
+        v-loading="loading"
+        class="report-results"
+        role="tabpanel"
+        :aria-label="
+          tab === 'summary'
+            ? '单据汇总'
+            : tab === 'detail'
+              ? '单据明细'
+              : '图形化报表'
+        "
       >
-        <label
-          ><input
-            v-model="column.visible"
-            type="checkbox"
-            :disabled="column.required"
-          />{{ column.label }}</label
-        ><label
-          >宽度<input
-            v-model.number="column.width"
-            type="number"
-            min="80"
-            max="600"
-            :aria-label="column.label + '宽度'" /></label
-        ><el-button
-          :disabled="index === 0"
-          :aria-label="column.label + '上移'"
-          @click="moveColumn(index, -1)"
-          >↑</el-button
-        ><el-button
-          :disabled="index === columnDraft.length - 1"
-          :aria-label="column.label + '下移'"
-          @click="moveColumn(index, 1)"
-          >↓</el-button
-        >
-      </div>
-      <template #footer
-        ><el-button @click="columnDraft = data!.fields.map((c) => ({ ...c }))"
-          >恢复默认</el-button
-        ><el-button @click="columnDialog = false">取消</el-button
-        ><el-button type="primary" @click="saveColumns"
-          >保存配置</el-button
-        ></template
-      ></el-drawer
-    >
-    <el-drawer
-      v-model="relatedOpen"
-      title="查看关联记录"
-      size="min(960px, 96vw)"
-      append-to-body
-      ><div v-loading="relatedLoading">
-        <p>按来源订单列出相关单据；点击进入对应记录明细查询。</p>
-        <el-alert
-          v-if="relatedFailed"
-          title="关联记录加载失败"
-          type="error"
-          :closable="false"
-        /><el-button v-if="relatedFailed" @click="loadRelated">重试</el-button>
-        <section
-          v-for="group in related"
-          :key="group.kind"
-          class="report-related"
-        >
-          <h3>{{ group.name }}</h3>
-          <el-table :data="group.items" empty-text="暂无此类记录"
-            ><el-table-column label="单据号" min-width="245"
-              ><template #default="{ row }"
-                ><el-button
-                  link
-                  type="primary"
-                  @click="relatedDetail(group, row)"
-                  >{{ row.number }}</el-button
-                ></template
-              ></el-table-column
-            ><el-table-column prop="occurred_at" label="发生时间" width="180"
-              ><template #default="{ row }">{{
-                localTime(row.occurred_at)
-              }}</template></el-table-column
-            ><el-table-column
-              prop="line_count"
-              label="明细条数"
-              width="100" /></el-table
-          ><el-button
-            v-if="group.has_more"
-            link
-            type="primary"
-            @click="relatedDetail(group)"
-            >超过50张，查看该订单全部{{ group.name }}明细</el-button
+        <template v-if="data">
+          <div class="report-metrics">
+            <div>
+              <small>单据数</small><strong>{{ data.totals.documents }}</strong>
+            </div>
+            <div>
+              <small>明细条数</small><strong>{{ data.totals.lines }}</strong>
+            </div>
+            <div>
+              <small>商品种数</small><strong>{{ data.totals.products }}</strong>
+            </div>
+            <div v-if="data.money_visible">
+              <small
+                >{{
+                  ["receipt", "inspection"].includes(kind)
+                    ? "参考含税金额"
+                    : "含税金额"
+                }}（元）</small
+              ><strong>{{ data.totals.gross_amount }}</strong>
+            </div>
+            <div v-if="data.money_visible">
+              <small>未税金额 / 税额（元）</small
+              ><strong
+                >{{ data.totals.net_amount }} /
+                {{ data.totals.tax_amount }}</strong
+              >
+            </div>
+          </div>
+          <div class="report-context">
+            <span
+              >{{
+                data.money_visible ? data.amount_basis + "。" : ""
+              }}汇总仅统计符合条件的明细，数量按基本单位分开计算。</span
+            ><span>查询时间：{{ localTime(data.generated_at) }}</span>
+          </div>
+          <p
+            v-if="kind === 'inspection' || kind === 'inbound'"
+            class="report-caption"
           >
-        </section>
-      </div></el-drawer
-    >
-  </section>
+            {{ data.number_basis }}
+          </p>
+          <p v-if="Number(data.totals.incomplete) > 0" class="report-notice">
+            {{ data.totals.incomplete }}
+            条明细的部分历史信息未留存或属于未审核草稿；缺失历史不以今天的主档替代。
+          </p>
+          <template v-if="tab !== 'charts'">
+            <el-table
+              :data="data.items"
+              row-key="id"
+              border
+              :max-height="'calc(var(--ui-workspace-height, 900px) - 390px)'"
+              empty-text="没有符合条件的记录"
+              class="report-table"
+            >
+              <el-table-column
+                v-for="column in visible"
+                :key="column.key"
+                :prop="column.key"
+                :label="column.label"
+                :width="column.width"
+                :fixed="!narrow && column.key === 'number' ? 'left' : undefined"
+                show-overflow-tooltip
+              >
+                <template #default="{ row }"
+                  ><el-button
+                    v-if="column.key === 'number' && tab === 'summary'"
+                    link
+                    type="primary"
+                    @click="drill(row)"
+                    >{{ row.number }}</el-button
+                  ><span v-else>{{ display(row, column.key) }}</span></template
+                >
+              </el-table-column>
+              <el-table-column
+                v-if="tab === 'summary'"
+                label="操作"
+                width="135"
+                :fixed="narrow ? undefined : 'right'"
+                ><template #default="{ row }"
+                  ><el-button link type="primary" @click="showRelated(row)"
+                    >查看关联记录</el-button
+                  ></template
+                ></el-table-column
+              >
+            </el-table>
+            <footer class="report-pager">
+              <span
+                >共 {{ data.total }}
+                {{ tab === "summary" ? "张单据" : "条明细" }} · 第
+                {{ Math.floor(offset / 50) + 1 }} 页</span
+              ><el-button
+                :disabled="!offset || loading || exporting"
+                @click="
+                  offset -= 50;
+                  load();
+                "
+                >上一页</el-button
+              ><el-button
+                :disabled="!data.has_more || loading || exporting"
+                @click="
+                  offset += 50;
+                  load();
+                "
+                >下一页</el-button
+              >
+            </footer>
+          </template>
+          <template v-else>
+            <div class="report-chart-controls">
+              <label
+                >分组维度<select
+                  aria-label="分组维度"
+                  v-model="dimension"
+                  :disabled="loading || dirty"
+                  @change="load"
+                >
+                  <option value="day">按日</option>
+                  <option value="month">按月</option>
+                  <option value="party">往来单位</option>
+                  <option value="warehouse">仓库</option>
+                  <option value="product">商品</option>
+                  <option value="state">状态／结果</option>
+                </select></label
+              ><label
+                >统计指标<select
+                  aria-label="统计指标"
+                  v-model="metric"
+                  :disabled="loading || dirty"
+                  @change="load"
+                >
+                  <option
+                    v-for="[key, label] in metrics"
+                    :key="key"
+                    :value="key"
+                  >
+                    {{ label }}
+                  </option>
+                </select></label
+              ><label v-if="metric === 'qty'"
+                >基本单位<select
+                  aria-label="基本单位"
+                  v-model="unit"
+                  :disabled="loading || dirty"
+                  @change="load"
+                >
+                  <option value="">请选择单位</option>
+                  <option v-for="value in data.units" :key="value.base_unit">
+                    {{ value.base_unit }}
+                  </option>
+                </select></label
+              ><label
+                >图形样式<select aria-label="图形样式" v-model="chartType">
+                  <option value="bar">条形图</option>
+                  <option value="line">折线图</option>
+                  <option value="donut">环形图</option>
+                  <option value="table">数据表</option>
+                </select></label
+              >
+            </div>
+            <ReportChart
+              :items="data.chart.items"
+              :type="chartType"
+              :unit="data.chart.unit || ''"
+              :metric-label="metricNames[data.chart.metric]"
+              :states="data.states"
+            />
+            <p class="report-caption">{{ data.chart.note }}</p>
+          </template>
+          <div class="report-unit-totals">
+            <span v-for="value in data.units" :key="value.base_unit"
+              >{{ value.base_unit }}：{{ value.qty
+              }}<template v-if="kind === 'inspection'"
+                >（合格 {{ value.qualified_qty }} / 拒收
+                {{ value.rejected_qty }}）</template
+              ></span
+            >
+          </div>
+        </template>
+      </div>
+      <el-drawer
+        v-model="columnDialog"
+        title="配置查询字段"
+        size="min(640px, 95vw)"
+        append-to-body
+        ><p>
+          配置仅影响当前单据类型及汇总／明细视图，保存在当前浏览器。单据号保留以便定位。
+        </p>
+        <div
+          v-for="(column, index) in columnDraft"
+          :key="column.key"
+          class="report-column-row"
+        >
+          <label
+            ><input
+              v-model="column.visible"
+              type="checkbox"
+              :disabled="column.required"
+            />{{ column.label }}</label
+          ><label
+            >宽度<input
+              v-model.number="column.width"
+              type="number"
+              min="80"
+              max="600"
+              :aria-label="column.label + '宽度'" /></label
+          ><el-button
+            :disabled="index === 0"
+            :aria-label="column.label + '上移'"
+            @click="moveColumn(index, -1)"
+            >↑</el-button
+          ><el-button
+            :disabled="index === columnDraft.length - 1"
+            :aria-label="column.label + '下移'"
+            @click="moveColumn(index, 1)"
+            >↓</el-button
+          >
+        </div>
+        <template #footer
+          ><el-button @click="columnDraft = data!.fields.map((c) => ({ ...c }))"
+            >恢复默认</el-button
+          ><el-button @click="columnDialog = false">取消</el-button
+          ><el-button type="primary" @click="saveColumns"
+            >保存配置</el-button
+          ></template
+        ></el-drawer
+      >
+      <el-drawer
+        v-model="relatedOpen"
+        title="查看关联记录"
+        size="min(960px, 96vw)"
+        append-to-body
+        ><div v-loading="relatedLoading">
+          <p>按来源订单列出相关单据；点击进入对应记录明细查询。</p>
+          <el-alert
+            v-if="relatedFailed"
+            title="关联记录加载失败"
+            type="error"
+            :closable="false"
+          /><el-button v-if="relatedFailed" @click="loadRelated"
+            >重试</el-button
+          >
+          <section
+            v-for="group in related"
+            :key="group.kind"
+            class="report-related"
+          >
+            <h3>{{ group.name }}</h3>
+            <el-table :data="group.items" empty-text="暂无此类记录"
+              ><el-table-column label="单据号" min-width="245"
+                ><template #default="{ row }"
+                  ><el-button
+                    link
+                    type="primary"
+                    @click="relatedDetail(group, row)"
+                    >{{ row.number }}</el-button
+                  ></template
+                ></el-table-column
+              ><el-table-column prop="occurred_at" label="发生时间" width="180"
+                ><template #default="{ row }">{{
+                  localTime(row.occurred_at)
+                }}</template></el-table-column
+              ><el-table-column
+                prop="line_count"
+                label="明细条数"
+                width="100" /></el-table
+            ><el-button
+              v-if="group.has_more"
+              link
+              type="primary"
+              @click="relatedDetail(group)"
+              >超过50张，查看该订单全部{{ group.name }}明细</el-button
+            >
+          </section>
+        </div></el-drawer
+      >
+    </section>
+  </PageExtensionLayout>
 </template>
 <style scoped>
 .document-reports {

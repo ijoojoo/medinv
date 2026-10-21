@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MasterDataLayout from "./MasterDataLayout.vue";
-import { copyMasterCode, type MasterTool } from "./masterTools";
+import MasterCoreActions from "./MasterCoreActions.vue";
+import { copyMasterCode, extensionTools, type MasterTool } from "./masterTools";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessageBox } from "element-plus";
 import { request } from "./api";
@@ -474,7 +475,7 @@ async function toolAction(key: string) {
     :active="active"
     :disabled="kind !== 'staff'"
     :label="titles[kind]"
-    :tools="tools"
+    :tools="extensionTools(tools)"
     @action="toolAction"
   >
     <aside v-if="kind === 'staff'" class="data-scope">
@@ -511,6 +512,12 @@ async function toolAction(key: string) {
                 : "设计稿保存、节点排序、流程发布与采购审批执行。"
           }}</small>
         </div>
+        <MasterCoreActions
+          v-if="kind === 'staff'"
+          :tools="tools"
+          :keys="!editing ? ['new'] : staffEdit ? [] : ['revise']"
+          @action="toolAction"
+        />
         <el-button
           v-if="editing"
           :disabled="busy || publisher?.busy"

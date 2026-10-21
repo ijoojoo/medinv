@@ -11,6 +11,8 @@ import {
   watch,
 } from "vue";
 import { ElMessage } from "element-plus";
+import PageExtensionLayout from "./PageExtensionLayout.vue";
+import { pageHelp } from "./pageExtensions";
 import BusinessNavigation from "./BusinessNavigation.vue";
 import CloseChangesDialog from "./CloseChangesDialog.vue";
 import { hasCatalogChanges, revealChanges } from "./catalogChanges";
@@ -790,457 +792,485 @@ onUnmounted(() => {
     <div ref="workArea" class="main-shell">
       <main
         class="workspace-content"
+        :data-master="
+          !activeEditor &&
+          !activeRecord &&
+          [
+            'products',
+            'parties',
+            'staff',
+            'warehouses',
+            'dictionaries',
+          ].includes(page)
+        "
         :data-width="activeEditor || activeRecord ? 'wide' : widthForPage(page)"
       >
-        <CommandRecovery @resolved="recoveredSubmission" @failure="failure" />
-        <p v-if="editorError" role="alert" class="editor-route-error">
-          {{ editorError }}
-        </p>
-        <p v-if="editorLoading" role="status">正在打开单据…</p>
-        <div
-          v-if="currentWorkOrigin"
-          class="business-toolbar"
-          aria-label="原单待办来源"
+        <PageExtensionLayout
+          :label="activeEditor || activeRecord ? '单据办理' : pageTitle"
+          :context-key="viewKey"
+          :disabled="!activeEditor && !activeRecord && !pageHelp[page]"
+          :help="
+            activeEditor || activeRecord
+              ? [
+                  '单据的新增明细、保存、提交及后续办理均位于主区域；切换页面前请注意尚未保存的修改。',
+                ]
+              : pageHelp[page]
+          "
         >
-          <el-button @click="returnToWorkbench(currentWorkOrigin)">{{
-            currentWorkOrigin.view === "risk" ? "返回风险事项" : "返回业务待办"
-          }}</el-button>
-          <span
-            >来自{{
-              currentWorkOrigin.view === "risk" ? "风险事项" : "业务待办"
-            }}
-            ·
-            {{
-              currentWorkOrigin.item.related_number ||
-              currentWorkOrigin.item.number
-            }}</span
-          >
-        </div>
-        <DocumentEditor
-          v-for="id in openEditorIds"
-          v-show="activeEditor === id"
-          :key="id"
-          :id="id"
-          :active="activeEditor === id"
-          @failure="failure"
-        />
-        <DocumentRecord
-          v-for="tab in recordTabs"
-          :key="tab.key"
-          v-show="activeRecord === tab.key"
-          :identity="tab.key"
-          :id="tab.id"
-          :entity="tab.entity"
-          :channel="tab.channel"
-          :active="activeRecord === tab.key"
-          @failure="failure"
-          @sale="openSourceSale"
-          @purchase="openReplenishmentPurchase"
-        />
-        <div
-          v-show="!activeEditor && !activeRecord"
-          class="module-content"
-          :key="`${session.tenant_id}:${session.context_generation}:${activeEntity}`"
-        >
-          <h1 class="visually-hidden">{{ pageTitle }}</h1>
-          <WorkDashboard
-            v-if="moduleTabs.includes('overview')"
-            v-show="page === 'overview'"
-            :active="page === 'overview' && !activeEditor && !activeRecord"
-            v-model="workFilters"
-            @open="openWorkItem"
-          />
-          <EnterpriseSettings
-            v-if="moduleTabs.includes('enterprise-settings')"
-            v-show="page === 'enterprise-settings'"
-            @failure="failure"
-          />
-          <template
-            v-for="item in [
-              { page: 'staff', kind: 'staff' },
-              { page: 'quality-ledgers', kind: 'maintenance' },
-              { page: 'approval-design', kind: 'approval_design' },
-            ] as const"
-            :key="item.page"
-            ><ManagementRecords
-              :active="page === item.page && !activeEditor && !activeRecord"
-              v-if="moduleTabs.includes(item.page)"
-              v-show="page === item.page"
-              :kind="item.kind"
-              :initial-target="
-                referenceNavigation?.page === item.page
-                  ? referenceNavigation
-                  : undefined
-              "
-              @failure="failure"
-          /></template>
-          <MessagesPage
-            v-if="moduleTabs.includes('messages')"
-            v-show="page === 'messages'"
-            :active="page === 'messages'"
-            @failure="failure"
-            @open="
-              (item) =>
-                openWorkItem({
-                  item,
-                  index: 0,
-                  view: 'operations',
-                  filters: {
-                    entity_id: activeEntity,
-                    kind: item.kind,
-                    search: '',
-                    offset: 0,
-                  },
-                })
-            "
-          />
-          <template
-            v-for="reportPage in [
-              'purchase-reports',
-              'sales-reports',
-              'quality-records',
-            ]"
-            :key="reportPage"
-          >
-            <DocumentReportsPage
-              v-if="moduleTabs.includes(reportPage)"
-              v-show="page === reportPage"
-              :page="reportPage"
-              :active="page === reportPage"
-              @failure="failure"
-            />
-          </template>
-          <AppearanceSettings
-            v-if="moduleTabs.includes('appearance')"
-            v-show="page === 'appearance'"
-          />
-          <div v-show="page === 'productFields'">
-            <ProductFieldSettings
-              v-if="moduleTabs.includes('productFields')"
-              :key="`${session.tenant_id}:${session.context_generation}`"
-              :active="page === 'productFields'"
-              @failure="failure"
-            />
-          </div>
-          <AdmissionPage
-            v-if="moduleTabs.includes('admission')"
-            v-show="page === 'admission'"
-            @failure="failure"
-          />
-          <div v-show="page === 'dictionaries'">
-            <CatalogDictionaryPage
-              :active="
-                page === 'dictionaries' && !activeEditor && !activeRecord
-              "
-              v-if="moduleTabs.includes('dictionaries')"
-              :key="`${session.tenant_id}:${session.context_generation}`"
-              @failure="failure"
-            />
-          </div>
+          <CommandRecovery @resolved="recoveredSubmission" @failure="failure" />
+          <p v-if="editorError" role="alert" class="editor-route-error">
+            {{ editorError }}
+          </p>
+          <p v-if="editorLoading" role="status">正在打开单据…</p>
           <div
-            v-for="kind in ['products', 'parties'] as const"
-            :key="kind"
-            v-show="page === kind"
-          >
-            <ProductMasterWorkspace
-              :active="page === kind && !activeEditor && !activeRecord"
-              v-if="kind === 'products' && moduleTabs.includes(kind)"
-              :initial-target="
-                referenceNavigation?.page === kind
-                  ? referenceNavigation
-                  : undefined
-              "
-              :key="`${session.tenant_id}:${session.context_generation}:master`"
-              @failure="failure"
-            />
-            <CatalogPage
-              :active="page === kind && !activeEditor && !activeRecord"
-              v-if="kind === 'parties' && moduleTabs.includes(kind)"
-              :key="`${session.tenant_id}:${session.context_generation}:${kind}`"
-              :kind="kind"
-              :initial-target="
-                referenceNavigation?.page === kind
-                  ? referenceNavigation
-                  : undefined
-              "
-              @failure="failure"
-            />
-          </div>
-          <div
-            v-if="purchaseLaunch && page === 'purchasing'"
+            v-if="currentWorkOrigin"
             class="business-toolbar"
+            aria-label="原单待办来源"
           >
-            <el-button
-              @click="
-                openSourceSale({
-                  id: purchaseLaunch.sale_id,
-                  entity_id: purchaseLaunch.entity_id,
-                })
-              "
-              >返回原销售单</el-button
+            <el-button @click="returnToWorkbench(currentWorkOrigin)">{{
+              currentWorkOrigin.view === "risk"
+                ? "返回风险事项"
+                : "返回业务待办"
+            }}</el-button>
+            <span
+              >来自{{
+                currentWorkOrigin.view === "risk" ? "风险事项" : "业务待办"
+              }}
+              ·
+              {{
+                currentWorkOrigin.item.related_number ||
+                currentWorkOrigin.item.number
+              }}</span
             >
-            <span class="form-note"
-              >补货采购沿用原审核、收货和入库流程，入库后回原销售单分配发货。</span
+          </div>
+          <DocumentEditor
+            v-for="id in openEditorIds"
+            v-show="activeEditor === id"
+            :key="id"
+            :id="id"
+            :active="activeEditor === id"
+            @failure="failure"
+          />
+          <DocumentRecord
+            v-for="tab in recordTabs"
+            :key="tab.key"
+            v-show="activeRecord === tab.key"
+            :identity="tab.key"
+            :id="tab.id"
+            :entity="tab.entity"
+            :channel="tab.channel"
+            :active="activeRecord === tab.key"
+            @failure="failure"
+            @sale="openSourceSale"
+            @purchase="openReplenishmentPurchase"
+          />
+          <div
+            v-show="!activeEditor && !activeRecord"
+            class="module-content"
+            :key="`${session.tenant_id}:${session.context_generation}:${activeEntity}`"
+          >
+            <h1 class="visually-hidden">{{ pageTitle }}</h1>
+            <WorkDashboard
+              v-if="moduleTabs.includes('overview')"
+              v-show="page === 'overview'"
+              :active="page === 'overview' && !activeEditor && !activeRecord"
+              v-model="workFilters"
+              @open="openWorkItem"
+            />
+            <EnterpriseSettings
+              v-if="moduleTabs.includes('enterprise-settings')"
+              v-show="page === 'enterprise-settings'"
+              @failure="failure"
+            />
+            <template
+              v-for="item in [
+                { page: 'staff', kind: 'staff' },
+                { page: 'quality-ledgers', kind: 'maintenance' },
+                { page: 'approval-design', kind: 'approval_design' },
+              ] as const"
+              :key="item.page"
+              ><ManagementRecords
+                :active="page === item.page && !activeEditor && !activeRecord"
+                v-if="moduleTabs.includes(item.page)"
+                v-show="page === item.page"
+                :kind="item.kind"
+                :initial-target="
+                  referenceNavigation?.page === item.page
+                    ? referenceNavigation
+                    : undefined
+                "
+                @failure="failure"
+            /></template>
+            <MessagesPage
+              v-if="moduleTabs.includes('messages')"
+              v-show="page === 'messages'"
+              :active="page === 'messages'"
+              @failure="failure"
+              @open="
+                (item) =>
+                  openWorkItem({
+                    item,
+                    index: 0,
+                    view: 'operations',
+                    filters: {
+                      entity_id: activeEntity,
+                      kind: item.kind,
+                      search: '',
+                      offset: 0,
+                    },
+                  })
+              "
+            />
+            <template
+              v-for="reportPage in [
+                'purchase-reports',
+                'sales-reports',
+                'quality-records',
+              ]"
+              :key="reportPage"
             >
-          </div>
-          <div
-            v-if="moduleTabs.includes('purchasing')"
-            v-show="page === 'purchasing'"
-          >
-            <PurchasingPage
-              :key="`${session.tenant_id}:${session.context_generation}:${purchaseLaunch?.id || ''}`"
-              :initial-id="
-                purchaseLaunch?.id ||
-                (workLaunch?.page === 'purchasing'
-                  ? workLaunch.target_id
-                  : undefined)
-              "
-              :initial-entity-id="
-                purchaseLaunch?.entity_id ||
-                (workLaunch?.page === 'purchasing'
-                  ? workLaunch.entity_id
-                  : undefined)
-              "
-              @failure="failure"
-              @sale="openSourceSale"
+              <DocumentReportsPage
+                v-if="moduleTabs.includes(reportPage)"
+                v-show="page === reportPage"
+                :page="reportPage"
+                :active="page === reportPage && !activeEditor && !activeRecord"
+                @failure="failure"
+              />
+            </template>
+            <AppearanceSettings
+              v-if="moduleTabs.includes('appearance')"
+              v-show="page === 'appearance'"
             />
-          </div>
-          <div
-            v-if="moduleTabs.includes('selling')"
-            v-show="page === 'selling'"
-          >
-            <SalesPage
-              :key="`${session.tenant_id}:${session.context_generation}:${sourceSale?.id || ''}`"
-              :initial-id="
-                sourceSale?.id ||
-                (workLaunch?.page === 'selling'
-                  ? workLaunch.target_id
-                  : undefined)
-              "
-              :initial-entity-id="
-                sourceSale?.entity_id ||
-                (workLaunch?.page === 'selling'
-                  ? workLaunch.entity_id
-                  : undefined)
-              "
-              @failure="failure"
-              @purchase="openReplenishmentPurchase"
-            />
-          </div>
-          <ReceivablesPage
-            v-if="page === 'receivables'"
-            :key="`${session.tenant_id}:${session.context_generation}`"
-            @failure="failure"
-          />
-          <FinancePage
-            v-if="page === 'finance'"
-            :key="`${session.tenant_id}:${session.context_generation}`"
-            @failure="failure"
-          />
-          <OpeningsPage
-            v-if="page === 'openings'"
-            :key="`${session.tenant_id}:${session.context_generation}`"
-            :initial-id="workLaunch?.target_id"
-            :initial-entity-id="workLaunch?.entity_id"
-            @failure="failure"
-          />
-          <QualityPage
-            v-if="page === 'quality'"
-            :key="`${session.tenant_id}:${session.context_generation}`"
-            :initial-id="workLaunch?.target_id"
-            :initial-entity-id="workLaunch?.entity_id"
-            @failure="failure"
-          />
-          <WarehousesPage
-            :active="page === 'warehouses' && !activeEditor && !activeRecord"
-            v-if="moduleTabs.includes('warehouses')"
-            v-show="page === 'warehouses'"
-            :key="`${session?.tenant_id}:${session?.context_generation}`"
-            @failure="failure"
-          />
-          <LocationMovesPage
-            v-if="page === 'location-moves'"
-            @failure="failure"
-          />
-          <TransfersPage
-            v-if="page === 'transfers'"
-            :key="`${session.tenant_id}:${session.context_generation}`"
-            :initial-id="workLaunch?.target_id"
-            :initial-loss-id="
-              workLaunch?.kind.startsWith('transfer_loss_')
-                ? workLaunch.item_id
-                : undefined
-            "
-            :initial-entity-id="workLaunch?.entity_id"
-            @failure="failure"
-          />
-          <CountsPage
-            v-if="page === 'counts'"
-            :key="`${session?.tenant_id}:${session?.context_generation}`"
-            :initial-id="workLaunch?.target_id"
-            :initial-entity-id="workLaunch?.entity_id"
-            @failure="failure"
-          />
-          <RetailPage
-            @return-sale="openRetailReturn"
-            v-if="page === 'retail'"
-            :key="session?.tenant_id + '-' + session?.context_generation"
-            :initial-id="workLaunch?.target_id"
-            :initial-entity-id="workLaunch?.entity_id"
-            @failure="failure"
-          />
-          <ReturnsPage
-            :initial-id="workLaunch?.target_id"
-            :initial-source-id="returnLaunch?.posting_id"
-            :initial-entity-id="
-              workLaunch?.entity_id || returnLaunch?.entity_id
-            "
-            v-if="page === 'returns'"
-            :key="`${session.tenant_id}:${session.context_generation}`"
-            @failure="failure"
-          />
-          <LedgerPage
-            v-if="page === 'ledger'"
-            :key="`${session.tenant_id}:${session.context_generation}`"
-            @failure="failure"
-          />
-          <section v-if="page === 'members'" class="panel" v-loading="busy">
-            <div class="panel-heading">
-              <h3>
-                企业成员<span class="count">{{ members.items.length }}</span>
-              </h3>
-              <el-button @click="loadMembers">刷新列表</el-button>
+            <div v-show="page === 'productFields'">
+              <ProductFieldSettings
+                v-if="moduleTabs.includes('productFields')"
+                :key="`${session.tenant_id}:${session.context_generation}`"
+                :active="page === 'productFields'"
+                @failure="failure"
+              />
             </div>
-            <el-table :data="members.items" empty-text="当前企业暂无成员"
-              ><el-table-column label="成员" min-width="180"
-                ><template #default="{ row }"
-                  ><div class="member-name">
-                    <span class="avatar small">{{
-                      row.display_name.slice(0, 1)
-                    }}</span
-                    ><b>{{ row.display_name }}</b
-                    ><el-tag
-                      v-if="row.principal_id === session.principal_id"
-                      size="small"
-                      type="info"
-                      >我</el-tag
-                    >
-                  </div></template
-                ></el-table-column
-              ><el-table-column label="角色" min-width="160"
-                ><template #default="{ row }">{{
-                  row.role_codes
-                    .map((r: string) => roleNames[r] || r)
-                    .join(" / ")
-                }}</template></el-table-column
-              ><el-table-column label="主体范围" min-width="130"
-                ><template #default="{ row }"
-                  >{{ row.entity_ids.length }} 个经营主体</template
-                ></el-table-column
-              ><el-table-column label="状态" width="95"
-                ><template #default="{ row }"
-                  ><el-tag :type="row.active ? 'success' : 'info'">{{
-                    row.active ? "已启用" : "已停用"
-                  }}</el-tag></template
-                ></el-table-column
-              ><el-table-column label="操作" width="110"
-                ><template #default="{ row }"
-                  ><el-button
-                    v-if="editable(row)"
-                    link
-                    type="primary"
-                    @click="edit(row)"
-                    >编辑权限</el-button
-                  ><span v-else class="muted">—</span></template
-                ></el-table-column
-              ></el-table
+            <AdmissionPage
+              v-if="moduleTabs.includes('admission')"
+              v-show="page === 'admission'"
+              @failure="failure"
+            />
+            <div v-show="page === 'dictionaries'">
+              <CatalogDictionaryPage
+                :active="
+                  page === 'dictionaries' && !activeEditor && !activeRecord
+                "
+                v-if="moduleTabs.includes('dictionaries')"
+                :key="`${session.tenant_id}:${session.context_generation}`"
+                @failure="failure"
+              />
+            </div>
+            <div
+              v-for="kind in ['products', 'parties'] as const"
+              :key="kind"
+              v-show="page === kind"
             >
-          </section>
-          <section
-            v-if="page === 'inventory'"
-            class="panel"
-            v-loading="inventoryLoading"
-          >
-            <div class="filters">
-              <label
-                >仓库<el-select v-model="warehouse" aria-label="库存仓库"
-                  ><el-option
-                    v-for="item in options.warehouses"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id" /></el-select></label
-              ><label
-                >商品<el-select v-model="sku" aria-label="库存商品" filterable
-                  ><el-option
-                    v-for="item in options.skus"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id" /></el-select></label
-              ><el-button
-                type="primary"
-                :disabled="!warehouse || !sku"
-                @click="searchStock"
-                >查询库存</el-button
+              <ProductMasterWorkspace
+                :active="page === kind && !activeEditor && !activeRecord"
+                v-if="kind === 'products' && moduleTabs.includes(kind)"
+                :initial-target="
+                  referenceNavigation?.page === kind
+                    ? referenceNavigation
+                    : undefined
+                "
+                :key="`${session.tenant_id}:${session.context_generation}:master`"
+                @failure="failure"
+              />
+              <CatalogPage
+                :active="page === kind && !activeEditor && !activeRecord"
+                v-if="kind === 'parties' && moduleTabs.includes(kind)"
+                :key="`${session.tenant_id}:${session.context_generation}:${kind}`"
+                :kind="kind"
+                :initial-target="
+                  referenceNavigation?.page === kind
+                    ? referenceNavigation
+                    : undefined
+                "
+                @failure="failure"
+              />
+            </div>
+            <div
+              v-if="purchaseLaunch && page === 'purchasing'"
+              class="business-toolbar"
+            >
+              <el-button
+                @click="
+                  openSourceSale({
+                    id: purchaseLaunch.sale_id,
+                    entity_id: purchaseLaunch.entity_id,
+                  })
+                "
+                >返回原销售单</el-button
+              >
+              <span class="form-note"
+                >补货采购沿用原审核、收货和入库流程，入库后回原销售单分配发货。</span
               >
             </div>
-            <el-table
-              :data="stock"
-              :empty-text="searched ? '没有符合条件的库存' : '请选择仓库与商品'"
-              ><el-table-column label="库存记录" min-width="165"
-                ><template #default="{ row }"
-                  ><span class="mono">{{
-                    row.balance_id.slice(0, 8).toUpperCase()
-                  }}</span
-                  ><small class="cell-sub">{{
-                    row.lot_id
-                      ? "批次 " + row.lot_id.slice(0, 8).toUpperCase()
-                      : "无批次"
-                  }}</small></template
-                ></el-table-column
-              ><el-table-column label="库位" min-width="165"
-                ><template #default="{ row }"
-                  >{{ row.location_code
-                  }}<small
-                    v-if="row.location_name !== row.location_code"
-                    class="cell-sub"
-                    >{{ row.location_name }}</small
-                  ></template
-                ></el-table-column
-              ><el-table-column label="账面数量" align="right"
-                ><template #default="{ row }">{{
-                  quantity(row.on_hand)
-                }}</template></el-table-column
-              ><el-table-column label="已预占" align="right"
-                ><template #default="{ row }">{{
-                  quantity(row.reserved)
-                }}</template></el-table-column
-              ><el-table-column label="冻结数量" align="right"
-                ><template #default="{ row }">{{
-                  quantity(row.blocked)
-                }}</template></el-table-column
-              ><el-table-column label="可用数量" align="right"
-                ><template #default="{ row }"
-                  ><b class="available">{{
-                    quantity(row.available)
-                  }}</b></template
-                ></el-table-column
-              ><el-table-column label="可分配状态" min-width="160"
-                ><template #default="{ row }"
-                  ><el-tag v-if="row.eligible" type="success" effect="plain"
-                    >可分配</el-tag
-                  ><span v-else class="warning-text">{{
-                    row.ineligibility_codes
-                      .map((c: string) => messages[c] || c)
-                      .join("、")
-                  }}</span></template
-                ></el-table-column
-              ></el-table
+            <div
+              v-if="moduleTabs.includes('purchasing')"
+              v-show="page === 'purchasing'"
             >
-            <div class="table-note">
-              库存数据为查询时点的快照；实际分配以预占结果为准。
+              <PurchasingPage
+                :key="`${session.tenant_id}:${session.context_generation}:${purchaseLaunch?.id || ''}`"
+                :initial-id="
+                  purchaseLaunch?.id ||
+                  (workLaunch?.page === 'purchasing'
+                    ? workLaunch.target_id
+                    : undefined)
+                "
+                :initial-entity-id="
+                  purchaseLaunch?.entity_id ||
+                  (workLaunch?.page === 'purchasing'
+                    ? workLaunch.entity_id
+                    : undefined)
+                "
+                @failure="failure"
+                @sale="openSourceSale"
+              />
             </div>
-          </section>
-        </div>
+            <div
+              v-if="moduleTabs.includes('selling')"
+              v-show="page === 'selling'"
+            >
+              <SalesPage
+                :key="`${session.tenant_id}:${session.context_generation}:${sourceSale?.id || ''}`"
+                :initial-id="
+                  sourceSale?.id ||
+                  (workLaunch?.page === 'selling'
+                    ? workLaunch.target_id
+                    : undefined)
+                "
+                :initial-entity-id="
+                  sourceSale?.entity_id ||
+                  (workLaunch?.page === 'selling'
+                    ? workLaunch.entity_id
+                    : undefined)
+                "
+                @failure="failure"
+                @purchase="openReplenishmentPurchase"
+              />
+            </div>
+            <ReceivablesPage
+              v-if="page === 'receivables'"
+              :key="`${session.tenant_id}:${session.context_generation}`"
+              @failure="failure"
+            />
+            <FinancePage
+              v-if="page === 'finance'"
+              :key="`${session.tenant_id}:${session.context_generation}`"
+              @failure="failure"
+            />
+            <OpeningsPage
+              v-if="page === 'openings'"
+              :key="`${session.tenant_id}:${session.context_generation}`"
+              :initial-id="workLaunch?.target_id"
+              :initial-entity-id="workLaunch?.entity_id"
+              @failure="failure"
+            />
+            <QualityPage
+              v-if="page === 'quality'"
+              :key="`${session.tenant_id}:${session.context_generation}`"
+              :initial-id="workLaunch?.target_id"
+              :initial-entity-id="workLaunch?.entity_id"
+              @failure="failure"
+            />
+            <WarehousesPage
+              :active="page === 'warehouses' && !activeEditor && !activeRecord"
+              v-if="moduleTabs.includes('warehouses')"
+              v-show="page === 'warehouses'"
+              :key="`${session?.tenant_id}:${session?.context_generation}`"
+              @failure="failure"
+            />
+            <LocationMovesPage
+              v-if="page === 'location-moves'"
+              @failure="failure"
+            />
+            <TransfersPage
+              v-if="page === 'transfers'"
+              :key="`${session.tenant_id}:${session.context_generation}`"
+              :initial-id="workLaunch?.target_id"
+              :initial-loss-id="
+                workLaunch?.kind.startsWith('transfer_loss_')
+                  ? workLaunch.item_id
+                  : undefined
+              "
+              :initial-entity-id="workLaunch?.entity_id"
+              @failure="failure"
+            />
+            <CountsPage
+              v-if="page === 'counts'"
+              :key="`${session?.tenant_id}:${session?.context_generation}`"
+              :initial-id="workLaunch?.target_id"
+              :initial-entity-id="workLaunch?.entity_id"
+              @failure="failure"
+            />
+            <RetailPage
+              @return-sale="openRetailReturn"
+              v-if="page === 'retail'"
+              :key="session?.tenant_id + '-' + session?.context_generation"
+              :initial-id="workLaunch?.target_id"
+              :initial-entity-id="workLaunch?.entity_id"
+              @failure="failure"
+            />
+            <ReturnsPage
+              :initial-id="workLaunch?.target_id"
+              :initial-source-id="returnLaunch?.posting_id"
+              :initial-entity-id="
+                workLaunch?.entity_id || returnLaunch?.entity_id
+              "
+              v-if="page === 'returns'"
+              :key="`${session.tenant_id}:${session.context_generation}`"
+              @failure="failure"
+            />
+            <LedgerPage
+              v-if="page === 'ledger'"
+              :key="`${session.tenant_id}:${session.context_generation}`"
+              @failure="failure"
+            />
+            <section v-if="page === 'members'" class="panel" v-loading="busy">
+              <div class="panel-heading">
+                <h3>
+                  企业成员<span class="count">{{ members.items.length }}</span>
+                </h3>
+                <el-button @click="loadMembers">刷新列表</el-button>
+              </div>
+              <el-table :data="members.items" empty-text="当前企业暂无成员"
+                ><el-table-column label="成员" min-width="180"
+                  ><template #default="{ row }"
+                    ><div class="member-name">
+                      <span class="avatar small">{{
+                        row.display_name.slice(0, 1)
+                      }}</span
+                      ><b>{{ row.display_name }}</b
+                      ><el-tag
+                        v-if="row.principal_id === session.principal_id"
+                        size="small"
+                        type="info"
+                        >我</el-tag
+                      >
+                    </div></template
+                  ></el-table-column
+                ><el-table-column label="角色" min-width="160"
+                  ><template #default="{ row }">{{
+                    row.role_codes
+                      .map((r: string) => roleNames[r] || r)
+                      .join(" / ")
+                  }}</template></el-table-column
+                ><el-table-column label="主体范围" min-width="130"
+                  ><template #default="{ row }"
+                    >{{ row.entity_ids.length }} 个经营主体</template
+                  ></el-table-column
+                ><el-table-column label="状态" width="95"
+                  ><template #default="{ row }"
+                    ><el-tag :type="row.active ? 'success' : 'info'">{{
+                      row.active ? "已启用" : "已停用"
+                    }}</el-tag></template
+                  ></el-table-column
+                ><el-table-column label="操作" width="110"
+                  ><template #default="{ row }"
+                    ><el-button
+                      v-if="editable(row)"
+                      link
+                      type="primary"
+                      @click="edit(row)"
+                      >编辑权限</el-button
+                    ><span v-else class="muted">—</span></template
+                  ></el-table-column
+                ></el-table
+              >
+            </section>
+            <section
+              v-if="page === 'inventory'"
+              class="panel"
+              v-loading="inventoryLoading"
+            >
+              <div class="filters">
+                <label
+                  >仓库<el-select v-model="warehouse" aria-label="库存仓库"
+                    ><el-option
+                      v-for="item in options.warehouses"
+                      :key="item.id"
+                      :label="item.name"
+                      :value="item.id" /></el-select></label
+                ><label
+                  >商品<el-select v-model="sku" aria-label="库存商品" filterable
+                    ><el-option
+                      v-for="item in options.skus"
+                      :key="item.id"
+                      :label="item.name"
+                      :value="item.id" /></el-select></label
+                ><el-button
+                  type="primary"
+                  :disabled="!warehouse || !sku"
+                  @click="searchStock"
+                  >查询库存</el-button
+                >
+              </div>
+              <el-table
+                :data="stock"
+                :empty-text="
+                  searched ? '没有符合条件的库存' : '请选择仓库与商品'
+                "
+                ><el-table-column label="库存记录" min-width="165"
+                  ><template #default="{ row }"
+                    ><span class="mono">{{
+                      row.balance_id.slice(0, 8).toUpperCase()
+                    }}</span
+                    ><small class="cell-sub">{{
+                      row.lot_id
+                        ? "批次 " + row.lot_id.slice(0, 8).toUpperCase()
+                        : "无批次"
+                    }}</small></template
+                  ></el-table-column
+                ><el-table-column label="库位" min-width="165"
+                  ><template #default="{ row }"
+                    >{{ row.location_code
+                    }}<small
+                      v-if="row.location_name !== row.location_code"
+                      class="cell-sub"
+                      >{{ row.location_name }}</small
+                    ></template
+                  ></el-table-column
+                ><el-table-column label="账面数量" align="right"
+                  ><template #default="{ row }">{{
+                    quantity(row.on_hand)
+                  }}</template></el-table-column
+                ><el-table-column label="已预占" align="right"
+                  ><template #default="{ row }">{{
+                    quantity(row.reserved)
+                  }}</template></el-table-column
+                ><el-table-column label="冻结数量" align="right"
+                  ><template #default="{ row }">{{
+                    quantity(row.blocked)
+                  }}</template></el-table-column
+                ><el-table-column label="可用数量" align="right"
+                  ><template #default="{ row }"
+                    ><b class="available">{{
+                      quantity(row.available)
+                    }}</b></template
+                  ></el-table-column
+                ><el-table-column label="可分配状态" min-width="160"
+                  ><template #default="{ row }"
+                    ><el-tag v-if="row.eligible" type="success" effect="plain"
+                      >可分配</el-tag
+                    ><span v-else class="warning-text">{{
+                      row.ineligibility_codes
+                        .map((c: string) => messages[c] || c)
+                        .join("、")
+                    }}</span></template
+                  ></el-table-column
+                ></el-table
+              >
+              <div class="table-note">
+                库存数据为查询时点的快照；实际分配以预占结果为准。
+              </div>
+            </section>
+          </div>
+        </PageExtensionLayout>
       </main>
     </div>
     <el-dialog v-model="dialog" title="编辑成员权限" width="480px"

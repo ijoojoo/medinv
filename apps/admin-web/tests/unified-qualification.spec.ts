@@ -47,7 +47,7 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   page.on("pageerror", (e) => errors.push(e.message));
   const detail = await openParty(page, party.id, code);
   await detail.getByRole("tab", { name: /经营范围与准入/ }).click();
-  await page.locator(".data-toolbox [data-tool=revise]").click();
+  await page.locator("[data-core-action=revise]").click();
   const editing = page.getByRole("dialog", { name: "修订资料", exact: true });
   const scopes = editing.getByRole("region", {
     name: "经营范围与准入",
@@ -70,9 +70,11 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   const pending = await read(context, `${root}/scopes`);
   expect(pending.payload.scopes[0].codes).toEqual(["06", "08-01"]);
   expect(pending.active_payload.scopes).toEqual([]);
-  await mkdir("../../outputs/three-column/qualification", { recursive: true });
+  await mkdir("../../outputs/extension-menu/master/qualification", {
+    recursive: true,
+  });
   await page.screenshot({
-    path: "../../outputs/three-column/qualification/party-scopes.png",
+    path: "../../outputs/extension-menu/master/qualification/party-scopes.png",
     fullPage: true,
   });
 
@@ -82,9 +84,9 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
     const qualityPage = await reviewer.newPage();
     await openParty(qualityPage, party.id, code);
     await qualityPage
-      .getByRole("button", { name: "展开工具箱", exact: true })
+      .getByRole("button", { name: "展开扩展功能", exact: true })
       .click();
-    await qualityPage.locator(".data-toolbox [data-tool=review]").click();
+    await qualityPage.locator("[data-core-action=review]").click();
     const quality = qualityPage.getByRole("dialog", {
       name: "主体审核 / 停用",
       exact: true,
@@ -105,7 +107,7 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
       (await read(context, `${root}/scopes`)).active_payload.scopes,
     ).toHaveLength(1);
     await qualityPage.screenshot({
-      path: "../../outputs/three-column/qualification/unified-review.png",
+      path: "../../outputs/extension-menu/master/qualification/unified-review.png",
       fullPage: true,
     });
   } finally {
@@ -114,7 +116,7 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   await page.reload();
   const fresh = await openParty(page, party.id, code);
   await fresh.getByRole("tab", { name: /经营范围与准入/ }).click();
-  await page.locator(".data-toolbox [data-tool=revise]").click();
+  await page.locator("[data-core-action=revise]").click();
   await scopes.getByRole("button", { name: "停用", exact: true }).click();
   await scopes.getByLabel("范围变更说明").fill("软件验收撤回操作");
   await scopes.getByRole("button", { name: "保存范围变更" }).click();
@@ -125,8 +127,8 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   await editing
     .getByRole("button", { name: "关闭此对话框", exact: true })
     .click();
-  await page.getByRole("button", { name: "展开工具箱", exact: true }).click();
-  await page.locator(".data-toolbox [data-tool=review]").click();
+  await page.getByRole("button", { name: "展开扩展功能", exact: true }).click();
+  await page.locator("[data-core-action=review]").click();
   const reviewTask = page.getByRole("dialog", {
     name: "主体审核 / 停用",
     exact: true,
@@ -137,7 +139,7 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   await expect(comparison.locator("tbody tr")).toHaveCount(1);
   await expect(comparison).toContainText("第一类器械 06 软件验收 · 启用");
   await page.screenshot({
-    path: "../../outputs/three-column/qualification/change-comparison.png",
+    path: "../../outputs/extension-menu/master/qualification/change-comparison.png",
     animations: "disabled",
   });
   await comparison.getByPlaceholder("撤回变更原因").fill("取消测试变更");
@@ -183,9 +185,11 @@ test("built-in legal rules can be edited and source links remain visible", async
     .fill("测试可修改内置规则");
   await dialog.getByRole("button", { name: "取消", exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  await mkdir("../../outputs/three-column/qualification", { recursive: true });
+  await mkdir("../../outputs/extension-menu/master/qualification", {
+    recursive: true,
+  });
   await page.screenshot({
-    path: "../../outputs/three-column/qualification/editable-rules.png",
+    path: "../../outputs/extension-menu/master/qualification/editable-rules.png",
     fullPage: true,
   });
   for (const width of [3440, 768, 390]) {

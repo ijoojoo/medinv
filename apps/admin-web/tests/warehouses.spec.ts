@@ -37,7 +37,9 @@ test("warehouse management creates a receipt location and renames it without mov
     await expect(
       page.getByRole("heading", { name: warehouseName, exact: true }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "展开工具箱", exact: true }).click();
+    await page
+      .getByRole("button", { name: "展开扩展功能", exact: true })
+      .click();
     await page.getByRole("button", { name: "新增库位", exact: true }).click();
     dialog = page.getByRole("dialog");
     await dialog.getByLabel("库位编码", { exact: true }).fill("RECEIVE-02");
@@ -68,7 +70,9 @@ test("warehouse management creates a receipt location and renames it without mov
       .getByRole("button", { name: "选择库位", exact: true })
       .click();
     await page
-      .getByRole("button", { name: "修改库位名称", exact: true })
+      .getByRole("row")
+      .filter({ hasText: "RECEIVE-02" })
+      .getByRole("button", { name: "修改名称", exact: true })
       .click();
     dialog = page.getByRole("dialog");
     await dialog.getByLabel("库位名称", { exact: true }).fill("常温采购收货区");
@@ -165,7 +169,7 @@ test("viewer reads warehouse locations but cannot maintain them via UI or HTTP",
     .getByRole("button", { name: "管理库位", exact: true })
     .first()
     .click();
-  await page.getByRole("button", { name: "展开工具箱", exact: true }).click();
+  await page.getByRole("button", { name: "展开扩展功能", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "新增库位", exact: true }),
   ).toBeDisabled();

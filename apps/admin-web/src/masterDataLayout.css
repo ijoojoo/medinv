@@ -212,7 +212,7 @@
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
-.main-shell > .workspace-content:has(.data-workspace) {
+.main-shell > .workspace-content[data-master="true"] {
   max-width: 1720px;
 }
 @media (min-width: 1920px) {
@@ -287,5 +287,30 @@
   .el-drawer {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+.extension-workspace {
+  --data-side-width: 208px;
+  --data-rail-width: 60px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--data-rail-width);
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+.extension-workspace.tools-expanded {
+  grid-template-columns: minmax(0, 1fr) var(--data-side-width);
+}
+.extension-content {
+  min-width: 0;
+}
+.extension-workspace > .extension-content > .panel {
+  margin-top: 0;
+}
+@media (max-width: 600px) {
+  .extension-workspace {
+    --data-rail-width: 44px;
+    gap: 6px;
   }
 }

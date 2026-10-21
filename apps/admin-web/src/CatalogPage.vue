@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import MasterDataLayout from "./MasterDataLayout.vue";
+import MasterCoreActions from "./MasterCoreActions.vue";
 import CatalogAttachments from "./CatalogAttachments.vue";
-import { copyMasterCode, type MasterTool } from "./masterTools";
+import { copyMasterCode, extensionTools, type MasterTool } from "./masterTools";
 import DateInput from "./DateInput.vue";
 import InformationCard from "./InformationCard.vue";
 import { activeEntity } from "./entityScope";
@@ -790,7 +791,7 @@ function beginIdentityRevision() {
     :active="active"
     class="party-workspace"
     label="往来单位"
-    :tools="tools"
+    :tools="extensionTools(tools)"
     @action="toolAction"
   >
     <aside v-if="!product" class="master-sidebar party-sidebar">
@@ -829,7 +830,12 @@ function beginIdentityRevision() {
       >
         <div class="catalog-heading">
           <h2>{{ product ? "商品资料" : "往来单位" }}</h2>
-          <span class="form-note">统一建档 · 独立审核 · 编码映射</span>
+          <span class="form-note">统一建档 · 主体审核 · 编码映射</span>
+          <MasterCoreActions
+            :tools="tools"
+            :keys="['new']"
+            @action="toolAction"
+          />
         </div>
         <form class="business-toolbar" @submit.prevent="load(true)">
           <label
@@ -1332,6 +1338,11 @@ function beginIdentityRevision() {
               >← 返回资料列表</el-button
             >
             <h2>{{ product ? "商品资料详情" : "往来单位资料详情" }}</h2>
+            <MasterCoreActions
+              :tools="tools"
+              :keys="['revise', 'review']"
+              @action="toolAction"
+            />
             <span v-if="hasCodeEdits" class="form-note"
               >有未保存的卡片修改，返回列表时可选择保存或放弃。</span
             >

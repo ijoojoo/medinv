@@ -36,7 +36,13 @@ test("independent purchase reports drill down, configure columns, link records, 
     await expect(
       root.getByRole("button", { name: "新建采购订单" }),
     ).toHaveCount(0);
-    await root.getByRole("button", { name: "配置字段" }).click();
+    await page
+      .getByRole("button", { name: "展开扩展功能", exact: true })
+      .click();
+    await page
+      .locator(".data-toolbox:visible")
+      .getByRole("button", { name: "配置字段" })
+      .click();
     const drawer = page.getByRole("dialog", { name: "配置查询字段" });
     await drawer.getByRole("checkbox", { name: "仓库", exact: true }).uncheck();
     await drawer.getByRole("button", { name: "往来单位上移" }).click();
@@ -109,9 +115,9 @@ test("independent purchase reports drill down, configure columns, link records, 
     await root.getByLabel("基本单位", { exact: true }).selectOption("个");
     await settled(page);
     await expect(root.locator(".report-chart")).toContainText("10.000000");
-    await mkdir("../../outputs/document-reports", { recursive: true });
+    await mkdir("../../outputs/extension-menu/reports", { recursive: true });
     await page.screenshot({
-      path: "../../outputs/document-reports/验收图形报表.png",
+      path: "../../outputs/extension-menu/reports/验收图形报表.png",
       fullPage: true,
     });
     await root.getByRole("tab", { name: "单据汇总", exact: true }).click();
@@ -134,7 +140,7 @@ test("independent purchase reports drill down, configure columns, link records, 
         ),
       ).toBe(true);
       await page.screenshot({
-        path: `../../outputs/document-reports/单据汇总-${width}.png`,
+        path: `../../outputs/extension-menu/reports/单据汇总-${width}.png`,
         fullPage: true,
       });
     }
@@ -147,7 +153,7 @@ test("independent purchase reports drill down, configure columns, link records, 
       root.locator(".report-table .el-table-fixed-column--right"),
     ).toHaveCount(0);
     await page.screenshot({
-      path: "../../outputs/document-reports/窄屏表格.png",
+      path: "../../outputs/extension-menu/reports/窄屏表格.png",
       fullPage: true,
     });
     expect(errors).toEqual([]);

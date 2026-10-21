@@ -1,0 +1,219 @@
+{
+  "version": "0.37.0",
+  "date": "2026-10-21",
+  "baseline_commit": "f483054",
+  "scope": "核心操作入口归位、业务/报表默认折叠扩展菜单、响应式及宽度修正",
+  "database": {
+    "med": "b0054",
+    "control": "c0017",
+    "forced_rls_tables": 102,
+    "core_api_paths": 195,
+    "migration": false
+  },
+  "browser": {
+    "distinct_cases": 18,
+    "batches": [
+      {
+        "startTime": "2026-10-21T12:50:40.991Z",
+        "duration": 140225.38199999998,
+        "expected": 17,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "startTime": "2026-10-21T12:55:46.671Z",
+        "duration": 24402.273,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ],
+    "cases": [
+      {
+        "name": "independent purchase reports drill down, configure columns, link records, export and graph filtered facts",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "business record buttons open independent reports and query failures do not expose stale results",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "report chart and export HTTP APIs use read permission with no mutation buttons",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "master add actions remain visible while extension menus contain only supporting actions",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "functional and report pages have a single collapsed menu and retain their main actions",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "party fixed toolbox, read-only tabs, guarded daily task, formal/pending separation and refresh failure",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "toolbox session state, medium overlay, narrow layouts and role permissions",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "product read-only fields retain slots and editing remains explicit with saved history",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "staff left scopes and right maintenance save a real record and show audit",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "warehouse tasks preserve stock identity and history is a single right tool",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "dictionary browse, explicit revision, cancellation, saved history and search",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "two roles complete purchase, partial inspection, posting and rejected handback in the UI",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "viewer can read purchasing and catalog but has no write controls",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "scope tab, certificate linkage, one quality review and withdrawal preserve live data",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "built-in legal rules can be edited and source links remain visible",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "warehouse management creates a receipt location and renames it without moving posted stock",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "viewer reads warehouse locations but cannot maintain them via UI or HTTP",
+        "statuses": [
+          "expected"
+        ]
+      },
+      {
+        "name": "cached master pages do not narrow business reports or widen settings",
+        "statuses": [
+          "expected"
+        ]
+      }
+    ],
+    "widths": [
+      390,
+      768,
+      1050,
+      1440,
+      2560
+    ]
+  },
+  "backend_contract_tests": {
+    "passed": 2,
+    "log": "artifacts/extension-menu/backend.log"
+  },
+  "checks": {
+    "vue_typescript_and_production_build": "passed",
+    "prettier": "passed",
+    "diff_whitespace": "passed",
+    "container_smoke": "passed (non-root, both databases, 195 API paths, expiry scan)"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0054",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "images": [
+    "medinv-web:0.37.0 fc73dc9ab91d",
+    "medinv-core:0.37.0 4f3caa320b13",
+    "nginx:stable-alpine 970364228b1e",
+    "postgres:18 74935e722416",
+    "quay.io/keycloak/keycloak:26.8.0 599f909022d7"
+  ],
+  "cleanup": {
+    "removed_images": [
+      "medinv-web:0.36.0",
+      "medinv-core:0.36.0"
+    ],
+    "remaining_containers": 6,
+    "remaining_images": 5,
+    "volumes_untouched": true
+  },
+  "evidence_folder": "artifacts/extension-menu",
+  "screenshots_folder": "outputs/extension-menu",
+  "limits": "相关专项验证；不是全站全量回归或备份恢复演练。",
+  "next_three": [
+    "N07 日期与正式业务备注",
+    "N08 往来单位导入、查重与错误反馈",
+    "N09 更多记录查询与固定打印模板"
+  ]
+}

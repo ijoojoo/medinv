@@ -18,3 +18,14 @@ export async function copyMasterCode(code: unknown) {
     ElMessage.error("未能访问剪贴板，请在资料中选中编码复制");
   }
 }
+
+export const coreToolKeys = new Set([
+  "new",
+  "revise",
+  "review",
+  "location",
+  "rename-location",
+  "search",
+]);
+export const extensionTools = (tools: MasterTool[]) =>
+  tools.filter((t) => !coreToolKeys.has(t.key));

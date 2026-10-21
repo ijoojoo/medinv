@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MasterDataLayout from "./MasterDataLayout.vue";
-import { copyMasterCode, type MasterTool } from "./masterTools";
+import MasterCoreActions from "./MasterCoreActions.vue";
+import { copyMasterCode, extensionTools, type MasterTool } from "./masterTools";
 import { ElMessageBox } from "element-plus";
 import { registerCatalogChanges } from "./catalogChanges";
 import { activeEntity } from "./entityScope";
@@ -285,7 +286,7 @@ async function toolAction(key: string) {
     <MasterDataLayout
       :active="active"
       label="仓库与库位"
-      :tools="tools"
+      :tools="extensionTools(tools)"
       @action="toolAction"
     >
       <aside class="data-scope">
@@ -311,6 +312,14 @@ async function toolAction(key: string) {
       </aside>
       <section class="panel" v-loading="loading">
         <template v-if="!detail">
+          <header class="master-toolbar">
+            <h2>仓库与库位</h2>
+            <MasterCoreActions
+              :tools="tools"
+              :keys="['new']"
+              @action="toolAction"
+            />
+          </header>
           <form class="business-toolbar" @submit.prevent="load(true)">
             <label
               >仓库编码或名称<input
@@ -364,6 +373,11 @@ async function toolAction(key: string) {
             <el-button :disabled="busy || loading" @click="back"
               >返回仓库列表</el-button
             >
+            <MasterCoreActions
+              :tools="tools"
+              :keys="['revise', 'location']"
+              @action="toolAction"
+            />
           </div>
           <h3>{{ detail.warehouse.name }}</h3>
           <p class="form-note">
@@ -393,7 +407,7 @@ async function toolAction(key: string) {
             <el-table-column prop="code" label="库位编码" min-width="160" />
             <el-table-column prop="name" label="库位名称" min-width="220" />
             <el-table-column prop="version" label="版本" width="80" />
-            <el-table-column label="选择库位" width="110"
+            <el-table-column label="选择库位" width="180"
               ><template #default="{ row }"
                 ><el-button
                   link
@@ -402,6 +416,14 @@ async function toolAction(key: string) {
                   >{{
                     selectedLocation?.id === row.id ? "已选择" : "选择库位"
                   }}</el-button
+                ><el-button
+                  link
+                  type="primary"
+                  :disabled="
+                    !can('warehouses.write') || busy || loading || !!mode
+                  "
+                  @click="begin('rename-location', row)"
+                  >修改名称</el-button
                 ></template
               ></el-table-column
             >

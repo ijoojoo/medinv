@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import MasterDataLayout from "./MasterDataLayout.vue";
+import MasterCoreActions from "./MasterCoreActions.vue";
 import CatalogAttachments from "./CatalogAttachments.vue";
-import { copyMasterCode, type MasterTool } from "./masterTools";
+import { copyMasterCode, extensionTools, type MasterTool } from "./masterTools";
 import MasterChangeSummary from "./MasterChangeSummary.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -1014,7 +1015,7 @@ async function toolAction(key: string) {
     :active="active"
     v-if="schema"
     label="商品主数据工作台"
-    :tools="tools"
+    :tools="extensionTools(tools)"
     @action="toolAction"
   >
     <aside class="master-sidebar">
@@ -1046,6 +1047,11 @@ async function toolAction(key: string) {
               >{{ list?.scope.join(" / ") }} · {{ list?.total || 0 }} 项</small
             >
           </div>
+          <MasterCoreActions
+            :tools="tools"
+            :keys="['new']"
+            @action="toolAction"
+          />
         </div>
         <form class="master-search" @submit.prevent="query()">
           <input
@@ -1192,6 +1198,11 @@ async function toolAction(key: string) {
             >
           </div>
           <div>
+            <MasterCoreActions
+              :tools="tools"
+              :keys="editMode ? [] : ['revise', 'review']"
+              @action="toolAction"
+            />
             <el-button :disabled="busy || opening" @click="close"
               >返回查询</el-button
             ><el-button v-if="editMode" @click="reloadSchema"

@@ -3,11 +3,15 @@ import { randomUUID } from "node:crypto";
 import { wholesale, command, read, nav } from "./business-helpers";
 
 const tool = (page: Page, key: string) =>
-  page.locator(`.data-toolbox:visible [data-tool="${key}"]`);
+  page.locator(
+    ["new", "revise", "review", "location", "search"].includes(key)
+      ? `[data-core-action="${key}"]:visible`
+      : `.data-toolbox:visible [data-tool="${key}"]`,
+  );
 const layout = (page: Page) => page.locator(".data-workspace:visible");
 async function expand(page: Page) {
   const button = layout(page).getByRole("button", {
-    name: "展开工具箱",
+    name: "展开扩展功能",
     exact: true,
   });
   if (await button.count()) await button.click();
@@ -74,7 +78,7 @@ test("party fixed toolbox, read-only tabs, guarded daily task, formal/pending se
   );
   const detail = await openParty(page, item.code);
   await expect(
-    layout(page).getByRole("button", { name: "展开工具箱" }),
+    layout(page).getByRole("button", { name: "展开扩展功能" }),
   ).toHaveAttribute("aria-expanded", "false");
   await expect(detail.getByRole("tab", { name: "变更记录" })).toHaveCount(0);
   await expect(
@@ -94,6 +98,9 @@ test("party fixed toolbox, read-only tabs, guarded daily task, formal/pending se
     el.querySelector(".data-toolbox")!.getBoundingClientRect().width,
   ]);
   expect(Math.abs(widths[0] - widths[1])).toBeLessThan(1);
+  expect(keys).not.toEqual(expect.arrayContaining(["new"]));
+  expect(keys).not.toEqual(expect.arrayContaining(["revise"]));
+  expect(keys).not.toEqual(expect.arrayContaining(["review"]));
   for (const tab of [
     "经营信息",
     "质量管控",
@@ -154,6 +161,7 @@ test("party fixed toolbox, read-only tabs, guarded daily task, formal/pending se
   await expect(
     detail.getByRole("tab", { name: "经营信息", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
+  await expand(page);
   await tool(page, "history").click();
   const history = page.getByRole("dialog", { name: "变更记录", exact: true });
   await expect(history).toContainText("三栏维护验证");
@@ -197,7 +205,7 @@ test("party fixed toolbox, read-only tabs, guarded daily task, formal/pending se
     timeout: 10000,
   });
   await page.screenshot({
-    path: "../../outputs/three-column/往来单位-展开.png",
+    path: "../../outputs/extension-menu/master/往来单位-展开.png",
     fullPage: true,
   });
   await reviewer.close();
@@ -217,20 +225,20 @@ test("toolbox session state, medium overlay, narrow layouts and role permissions
   await nav(page, "职员资料");
   await page.setViewportSize({ width: 1050, height: 900 });
   await expect(
-    page.getByRole("dialog", { name: "往来单位工具箱" }),
+    page.getByRole("dialog", { name: "往来单位扩展功能" }),
   ).toHaveCount(0);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await nav(page, "往来单位");
   await expect(
-    layout(page).getByRole("button", { name: "收起工具箱" }),
+    layout(page).getByRole("button", { name: "收起扩展功能" }),
   ).toHaveAttribute("aria-expanded", "true");
   await page.setViewportSize({ width: 1050, height: 900 });
-  const panel = page.getByRole("dialog", { name: "往来单位工具箱" });
+  const panel = page.getByRole("dialog", { name: "往来单位扩展功能" });
   await expect(panel).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(panel).not.toBeVisible();
   await layout(page)
-    .getByRole("button", { name: "展开工具箱", exact: true })
+    .getByRole("button", { name: "展开扩展功能", exact: true })
     .click();
   await panel.getByRole("button", { name: "单位信息卡", exact: true }).click();
   await expect(panel).not.toBeVisible();
@@ -247,7 +255,7 @@ test("toolbox session state, medium overlay, narrow layouts and role permissions
       timeout: 10000,
     });
     await page.screenshot({
-      path: `../../outputs/three-column/往来单位-${width}.png`,
+      path: `../../outputs/extension-menu/master/往来单位-${width}.png`,
       fullPage: true,
     });
   }
@@ -310,6 +318,7 @@ test("product read-only fields retain slots and editing remains explicit with sa
   await expect(page.locator('[data-field="name"] .data-read-value')).toHaveText(
     name + "修订",
   );
+  await expand(page);
   await tool(page, "history").click();
   await expect(page.getByRole("dialog", { name: "变更记录" })).toContainText(
     "数据 v",
@@ -320,7 +329,7 @@ test("product read-only fields retain slots and editing remains explicit with sa
     timeout: 10000,
   });
   await page.screenshot({
-    path: "../../outputs/three-column/商品档案.png",
+    path: "../../outputs/extension-menu/master/商品档案.png",
     fullPage: true,
   });
   const latest = await read(
@@ -350,6 +359,7 @@ test("staff left scopes and right maintenance save a real record and show audit"
   await page.getByLabel("变更原因", { exact: true }).fill("三栏离职范围验证");
   await page.getByRole("button", { name: "保存资料", exact: true }).click();
   await expect(page.locator(".data-read-grid")).toContainText("离职");
+  await expand(page);
   await tool(page, "history").click();
   await expect(page.getByRole("dialog", { name: "变更记录" })).toContainText(
     "三栏离职范围验证",
@@ -372,7 +382,7 @@ test("staff left scopes and right maintenance save a real record and show audit"
     timeout: 10000,
   });
   await page.screenshot({
-    path: "../../outputs/three-column/职员资料.png",
+    path: "../../outputs/extension-menu/master/职员资料.png",
     fullPage: true,
   });
   const rows = await read(
@@ -410,7 +420,11 @@ test("warehouse tasks preserve stock identity and history is a single right tool
     .filter({ hasText: "SECOND" })
     .getByRole("button", { name: "选择库位" })
     .click();
-  await tool(page, "rename-location").click();
+  await page
+    .getByRole("row")
+    .filter({ hasText: "SECOND" })
+    .getByRole("button", { name: "修改名称", exact: true })
+    .click();
   dialog = page.getByRole("dialog", { name: "修改库位名称" });
   await dialog.getByLabel("库位名称", { exact: true }).fill("第二收货位");
   await dialog.getByLabel("维护原因").fill("只调整名称");
@@ -422,6 +436,7 @@ test("warehouse tasks preserve stock identity and history is a single right tool
   await expect(
     layout(page).getByRole("heading", { name: "维护记录" }),
   ).toHaveCount(0);
+  await expand(page);
   await tool(page, "history").click();
   await expect(page.getByRole("dialog", { name: "变更记录" })).toContainText(
     "只调整名称",
@@ -431,7 +446,7 @@ test("warehouse tasks preserve stock identity and history is a single right tool
     timeout: 10000,
   });
   await page.screenshot({
-    path: "../../outputs/three-column/仓库与库位.png",
+    path: "../../outputs/extension-menu/master/仓库与库位.png",
     fullPage: true,
   });
 });
@@ -450,7 +465,7 @@ test("dictionary browse, explicit revision, cancellation, saved history and sear
     await nav(page, "数据字典");
     const dict = page.locator(".dictionary-content:visible");
     await expect(dict.getByRole("button", { name: /新增字典值/ })).toHaveCount(
-      0,
+      1,
     );
     await expect(dict.getByRole("switch")).toHaveCount(0);
     await tool(page, "revise").click();
@@ -496,6 +511,7 @@ test("dictionary browse, explicit revision, cancellation, saved history and sear
     const saved = await savedResponse;
     expect(saved.status(), await saved.text()).toBe(200);
     await expect(dict.getByRole("switch")).toHaveCount(0);
+    await expand(page);
     await tool(page, "history").click();
     await expect(page.getByRole("dialog", { name: "变更记录" })).toContainText(
       "三栏字典界面验证",
@@ -514,7 +530,7 @@ test("dictionary browse, explicit revision, cancellation, saved history and sear
       timeout: 10000,
     });
     await page.screenshot({
-      path: "../../outputs/three-column/数据字典.png",
+      path: "../../outputs/extension-menu/master/数据字典.png",
       fullPage: true,
     });
     for (const width of [390, 768, 1440]) {
