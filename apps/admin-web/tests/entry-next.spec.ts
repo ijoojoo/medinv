@@ -1,3 +1,4 @@
+import { chooseWarehouse } from "./business-helpers";
 import { chooseParty } from "./business-helpers";
 import { test, expect, type Page, type Locator } from "@playwright/test";
 import {
@@ -22,12 +23,13 @@ async function fill(page: Page, f: any, purchase = true) {
     }),
     f.party.id,
   );
-  await editor
-    .getByRole("combobox", {
+  await chooseWarehouse(
+    editor.getByRole("combobox", {
       name: purchase ? "收货仓库" : "发货仓库",
       exact: true,
-    })
-    .selectOption(f.warehouse);
+    }),
+    f.warehouse,
+  );
   if (!purchase) {
     await editor
       .getByLabel("收货地址", { exact: true })

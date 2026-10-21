@@ -1,3 +1,4 @@
+import { chooseWarehouse } from "./business-helpers";
 import { chooseParty } from "./business-helpers";
 import { chooseEntrySku } from "./business-helpers";
 import { test, expect, type BrowserContext, type Page } from "@playwright/test";
@@ -172,9 +173,10 @@ test("six roles partially receive, inspect and ship two products, replenish reje
       saleDialog.getByRole("combobox", { name: /^客户/ }),
       party.id,
     );
-    await saleDialog
-      .getByRole("combobox", { name: /^发货仓库/ })
-      .selectOption(opened.warehouse_id);
+    await chooseWarehouse(
+      saleDialog.getByRole("combobox", { name: /^发货仓库/ }),
+      opened.warehouse_id,
+    );
     await saleDialog.getByLabel("收货地址").fill("虚拟分批交付点");
     for (const [i, g] of goods.entries()) {
       if (i)

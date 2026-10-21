@@ -51,6 +51,30 @@ export async function chooseParty(
   await option.click();
   await expect(page.locator(".party-lookup-popover:visible")).toHaveCount(0);
 }
+export async function chooseWarehouse(input: Locator, id: string) {
+  const page = input.page();
+  const scope = await input.evaluate((el) => {
+    const root = el.closest<HTMLElement>(".warehouse-lookup")!;
+    return { entity: root.dataset.entity!, channel: root.dataset.channel! };
+  });
+  const data = await read(
+    page.context(),
+    `/api/v1/warehouses/lookup?${new URLSearchParams({
+      entity_id: scope.entity,
+      channel: scope.channel,
+      warehouse_id: id,
+    })}`,
+  );
+  expect(data.items).toHaveLength(1);
+  await input.fill(data.items[0].code);
+  await page
+    .locator(`.warehouse-lookup-popover:visible [data-warehouse="${id}"]`)
+    .click();
+  await expect(input).toHaveValue(data.items[0].name);
+  await expect(page.locator(".warehouse-lookup-popover:visible")).toHaveCount(
+    0,
+  );
+}
 export async function chooseEntrySku(
   scope: Locator,
   sku: string | { code: string },

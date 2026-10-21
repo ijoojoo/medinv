@@ -1,3 +1,4 @@
+import { chooseWarehouse } from "./business-helpers";
 import { chooseParty } from "./business-helpers";
 import { chooseEntrySku } from "./business-helpers";
 import { test, expect, type Page } from "@playwright/test";
@@ -12,16 +13,17 @@ import {
 async function openProduct(page: Page, name: string) {
   await page.goto("/");
   await nav(page, "商品档案");
-  await page.getByLabel("查询资料", { exact: true }).fill(name);
+  await page
+    .getByRole("textbox", { name: "检索商品主数据", exact: true })
+    .fill(name);
   await page.getByRole("button", { name: "查询", exact: true }).click();
   await page
     .getByRole("row")
     .filter({ hasText: name })
-    .getByRole("button", { name: "资料详情", exact: true })
+    .getByRole("button", { name: "维护", exact: true })
     .click();
-  await page.getByRole("tab", { name: "基本信息", exact: true }).click();
+  await page.getByRole("button", { name: "维护其他包装", exact: true }).click();
   const panel = page.getByTestId("packaging-panel");
-  await panel.locator("summary").click();
   return panel;
 }
 
@@ -42,10 +44,10 @@ test("independently reviewed packaging drives purchase, wholesale and retail qua
     const f = await stockedCustomer(context, owner, reviewer, checker);
     let panel = await openProduct(page, f.name);
     await panel
-      .getByRole("button", { name: "新增包装版本", exact: true })
+      .getByRole("button", { name: "添加其他包装", exact: true })
       .click();
-    await panel.getByLabel("包装单位名称", { exact: true }).fill("箱");
-    await panel.getByLabel("基本单位数量（分子）", { exact: true }).fill("3");
+    await panel.getByLabel("包装名称", { exact: true }).fill("箱");
+    await panel.getByLabel("所含个数", { exact: true }).fill("3");
     await panel
       .getByLabel("包装维护原因", { exact: true })
       .fill("核对一箱三个的测试包装");
@@ -95,18 +97,24 @@ test("independently reviewed packaging drives purchase, wholesale and retail qua
     ]) {
       await page.goto("/");
       await nav(page, menu);
-      await page.getByRole("button", { name: action === "新建采购单" ? "新建采购订单" : action, exact: true }).click();
+      await page
+        .getByRole("button", {
+          name: action === "新建采购单" ? "新建采购订单" : action,
+          exact: true,
+        })
+        .click();
       const dialog = page.locator(".document-editor:visible");
       await chooseParty(
         dialog.getByRole("combobox", { name: partyLabel, exact: true }),
         f.party.id,
       );
-      await dialog
-        .getByRole("combobox", {
+      await chooseWarehouse(
+        dialog.getByRole("combobox", {
           name: menu === "采购入库" ? "收货仓库" : "发货仓库",
           exact: true,
-        })
-        .selectOption(f.warehouse);
+        }),
+        f.warehouse,
+      );
       if (menu === "批发销售")
         await dialog.getByLabel("收货地址").fill("包装验收收货点");
       await chooseEntrySku(dialog, f.product.sku_id);
@@ -130,9 +138,16 @@ test("independently reviewed packaging drives purchase, wholesale and retail qua
       expect(doc.lines[0].gross_amount).toBe("18.00");
       expect(doc.lines[0].package_snapshot.packaging_id).toBe(pack.id);
       await expect(dialog).not.toBeVisible();
+      const savedRow = page
+        .getByRole("row")
+        .filter({ hasText: f.name })
+        .first();
       await expect(
-        page.getByRole("row").filter({ hasText: f.name }).first(),
-      ).toContainText("2 箱");
+        savedRow.getByRole("cell", { name: "箱", exact: true }),
+      ).toBeVisible();
+      await expect(
+        savedRow.getByRole("cell", { name: /^2(?:\.0+)?$/ }),
+      ).toBeVisible();
     }
     await page.goto("/");
     await nav(page, "零售收银");

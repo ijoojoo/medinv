@@ -1,3 +1,4 @@
+import { chooseWarehouse } from "./business-helpers";
 import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -59,13 +60,14 @@ for (const purchase of [true, false]) {
       );
       await party.press("Enter");
       await expect(warehouse).toBeFocused();
-      await warehouse.selectOption(f.warehouse);
+      await chooseWarehouse(warehouse, f.warehouse);
       await warehouse.press("Enter");
       await expect(title).toBeFocused();
       const note = `表头验收-${f.suffix}`;
       await title.fill(note);
       await title.press("Shift+Enter");
       await expect(warehouse).toBeFocused();
+      await warehouse.press("Escape");
       await warehouse.press("Enter");
       await title.dispatchEvent("keydown", {
         key: "Enter",

@@ -1,3 +1,4 @@
+import { chooseWarehouse } from "./business-helpers";
 import { chooseParty } from "./business-helpers";
 import { chooseEntrySku } from "./business-helpers";
 import { test, expect } from "@playwright/test";
@@ -76,7 +77,7 @@ test("retail reservation and wholesale partial shipment share visible stock thro
       dialog.getByRole("combobox", { name: "客户", exact: true }),
       f.party.id,
     );
-    await dialog.getByLabel("发货仓库").selectOption(f.warehouse);
+    await chooseWarehouse(dialog.getByLabel("发货仓库"), f.warehouse);
     await dialog.getByLabel("收货地址").fill("可售库存软件验收地址");
     await chooseEntrySku(dialog, f.product.sku_id);
     await dialog.getByLabel("销售数量").fill("10");
@@ -93,11 +94,11 @@ test("retail reservation and wholesale partial shipment share visible stock thro
     await expect(
       stock.getByRole("row").filter({ hasText: f.name }),
     ).toContainText("7 个");
-    await dialog.getByLabel("发货仓库").selectOption(empty.id);
+    await chooseWarehouse(dialog.getByLabel("发货仓库"), empty.id);
     await expect(
       stock.getByRole("row").filter({ hasText: f.name }),
     ).toContainText("0 个");
-    await dialog.getByLabel("发货仓库").selectOption(f.warehouse);
+    await chooseWarehouse(dialog.getByLabel("发货仓库"), f.warehouse);
     await expect(
       stock.getByRole("row").filter({ hasText: f.name }),
     ).toContainText("7 个");

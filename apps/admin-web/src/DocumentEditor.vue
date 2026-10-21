@@ -1,10 +1,9 @@
 <script setup lang="ts">
+import WarehouseLookup from "./WarehouseLookup.vue";
 import PartyLookup from "./PartyLookup.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { session } from "./api";
-import { loadOptions, type PurchaseOptions } from "./business";
-import type { SalesOptions } from "./sales";
 import { submitCommand, unresolved } from "./commandRecovery";
 import DocumentEntryGrid from "./DocumentEntryGrid.vue";
 import SaleStockPanel from "./SaleStockPanel.vue";
@@ -51,16 +50,8 @@ const entityName = computed(
 );
 const entry = ref<InstanceType<typeof DocumentEntryGrid>>();
 const partyInput = ref<InstanceType<typeof PartyLookup>>();
-const choices = ref<PurchaseOptions & SalesOptions>({
-  suppliers: [],
-  customers: [],
-  warehouses: [],
-  skus: [],
-  locations: [],
-});
-const loading = ref(true),
-  optionsError = ref(""),
-  maintaining = ref(false);
+const warehouseInput = ref<InstanceType<typeof WarehouseLookup>>();
+const maintaining = ref(false);
 const blocked = computed(
   () =>
     maintaining.value ||
@@ -119,12 +110,13 @@ watch(
   () =>
     [
       props.active,
-      loading.value,
       entry.value?.ready,
       partyInput.value?.ready,
+      warehouseInput.value?.ready,
     ] as const,
-  async ([active, busy, ready, partyReady]) => {
-    if (!active || busy || !ready || !partyReady || !resumePending) return;
+  async ([active, ready, partyReady, warehouseReady]) => {
+    if (!active || !ready || !partyReady || !warehouseReady || !resumePending)
+      return;
     resumePending = false;
     await nextTick();
     const focused = document.activeElement;
@@ -132,7 +124,6 @@ watch(
       !alive ||
       !props.active ||
       blocked.value ||
-      optionsError.value ||
       focused?.closest('[role="dialog"],.el-overlay') ||
       root.value?.contains(focused) ||
       (focused !== document.body && focused !== activationFocus)
@@ -160,23 +151,7 @@ let alive = true;
 onUnmounted(() => {
   alive = false;
 });
-async function loadChoices() {
-  loading.value = true;
-  optionsError.value = "";
-  try {
-    const result = await loadOptions<PurchaseOptions & SalesOptions>(
-      `/api/v1/${purchase.value ? "purchasing" : "selling"}/options?entity_id=${state.value.record.entity_id}&include_skus=false&include_parties=false`,
-    );
-    if (alive) choices.value = result;
-  } catch (e) {
-    if (alive)
-      optionsError.value = e instanceof Error ? e.message : "资料读取失败";
-  } finally {
-    if (alive) loading.value = false;
-  }
-}
 onMounted(() => {
-  void loadChoices();
   if (isDirty(state.value)) editorChanged(props.id);
 });
 watch(
@@ -214,14 +189,7 @@ async function resolveConflict(copy = false) {
   }
 }
 async function save(event: SubmitEvent) {
-  if (
-    blocked.value ||
-    loading.value ||
-    entry.value?.hydrating ||
-    optionsError.value ||
-    state.value.conflict
-  )
-    return;
+  if (blocked.value || entry.value?.hydrating || state.value.conflict) return;
   const rows = entry.value?.prepare();
   if (!rows) return;
   const current = state.value;
@@ -325,7 +293,7 @@ function keys(e: KeyboardEvent) {
   // Plain Enter advances the header. Formal submission remains an explicit
   // button or Ctrl+Enter action, never a native implicit form submit.
   e.preventDefault();
-  if (blocked.value || loading.value || optionsError.value) return;
+  if (blocked.value) return;
   const fields = Array.from(
     root.value!.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
       ".editor-header-fields input:not(:disabled),.editor-header-fields select:not(:disabled)",
@@ -415,20 +383,13 @@ function keys(e: KeyboardEvent) {
         >查看原单</el-button
       >
     </div>
-    <div
-      v-if="state.error || optionsError"
-      class="editor-notice warning-text"
-      role="alert"
-    >
-      {{ state.error || optionsError }}
+    <div v-if="state.error" class="editor-notice warning-text" role="alert">
+      {{ state.error }}
       <template v-if="state.conflict"
         ><el-button @click="resolveConflict()">读取已存版本</el-button
         ><el-button @click="resolveConflict(true)"
           >另存草稿</el-button
         ></template
-      >
-      <el-button v-if="optionsError" @click="loadChoices"
-        >重试读取资料</el-button
       >
     </div>
     <form class="business-form editor-form" @submit.prevent="save">
@@ -442,7 +403,7 @@ function keys(e: KeyboardEvent) {
               channel="purchase"
               label="供应商"
               required
-              :disabled="blocked || loading || !!optionsError"
+              :disabled="blocked"
           /></label>
           <label v-else data-entry-field="party"
             >客户<PartyLookup
@@ -452,21 +413,19 @@ function keys(e: KeyboardEvent) {
               channel="sale"
               label="客户"
               required
-              :disabled="blocked || loading || !!optionsError"
+              :disabled="blocked"
           /></label>
           <label data-entry-field="warehouse"
             >{{ purchase ? "收货仓库" : "发货仓库"
-            }}<select
+            }}<WarehouseLookup
+              ref="warehouseInput"
               v-model="state.content.warehouse_id"
+              :entity="state.record.entity_id"
+              :channel="state.record.channel"
+              :label="purchase ? '收货仓库' : '发货仓库'"
               required
-              :disabled="loading || !!optionsError"
-            >
-              <option disabled value="">请选择仓库</option>
-              <option v-for="w in choices.warehouses" :key="w.id" :value="w.id">
-                {{ w.name }}
-              </option>
-            </select></label
-          >
+              :disabled="blocked"
+          /></label>
           <label data-entry-field="title"
             >草稿备注<input
               v-model="state.record.title"
@@ -557,13 +516,7 @@ function keys(e: KeyboardEvent) {
         <el-button
           native-type="submit"
           type="primary"
-          :disabled="
-            blocked ||
-            loading ||
-            entry?.hydrating ||
-            !!optionsError ||
-            state.conflict
-          "
+          :disabled="blocked || entry?.hydrating || state.conflict"
           :loading="state.submitting"
           >{{
             revision ? "保存变更并待审" : purchase ? "保存采购单" : "保存销售单"
@@ -582,13 +535,7 @@ function keys(e: KeyboardEvent) {
           <el-button
             native-type="submit"
             data-save-next
-            :disabled="
-              blocked ||
-              loading ||
-              entry?.hydrating ||
-              !!optionsError ||
-              state.conflict
-            "
+            :disabled="blocked || entry?.hydrating || state.conflict"
             >保存并新建</el-button
           >
         </div>

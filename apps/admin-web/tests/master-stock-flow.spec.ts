@@ -1,3 +1,4 @@
+import { chooseWarehouse } from "./business-helpers";
 import { test, expect, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -285,9 +286,10 @@ test("master product and package barcodes complete purchasing, receiving, wholes
       editor.getByRole("combobox", { name: "供应商", exact: true }),
       party.id,
     );
-    await editor
-      .getByRole("combobox", { name: "收货仓库", exact: true })
-      .selectOption(warehouse.id);
+    await chooseWarehouse(
+      editor.getByRole("combobox", { name: "收货仓库", exact: true }),
+      warehouse.id,
+    );
     await editor.getByRole("button", { name: "导入文件", exact: true }).click();
     let dialog = page.getByRole("dialog", {
       name: "导入商品明细",
@@ -440,9 +442,10 @@ test("master product and package barcodes complete purchasing, receiving, wholes
       editor.getByRole("combobox", { name: "客户", exact: true }),
       party.id,
     );
-    await editor
-      .getByRole("combobox", { name: "发货仓库", exact: true })
-      .selectOption(warehouse.id);
+    await chooseWarehouse(
+      editor.getByRole("combobox", { name: "发货仓库", exact: true }),
+      warehouse.id,
+    );
     await editor
       .getByLabel("收货地址", { exact: true })
       .fill("虚拟联合验收收货点");

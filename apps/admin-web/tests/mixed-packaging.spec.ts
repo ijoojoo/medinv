@@ -1,3 +1,4 @@
+import { chooseWarehouse } from "./business-helpers";
 import { chooseParty } from "./business-helpers";
 import { chooseEntrySku } from "./business-helpers";
 import { test, expect, type BrowserContext, type Page } from "@playwright/test";
@@ -211,9 +212,12 @@ test("seven roles buy and sell OTC drugs and devices in different packages witho
         dialog.getByRole("combobox", { name: purchase ? /^供应商/ : /^客户/ }),
         party.id,
       );
-      await dialog
-        .getByRole("combobox", { name: purchase ? /^收货仓库/ : /^发货仓库/ })
-        .selectOption(opened.warehouse_id);
+      await chooseWarehouse(
+        dialog.getByRole("combobox", {
+          name: purchase ? /^收货仓库/ : /^发货仓库/,
+        }),
+        opened.warehouse_id,
+      );
       if (!purchase) await dialog.getByLabel("收货地址").fill("虚拟药械交付点");
       const all = [
         { sku: device.sku_id, pack: packs.device_box, qty: "1", price: "999" },

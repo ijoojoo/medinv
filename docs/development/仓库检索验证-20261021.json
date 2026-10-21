@@ -1,0 +1,76 @@
+{
+  "version": "0.34.0",
+  "date": "2026-10-21",
+  "business_revision": "b0054",
+  "control_revision": "c0017",
+  "rls_tables": 102,
+  "api_paths": 192,
+  "backend_targeted": {
+    "passed": 28,
+    "seconds": 10.66,
+    "log": "artifacts/warehouse-lookup/backend-regression.log"
+  },
+  "frontend_checks": {
+    "distinct_cases_verified": 23,
+    "browser_scenarios": 22,
+    "arithmetic_check": 1,
+    "single_green_batch": false,
+    "runs": {
+      "artifacts/warehouse-lookup/browser-second.json": {
+        "startTime": "2026-10-21T10:01:24.080Z",
+        "duration": 192680.248,
+        "expected": 21,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "artifacts/warehouse-lookup/browser-repair.json": {
+        "startTime": "2026-10-21T10:05:26.246Z",
+        "duration": 61788.768000000004,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "artifacts/warehouse-lookup/packaging-final.json": {
+        "startTime": "2026-10-21T10:06:49.826Z",
+        "duration": 20653.445,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "resolution": "Warehouse test used a hidden filter as a visible-role locator; packaging test used pre-MDM labels and a formerly combined quantity/unit cell. Updated selectors and semantic cell assertions; five warehouse cases and final packaging case passed. Product source unchanged during these repairs."
+  },
+  "initial_report": {
+    "passed": 21,
+    "failed": 1,
+    "report": "artifacts/warehouse-lookup/browser-first.json",
+    "cause": "Request counter also counted the purchasing list filter requests. Scope corrected to additional loads during document entry. Selection-preserving keyboard refinement added before final batch."
+  },
+  "checks": [
+    "Vue TypeScript and production build",
+    "Prettier",
+    "Ruff",
+    "mypy: 174 source files",
+    "trial build/start/check/status",
+    "Linux non-root two-database/API and expiry smoke"
+  ],
+  "schema_migration": false,
+  "screenshots": {
+    "outputs/warehouse-lookup/采购仓库检索-窄屏.png": "c012178fed94fecf4187bd2a9415889fed283eae765fe75bdf34552850640edd",
+    "outputs/warehouse-lookup/采购仓库检索.png": "e79bb27e4edae1e4294086b871f494979bd36b182480337dbe0a08ef128bd2d2"
+  },
+  "boundaries": [
+    "N07 warehouse lookup increment; business date and formal note remain pending",
+    "Existing document-list filters still load their own choices; editor no longer duplicates the load",
+    "No new warehouse archival operation; already archived/missing references display and block entry",
+    "No full backend suite or full-site browser suite rerun"
+  ],
+  "next_three_phases": [
+    "N07: business dates and formal notes across create, revise, drafts and historical display",
+    "N08: party import preview, duplicate detection, error file and atomic submission with parent review",
+    "N09: historical document views, exports and fixed print templates"
+  ]
+}

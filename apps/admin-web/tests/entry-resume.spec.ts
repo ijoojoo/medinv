@@ -217,19 +217,30 @@ test("reordered and deleted draft rows resolve by identity; hidden columns fall 
   );
 });
 
-test("late options never steal focus after the user starts another action", async ({
+test("late warehouse hydration never steals focus after the user starts another action", async ({
   page,
   context,
 }) => {
   const owner = await wholesale(context, "demo.owner");
   const f = await draft(context, owner, "purchase");
+  const warehouse = (
+    await read(
+      context,
+      `/api/v1/warehouses/lookup?entity_id=${owner.entities[0].id}&channel=purchase`,
+    )
+  ).items[0];
+  await command(context, owner, `/api/v1/document-drafts/${f.id}`, {
+    ...f.body,
+    expected_version: f.saved.version,
+    content: { ...f.body.content, warehouse_id: warehouse.id },
+  });
   await page.goto(f.url);
   await price(page, f.body.content.lines[18]!.client_key).focus();
   let release = () => {};
   const hold = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route("**/api/v1/purchasing/options?**", async (route) => {
+  await page.route("**/api/v1/warehouses/lookup?**", async (route) => {
     await hold;
     await route.continue();
   });
@@ -244,6 +255,9 @@ test("late options never steal focus after the user starts another action", asyn
     await expect(
       editor(page).getByRole("combobox", { name: "供应商", exact: true }),
     ).toBeEnabled();
+    await expect(
+      editor(page).getByRole("combobox", { name: "收货仓库", exact: true }),
+    ).toHaveValue(warehouse.name);
     await expect(save).toBeFocused();
   } finally {
     release();

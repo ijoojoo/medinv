@@ -109,6 +109,7 @@ from medinv.modules.inventory.application.quality import QualityService
 from medinv.modules.inventory.application.service import InventoryService
 from medinv.modules.inventory.application.transfer_losses import TransferLossService
 from medinv.modules.inventory.application.transfers import TransferService
+from medinv.modules.inventory.application.warehouse_lookup import WarehouseLookup
 from medinv.modules.inventory.application.warehouses import WarehouseService
 from medinv.modules.procurement.api.schemas import (
     Approval,
@@ -231,7 +232,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.33.1", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.34.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -658,6 +659,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         offset: int = Query(default=0, ge=0, le=100000),
     ) -> dict[str, Any]:
         return envelope(request, warehouses.listing(auth(request), entity_id, search, offset))
+
+    @app.get("/api/v1/warehouses/lookup")
+    def warehouse_lookup(
+        request: Request,
+        entity_id: UUID,
+        channel: Literal["purchase", "sale"],
+        search: str = Query(default="", max_length=100),
+        offset: int = Query(default=0, ge=0, le=100000),
+        warehouse_id: UUID | None = None,
+    ) -> dict[str, Any]:
+        return envelope(
+            request,
+            WarehouseLookup(catalog.uow).search(
+                auth(request), entity_id, channel, search, offset, warehouse_id
+            ),
+        )
 
     @app.get("/api/v1/warehouses/{id}")
     def warehouse_detail(
