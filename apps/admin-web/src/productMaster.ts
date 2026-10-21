@@ -82,6 +82,7 @@ export interface MasterIssue {
 }
 export type MasterValues = Record<string, unknown>;
 export interface MasterRecord {
+  active_values: MasterValues;
   id: string;
   has_changes?: boolean;
   version: number;

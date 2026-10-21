@@ -37,6 +37,7 @@ test("warehouse management creates a receipt location and renames it without mov
     await expect(
       page.getByRole("heading", { name: warehouseName, exact: true }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "展开工具箱", exact: true }).click();
     await page.getByRole("button", { name: "新增库位", exact: true }).click();
     dialog = page.getByRole("dialog");
     await dialog.getByLabel("库位编码", { exact: true }).fill("RECEIVE-02");
@@ -64,6 +65,9 @@ test("warehouse management creates a receipt location and renames it without mov
     await page
       .getByRole("row")
       .filter({ hasText: "RECEIVE-02" })
+      .getByRole("button", { name: "选择库位", exact: true })
+      .click();
+    await page
       .getByRole("button", { name: "修改库位名称", exact: true })
       .click();
     dialog = page.getByRole("dialog");
@@ -100,6 +104,7 @@ test("warehouse management creates a receipt location and renames it without mov
     expect(options.locations.find((l: any) => l.id === location.id).name).toBe(
       "常温采购收货区",
     );
+    await page.getByRole("button", { name: "变更记录", exact: true }).click();
     await expect(
       page.getByText("常温收货二号位 → 常温采购收货区", { exact: false }),
     ).toBeVisible();
@@ -109,6 +114,7 @@ test("warehouse management creates a receipt location and renames it without mov
       fullPage: true,
       animations: "disabled",
     });
+    await page.keyboard.press("Escape");
     await page
       .getByRole("button", { name: "返回仓库列表", exact: true })
       .click();
@@ -154,20 +160,18 @@ test("viewer reads warehouse locations but cannot maintain them via UI or HTTP",
   await nav(page, "仓库与库位");
   await expect(
     page.getByRole("button", { name: "新增实体仓库", exact: true }),
-  ).toHaveCount(0);
+  ).toBeDisabled();
   await page
     .getByRole("button", { name: "管理库位", exact: true })
     .first()
     .click();
-  await expect(
-    page.getByRole("heading", { name: "维护记录", exact: true }),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "展开工具箱", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "新增库位", exact: true }),
-  ).toHaveCount(0);
+  ).toBeDisabled();
   await expect(
     page.getByRole("button", { name: "修改仓库名称", exact: true }),
-  ).toHaveCount(0);
+  ).toBeDisabled();
   const warehouse = (
     await read(context, `/api/v1/warehouses?entity_id=${viewer.entities[0].id}`)
   ).items[0];

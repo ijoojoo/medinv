@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { inlinePrices, priceLabels } from "./masterTrade";
 import DateInput from "./DateInput.vue";
 import { computed, reactive } from "vue";
 import { can } from "./business";
@@ -22,6 +23,7 @@ const props = defineProps<{
   existing?: boolean;
   unitLocked?: boolean;
   disabled?: boolean;
+  readView?: boolean;
   organizations?: Organization[];
 }>();
 const emit = defineEmits<{
@@ -72,6 +74,29 @@ function readonly(key: string) {
     (props.unitLocked && key === "base_unit")
   );
 }
+function readValue(key: string) {
+  const f = fields.value.find((f) => f.key === key)!;
+  if (!can(f.read_permission)) return "无查看权限";
+  if (f.unconfirmed) return "待核实：先明确子类型 / 管理类别";
+  if (!f.applicable) return "本品类不适用";
+  if (key === "reference_prices") {
+    const prices = inlinePrices(props.values);
+    return Object.entries(priceLabels)
+      .map(
+        ([k, label]) =>
+          `${label}：${prices[k as keyof typeof priceLabels] || "未设置"}`,
+      )
+      .join("；");
+  }
+  const value = props.values[key];
+  if (f.value_type === "select")
+    return f.options?.find((o) => o.value === value)?.label || summary(value);
+  if (f.value_type === "reference")
+    return (
+      props.organizations?.find((o) => o.id === value)?.name || summary(value)
+    );
+  return summary(value);
+}
 function input(key: string, event: Event, type: string) {
   const v = (event.target as HTMLInputElement).value;
   emit("change", key, v === "" ? null : type === "boolean" ? v === "true" : v);
@@ -107,8 +132,14 @@ const hint = (key: string) =>
             >*</span
           >{{ label(s.field_key, s.field.label) }}</label
         >
+        <span
+          v-if="readView"
+          class="data-read-value"
+          :id="`master-${s.slot_id}`"
+          >{{ readValue(s.field_key) }}</span
+        >
         <input
-          v-if="!can(s.field.read_permission)"
+          v-else-if="!can(s.field.read_permission)"
           :id="`master-${s.slot_id}`"
           value="无查看权限"
           disabled
@@ -250,6 +281,7 @@ const hint = (key: string) =>
           @input="input(s.field_key, $event, s.field.value_type)"
         />
         <div
+          v-if="!readView"
           class="master-feedback"
           :title="hint(s.field_key) || s.field.semantic_definition"
         >

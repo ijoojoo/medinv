@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "药械进销存 · 核心 API",
-    "version": "0.34.0"
+    "version": "0.35.0"
   },
   "paths": {
     "/api/v1/context": {
@@ -15701,6 +15701,21 @@
               "minimum": 0,
               "default": 0,
               "title": "Offset"
+            }
+          },
+          {
+            "name": "staff_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "",
+                "ACTIVE",
+                "LEFT"
+              ],
+              "type": "string",
+              "default": "",
+              "title": "Staff Status"
             }
           },
           {

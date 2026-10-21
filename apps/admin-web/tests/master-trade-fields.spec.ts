@@ -77,7 +77,7 @@ test("basic barcode and prices are entered directly; other packaging keeps its c
       "元／盒",
     );
     await page.screenshot({
-      path: "../../outputs/mdm-basic-fields/价格直接录入.png",
+      path: "../../outputs/three-column/trade/价格直接录入.png",
       fullPage: true,
     });
     const product = await save(page);
@@ -94,9 +94,12 @@ test("basic barcode and prices are entered directly; other packaging keeps its c
       page.getByLabel("条码（基本单位）", { exact: true }),
     ).toHaveValue(barcode);
     await page.screenshot({
-      path: "../../outputs/mdm-basic-fields/基本信息与其他包装.png",
+      path: "../../outputs/three-column/trade/基本信息与其他包装.png",
       fullPage: true,
     });
+    await tabs(page)
+      .getByRole("button", { name: "基本信息", exact: true })
+      .click();
     await page
       .getByRole("button", { name: "维护其他包装", exact: true })
       .click();
@@ -115,7 +118,7 @@ test("basic barcode and prices are entered directly; other packaging keeps its c
       .fill("虚构测试包装核对");
     await expect(packaging).toContainText("1 箱 ＝ 100 盒");
     await page.screenshot({
-      path: "../../outputs/mdm-basic-fields/包装换算录入.png",
+      path: "../../outputs/three-column/trade/包装换算录入.png",
       fullPage: true,
     });
     await packaging

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import MasterDataLayout from "./MasterDataLayout.vue";
+import CatalogAttachments from "./CatalogAttachments.vue";
+import { copyMasterCode, type MasterTool } from "./masterTools";
 import MasterChangeSummary from "./MasterChangeSummary.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -13,6 +16,12 @@ import type { CatalogDictionary } from "./catalogDictionaries";
 import MasterTree from "./MasterTree.vue";
 import InformationCard from "./InformationCard.vue";
 const infoOpen = ref(false);
+const editMode = ref(false),
+  historyListOpen = ref(false),
+  attachmentsOpen = ref(false);
+const displayedValues = computed(() =>
+  !editMode.value && record.value ? record.value.active_values : values.value,
+);
 import CatalogColumnSettings from "./CatalogColumnSettings.vue";
 import { useCatalogColumns, type ListColumnDefinition } from "./catalogColumns";
 import ProductCertificates from "./ProductCertificates.vue";
@@ -43,7 +52,10 @@ import {
   type RoleLink,
 } from "./productMaster";
 import { clearReference, type ReferenceTarget } from "./workspace";
-const props = defineProps<{ initialTarget?: ReferenceTarget }>();
+const props = defineProps<{
+  active?: boolean;
+  initialTarget?: ReferenceTarget;
+}>();
 const emit = defineEmits<{ failure: [error: unknown] }>();
 const schema = ref<SchemaResponse | null>(null),
   list = ref<MasterList | null>(null),
@@ -269,8 +281,11 @@ async function locateReference() {
   const target = props.initialTarget;
   if (!target || !schema.value) return;
   if (await open(target.id)) {
-    if (target.tab === "certificates")
-      await openRelation("product_certificates");
+    if (target.tab === "certificates") tab.value = "quality";
+    if (target.tab === "history") {
+      historyOpen.value = false;
+      historyListOpen.value = true;
+    }
   }
 }
 watch(
@@ -355,7 +370,11 @@ function expand(id: string) {
     /* Navigation remains usable without local persistence. */
   }
 }
-function browse(id: string) {
+async function browse(id: string) {
+  if (editing.value) {
+    await close();
+    if (editing.value) return;
+  }
   selected.value = id;
   offset.value = 0;
   listReturn.clear();
@@ -406,6 +425,7 @@ async function refreshDictionaries() {
   );
 }
 function start(id: string) {
+  editMode.value = true;
   savedRefreshId.value = "";
   node.value = id;
   record.value = null;
@@ -433,6 +453,7 @@ async function open(id: string, afterSave = false) {
     ]);
     if (current !== detailEpoch) return false;
     record.value = result;
+    if (!afterSave) editMode.value = false;
     node.value = result.category_node_id;
     values.value = JSON.parse(JSON.stringify(result.values));
     resetTrade(result.values);
@@ -513,6 +534,7 @@ async function confirmMasterDates() {
   return true;
 }
 async function save() {
+  if (!editMode.value) return false;
   if (busy.value || opening.value || !can("catalog.write")) return false;
   // The write already succeeded. Retrying must only reload, never create twice.
   if (savedRefreshId.value) return !!(await open(savedRefreshId.value, true));
@@ -846,9 +868,155 @@ async function certificateSaved() {
     }
   }
 }
+
+const tools = computed<MasterTool[]>(() => {
+  const waiting =
+    busy.value || opening.value || loading.value ? "正在处理，请稍候" : "";
+  const need =
+    waiting || (!record.value || !editing.value ? "请先打开一份商品资料" : "");
+  const task =
+    waiting || (editMode.value && editing.value ? "请先结束修订任务" : "");
+  return [
+    {
+      key: "revise",
+      label: "修订资料",
+      short: "修订",
+      icon: "✎",
+      group: "资料维护",
+      disabled: !can("catalog.write") ? "无维护权限" : need || task,
+    },
+    {
+      key: "refresh",
+      label: "刷新资料",
+      icon: "↻",
+      group: "资料维护",
+      disabled: task,
+    },
+    {
+      key: "new",
+      label: "新建商品 / 项目",
+      short: "新建",
+      icon: "＋",
+      group: "资料维护",
+      disabled: !can("catalog.write") ? "无维护权限" : task,
+    },
+    {
+      key: "review",
+      label: "质量审核 / 停用",
+      icon: "✓",
+      group: "资料维护",
+      disabled: !can("catalog.review") ? "无审核权限" : need || task,
+    },
+    {
+      key: "history",
+      label: "变更记录",
+      short: "记录",
+      icon: "◷",
+      group: "关联查阅",
+      disabled: need || task,
+    },
+    {
+      key: "attachments",
+      label: "证照附件",
+      short: "附件",
+      icon: "▤",
+      group: "关联查阅",
+      disabled: need || task,
+    },
+    {
+      key: "card",
+      label: "商品信息卡",
+      icon: "▣",
+      group: "关联查阅",
+      disabled: need || task,
+    },
+    {
+      key: "copyCode",
+      label: "复制商品编码",
+      icon: "⧉",
+      group: "辅助操作",
+      disabled: need,
+    },
+    {
+      key: "columns",
+      label: "列表列设置",
+      icon: "☷",
+      group: "辅助操作",
+      disabled: task,
+    },
+    {
+      key: "import",
+      label: "导入商品",
+      icon: "↓",
+      group: "辅助操作",
+      disabled: !can("catalog.write") ? "无维护权限" : task,
+    },
+    {
+      key: "export",
+      label: "导出当前范围",
+      icon: "↑",
+      group: "辅助操作",
+      disabled: task,
+    },
+  ];
+});
+async function cancelRevision() {
+  if (!(await guard())) return;
+  if (!record.value) {
+    editing.value = false;
+    editMode.value = false;
+    values.value = {};
+    original.value = "{}";
+    resetTrade({});
+    await listReturn.restore();
+    return;
+  }
+  values.value = JSON.parse(JSON.stringify(record.value.values));
+  resetTrade(values.value);
+  original.value = JSON.stringify(values.value);
+  reason.value = "";
+  editMode.value = false;
+}
+async function toolAction(key: string) {
+  if (tools.value.find((t) => t.key === key)?.disabled) return;
+  if (key === "copyCode")
+    return copyMasterCode(record.value?.active_values.code);
+  if (key === "revise") {
+    editMode.value = true;
+    return;
+  }
+  if (key === "refresh") {
+    if (record.value && editing.value) await open(record.value.id, true);
+    else await load();
+    return;
+  }
+  if (key === "new") return newProduct();
+  if (key === "history") {
+    historyOpen.value = false;
+    historyListOpen.value = true;
+  }
+  if (key === "attachments") attachmentsOpen.value = true;
+  if (key === "card") infoOpen.value = true;
+  if (key === "review") {
+    reviewReason.value = "";
+    reviewOpen.value = true;
+  }
+  if (key === "columns") columnSettings.value = true;
+  if (key === "import") {
+    newNode.value = "";
+    importOpen.value = true;
+  }
+  if (key === "export") await exportRows();
+}
 </script>
 <template>
-  <section class="master-workspace" v-if="schema" aria-label="商品主数据工作台">
+  <MasterDataLayout
+    :active="active"
+    v-if="schema"
+    label="商品主数据工作台"
+    :tools="tools"
+    @action="toolAction"
+  >
     <aside class="master-sidebar">
       <div class="master-side-heading">商品与项目 <span>品类导航</span></div>
       <MasterTree
@@ -876,27 +1044,6 @@ async function certificateSaved() {
             <h2>商品主数据</h2>
             <small
               >{{ list?.scope.join(" / ") }} · {{ list?.total || 0 }} 项</small
-            >
-          </div>
-          <div>
-            <el-button
-              :disabled="loading || opening"
-              @click="columnSettings = true"
-              >列设置</el-button
-            >
-            <el-button @click="exportRows">导出当前范围</el-button
-            ><el-button
-              v-if="can('catalog.write')"
-              @click="
-                newNode = '';
-                importOpen = true;
-              "
-              >导入</el-button
-            ><el-button
-              v-if="can('catalog.write')"
-              type="primary"
-              @click="newProduct"
-              >新建商品 / 项目</el-button
             >
           </div>
         </div>
@@ -985,7 +1132,7 @@ async function certificateSaved() {
                 </td>
                 <td>
                   <button class="master-text-button" @click="open(row.id)">
-                    维护
+                    资料详情
                   </button>
                 </td>
               </tr>
@@ -1025,7 +1172,7 @@ async function certificateSaved() {
         <div class="master-toolbar">
           <div>
             <h2>
-              {{ values.name || "新建商品 / 项目" }}
+              {{ displayedValues.name || "新建商品 / 项目" }}
               <span class="master-state"
                 >{{ record ? labels[record.approval_state] : "未保存"
                 }}{{
@@ -1045,13 +1192,13 @@ async function certificateSaved() {
             >
           </div>
           <div>
-            <el-button v-if="record" @click="infoOpen = true"
-              >商品信息卡</el-button
-            >
             <el-button :disabled="busy || opening" @click="close"
               >返回查询</el-button
-            ><el-button @click="reloadSchema">重载规则并校验</el-button
-            ><el-button @click="validate">校验全部页签</el-button>
+            ><el-button v-if="editMode" @click="reloadSchema"
+              >重载规则并校验</el-button
+            ><el-button v-if="editMode" @click="validate"
+              >校验全部页签</el-button
+            >
           </div>
         </div>
         <nav class="master-tabs" aria-label="商品资料分组">
@@ -1074,7 +1221,15 @@ async function certificateSaved() {
         >
           资料已保存，最新详情暂未读回。请点击“重试读取已保存资料”；不会重复建档。
         </p>
-        <div class="master-issue-strip" role="status">
+        <p v-if="record && !editMode" class="master-issue-strip" role="status">
+          {{
+            record.has_changes
+              ? "当前正式资料 · 有待审核变更，审核通过后统一生效"
+              : "只读查阅 · " + labels[record.approval_state]
+          }}
+          · 编码 {{ displayedValues.code }}
+        </p>
+        <div v-if="editMode" class="master-issue-strip" role="status">
           <template v-if="issues.length"
             ><span>{{ issues.length }} 项需要处理：</span
             ><button
@@ -1095,7 +1250,8 @@ async function certificateSaved() {
           :data="schema"
           :profile="profile"
           :tab="group.id"
-          :values="values"
+          :values="displayedValues"
+          :read-view="!editMode"
           :issues="issues"
           :existing="!!record"
           :unit-locked="!!record?.skus.some((s) => !!s.base_unit)"
@@ -1151,7 +1307,7 @@ async function certificateSaved() {
           </template>
         </MasterFields>
         <div
-          v-if="tab === 'basic' && profile !== 'service'"
+          v-if="editMode && tab === 'basic' && profile !== 'service'"
           class="master-packaging-entry"
         >
           <div>
@@ -1179,45 +1335,15 @@ async function certificateSaved() {
             >其他条码与历史</el-button
           >
         </div>
-        <details
-          v-if="record && Object.values(record.legacy).some(Boolean)"
-          class="master-history"
-        >
-          <summary>旧档原始记录与历史版本</summary>
-          <p>{{ record.legacy.message }}</p>
-          <dl>
-            <template
-              v-for="k in [
-                'manufacturer_name',
-                'authorization_holder',
-                'registrant_name',
-                'approval_number',
-                'valid_from',
-                'valid_until',
-              ]"
-              :key="k"
-              ><dt>{{ legacyLabels[k] }}</dt>
-              <dd>{{ record.legacy[k] || "未记载" }}</dd></template
-            >
-          </dl>
-          <button
-            v-for="h in record.history"
-            :key="h.data_version"
-            class="master-text-button"
-            @click="history(h.data_version)"
-          >
-            数据 v{{ h.data_version }} / 表单 v{{ h.form_revision }}
-          </button>
-        </details>
         <MasterChangeSummary
-          v-if="record"
+          v-if="record && editMode"
           kind="product"
           :id="record.id"
           :version="record.version"
           @failure="emit('failure', $event)"
           @saved="open(record!.id, true)"
         />
-        <footer class="master-footer">
+        <footer v-if="editMode" class="master-footer">
           <span
             >编码：{{ values.code || "保存时生成"
             }}<small>Ctrl / ⌘ + S 保存变更 · 证件随商品一次审核</small></span
@@ -1227,14 +1353,6 @@ async function certificateSaved() {
             placeholder="修订说明"
             maxlength="200"
           /><el-button
-            v-if="record && can('catalog.review')"
-            :disabled="dirty || busy || opening"
-            @click="
-              reviewReason = '';
-              reviewOpen = true;
-            "
-            >质量审核 / 停用</el-button
-          ><el-button
             v-if="can('catalog.write')"
             :disabled="busy || opening || relationDirty"
             @click="saveAndReturn"
@@ -1249,6 +1367,9 @@ async function certificateSaved() {
               savedRefreshId && !opening ? "重试读取已保存资料" : "保存资料草稿"
             }}</el-button
           >
+          <el-button :disabled="busy || opening" @click="cancelRevision">{{
+            dirty ? "取消修订" : "返回只读查阅"
+          }}</el-button>
         </footer>
       </div>
     </div>
@@ -1634,18 +1755,72 @@ async function certificateSaved() {
         >
       </template>
     </el-dialog>
-    <el-dialog v-model="historyOpen" title="历史数据快照" width="800px"
-      ><table class="master-list-table">
-        <tbody>
-          <tr v-for="(v, k) in historyValues" :key="k">
-            <td>
-              {{ historyLabels[k] || k }}
-            </td>
-            <td>{{ summary(v) }}</td>
-          </tr>
-        </tbody>
-      </table></el-dialog
+    <el-drawer
+      v-model="historyListOpen"
+      title="变更记录"
+      size="min(640px, 96vw)"
+      append-to-body
     >
+      <p class="data-task-heading">
+        {{ record?.active_values.name }} · {{ record?.active_values.code }}
+      </p>
+      <template v-if="historyOpen"
+        ><el-button @click="historyOpen = false">返回版本列表</el-button>
+        <table class="master-list-table">
+          <tbody>
+            <tr v-for="(v, k) in historyValues" :key="k">
+              <td>
+                {{ historyLabels[k] || k }}
+              </td>
+              <td>{{ summary(v) }}</td>
+            </tr>
+          </tbody>
+        </table></template
+      >
+      <template v-else>
+        <MasterChangeSummary
+          readonly
+          v-if="record"
+          kind="product"
+          :id="record.id"
+          :version="record.version"
+          @failure="emit('failure', $event)"
+          @saved="open(record!.id, true)"
+        />
+        <p v-if="!record?.history.length">暂无历史版本</p>
+        <p v-for="h in record?.history" :key="h.data_version">
+          <el-button @click="history(h.data_version)"
+            >数据 v{{ h.data_version }} / 表单 v{{ h.form_revision }}</el-button
+          ><small> {{ h.created_at }}</small>
+        </p>
+        <details v-if="record && Object.values(record.legacy).some(Boolean)">
+          <summary>旧档原始记录</summary>
+          <p>{{ record.legacy.message }}</p>
+          <dl>
+            <template v-for="(v, k) in record.legacy" :key="k"
+              ><dt>{{ legacyLabels[k] || k }}</dt>
+              <dd>{{ v || "未记载" }}</dd></template
+            >
+          </dl>
+        </details>
+      </template>
+    </el-drawer>
+    <el-drawer
+      v-model="attachmentsOpen"
+      title="证照附件"
+      size="min(640px, 96vw)"
+      append-to-body
+      destroy-on-close
+      ><CatalogAttachments
+        v-if="record"
+        readonly
+        area="products"
+        :parent="record.id"
+        :model-value="null"
+        :selectable="false"
+        :disabled="false"
+        @failure="emit('failure', $event)"
+    /></el-drawer>
     <el-dialog
       v-model="reviewOpen"
       title="商品资料审核"
@@ -1671,7 +1846,7 @@ async function certificateSaved() {
         ></template
       ></el-dialog
     >
-  </section>
+  </MasterDataLayout>
   <el-skeleton v-else :rows="10" animated />
   <CatalogColumnSettings
     v-if="columnSettings"
@@ -1686,7 +1861,7 @@ async function certificateSaved() {
     v-if="record"
     v-model="infoOpen"
     kind="product"
-    :record="record.values"
+    :record="record.active_values"
     :legacy="record.legacy"
     :version="record.data_version"
     :state="record.approval_state"

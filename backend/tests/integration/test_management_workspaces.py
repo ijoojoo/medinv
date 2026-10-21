@@ -187,6 +187,23 @@ def test_staff_crud_auth_isolation_conflict_and_audit(flow):
         save(f, "staff", {**payload, "permissions": ["OWNER"]})
 
 
+def test_staff_scope_filter_precedes_pagination(flow):
+    f = flow
+    svc = Management(f.world.uow)
+    for code, status in (("ACTIVE1", "ACTIVE"), ("LEFT1", "LEFT"), ("ACTIVE2", "ACTIVE")):
+        save(f, "staff", {"code": code, "name": "任职范围验证", "status": status})
+    active = svc.listing(f.maker, "staff", f.world.entity, staff_status="ACTIVE")["items"]
+    assert {r["payload"]["code"] for r in active} == {"ACTIVE1", "ACTIVE2"}
+    page = svc.listing(f.maker, "staff", f.world.entity, offset=1, staff_status="ACTIVE")
+    assert len(page["items"]) == 1
+    assert page["items"][0]["id"] == active[1]["id"]
+    left = svc.listing(f.maker, "staff", f.world.entity, staff_status="LEFT")["items"]
+    assert [r["payload"]["code"] for r in left] == ["LEFT1"]
+    other = replace(f.maker, tenant_id=uuid4())
+    with pytest.raises(BusinessError):
+        svc.listing(other, "staff", f.world.entity, staff_status="ACTIVE")
+
+
 def test_approval_design_is_draft_only_and_audited(flow):
     f = flow
     before = f.detail()["order"]

@@ -863,6 +863,7 @@ onUnmounted(() => {
             ] as const"
             :key="item.page"
             ><ManagementRecords
+              :active="page === item.page && !activeEditor && !activeRecord"
               v-if="moduleTabs.includes(item.page)"
               v-show="page === item.page"
               :kind="item.kind"
@@ -916,6 +917,9 @@ onUnmounted(() => {
           />
           <div v-show="page === 'dictionaries'">
             <CatalogDictionaryPage
+              :active="
+                page === 'dictionaries' && !activeEditor && !activeRecord
+              "
               v-if="moduleTabs.includes('dictionaries')"
               :key="`${session.tenant_id}:${session.context_generation}`"
               @failure="failure"
@@ -927,6 +931,7 @@ onUnmounted(() => {
             v-show="page === kind"
           >
             <ProductMasterWorkspace
+              :active="page === kind && !activeEditor && !activeRecord"
               v-if="kind === 'products' && moduleTabs.includes(kind)"
               :initial-target="
                 referenceNavigation?.page === kind
@@ -937,6 +942,7 @@ onUnmounted(() => {
               @failure="failure"
             />
             <CatalogPage
+              :active="page === kind && !activeEditor && !activeRecord"
               v-if="kind === 'parties' && moduleTabs.includes(kind)"
               :key="`${session.tenant_id}:${session.context_generation}:${kind}`"
               :kind="kind"
@@ -1034,7 +1040,9 @@ onUnmounted(() => {
             @failure="failure"
           />
           <WarehousesPage
-            v-if="page === 'warehouses'"
+            :active="page === 'warehouses' && !activeEditor && !activeRecord"
+            v-if="moduleTabs.includes('warehouses')"
+            v-show="page === 'warehouses'"
             :key="`${session?.tenant_id}:${session?.context_generation}`"
             @failure="failure"
           />

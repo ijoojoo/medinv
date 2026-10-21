@@ -18,6 +18,7 @@ import {
 } from "./qualification";
 const props = defineProps<{
   party: string;
+  readonly?: boolean;
   active: boolean;
   version: string;
 }>();
@@ -35,6 +36,7 @@ interface ScopeData {
   legacy: boolean;
   party_kind: string;
   rules: QualificationSettings;
+  active_results: ScopeData["results"];
   results: {
     id: string;
     reasons: Record<string, string[]>;
@@ -79,14 +81,18 @@ async function load() {
   try {
     const [result, certificates] = await Promise.all([
       request<ScopeData>(root.value),
-      request<{ items: Cert[] }>(
+      request<{ items: Cert[]; active_items: Cert[] }>(
         `/api/v1/catalog/parties/${props.party}/certificates`,
       ),
     ]);
     if (token !== epoch) return;
     data.value = result;
-    scopes.value = result.payload.scopes;
-    certs.value = certificates.items;
+    scopes.value = props.readonly
+      ? result.active_payload.scopes
+      : result.payload.scopes;
+    certs.value = props.readonly
+      ? certificates.active_items
+      : certificates.items;
     baseline.value = JSON.stringify(scopes.value);
     reason.value = "";
   } catch (e) {
@@ -160,7 +166,10 @@ function reasons(id: string) {
   return [
     ...new Set(
       Object.values(
-        data.value?.results.find((r) => r.id === id)?.reasons || {},
+        (props.readonly
+          ? data.value?.active_results
+          : data.value?.results
+        )?.find((r) => r.id === id)?.reasons || {},
       ).flat(),
     ),
   ];
@@ -183,15 +192,21 @@ onMounted(load);
           范围和证件随往来单位一次审核；已审核资料的变更通过后统一生效。
         </p>
       </div>
-      <el-button v-if="can('catalog.write')" @click="edit()"
+      <el-button v-if="!readonly && can('catalog.write')" @click="edit()"
         >新增经营范围</el-button
-      ><el-button @click="emit('review')">查看主体审核</el-button>
+      ><el-button v-if="!readonly" @click="emit('review')"
+        >查看主体审核</el-button
+      >
     </div>
     <p v-if="data?.legacy" class="form-note">
       尚未启用按类目管理。核对证件并保存范围后，提交一次主体审核；审核通过前保留当前有效资料。
     </p>
     <p v-else-if="data?.has_changes" class="form-note">
-      有待审核变更。以下为变更预检，当前业务继续使用上次审核通过的资料。
+      {{
+        readonly
+          ? "有待审核变更；以下显示当前正式范围，变更通过主体审核后生效。"
+          : "有待审核变更。以下为变更预检，当前业务继续使用上次审核通过的资料。"
+      }}
     </p>
     <p v-if="data" class="form-note">
       异常处理：{{
@@ -210,8 +225,8 @@ onMounted(load);
             <th>经营范围 / 类目</th>
             <th>单位身份 / 业务</th>
             <th>证件依据</th>
-            <th>资料预检</th>
-            <th>操作</th>
+            <th>{{ readonly ? "当前准入条件" : "资料预检" }}</th>
+            <th v-if="!readonly">操作</th>
           </tr>
         </thead>
         <tbody>
@@ -257,7 +272,7 @@ onMounted(load);
                 </div></template
               >
             </td>
-            <td>
+            <td v-if="!readonly">
               <el-button
                 link
                 :disabled="!can('catalog.write')"
@@ -277,7 +292,7 @@ onMounted(load);
         </tbody>
       </table>
     </div>
-    <div class="qualification-actions" v-if="can('catalog.write')">
+    <div class="qualification-actions" v-if="!readonly && can('catalog.write')">
       <input
         v-model="reason"
         placeholder="范围变更说明"

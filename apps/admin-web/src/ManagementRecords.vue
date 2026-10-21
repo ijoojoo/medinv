@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MasterDataLayout from "./MasterDataLayout.vue";
+import { copyMasterCode, type MasterTool } from "./masterTools";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessageBox } from "element-plus";
 import { request } from "./api";
@@ -11,7 +13,11 @@ import DateInput from "./DateInput.vue";
 import { localTime } from "./sales";
 type Kind = "staff" | "maintenance" | "approval_design";
 import { clearReference, type ReferenceTarget } from "./workspace";
-const props = defineProps<{ kind: Kind; initialTarget?: ReferenceTarget }>();
+const props = defineProps<{
+  active?: boolean;
+  kind: Kind;
+  initialTarget?: ReferenceTarget;
+}>();
 const emit = defineEmits<{ failure: [error: unknown] }>();
 const titles = {
   staff: "职员资料",
@@ -53,6 +59,9 @@ const rows = ref<Row[]>([]),
   more = ref(false),
   loading = ref(false),
   failed = ref(false);
+const staffEdit = ref(false),
+  staffScope = ref(""),
+  historyOpen = ref(false);
 const reason = ref(""),
   baseline = ref(""),
   recordId = ref("");
@@ -105,6 +114,7 @@ const writable = computed(() => can(permission[props.kind]));
 const locked = computed(
   () =>
     !writable.value ||
+    (props.kind === "staff" && !staffEdit.value) ||
     (props.kind === "maintenance" &&
       selected.value?.payload.state !== undefined &&
       selected.value.payload.state !== "DRAFT"),
@@ -129,7 +139,7 @@ async function load(reset = false) {
   failed.value = false;
   try {
     const data = await request<{ items: Row[]; has_more: boolean }>(
-      `/api/v1/management/${props.kind}?entity_id=${activeEntity.value}&search=${encodeURIComponent(search.value)}&offset=${offset.value}`,
+      `/api/v1/management/${props.kind}?entity_id=${activeEntity.value}&search=${encodeURIComponent(search.value)}&offset=${offset.value}&staff_status=${props.kind === "staff" ? staffScope.value : ""}`,
     );
     if (token === epoch) {
       rows.value = data.items;
@@ -181,6 +191,7 @@ function moveStep(i: number, d: number) {
   ];
 }
 async function open(row?: Row) {
+  const token = ++epoch;
   loading.value = true;
   try {
     const current = row
@@ -188,7 +199,9 @@ async function open(row?: Row) {
           `/api/v1/management/${props.kind}/${row.id}?entity_id=${activeEntity.value}`,
         )
       : null;
+    if (token !== epoch) return;
     selected.value = current;
+    staffEdit.value = !current;
     recordId.value = current?.id || crypto.randomUUID();
     reason.value = "";
     if (props.kind === "staff")
@@ -241,9 +254,9 @@ async function open(row?: Row) {
     await loadDictionary();
     if (props.kind === "maintenance") await findProducts();
   } catch (e) {
-    emit("failure", e);
+    if (token === epoch) emit("failure", e);
   } finally {
-    loading.value = false;
+    if (token === epoch) loading.value = false;
   }
 }
 async function close() {
@@ -264,6 +277,7 @@ async function close() {
   reason.value = "";
 }
 async function save() {
+  if (props.kind === "staff" && !staffEdit.value) return;
   if (props.kind === "staff") {
     staff.value.joined_on ||= null;
     staff.value.left_on ||= null;
@@ -355,355 +369,527 @@ onMounted(() => {
   void load();
   void loadDictionary();
 });
+
+const staffFields = [
+  ["code", "职员编码"],
+  ["name", "姓名"],
+  ["department_id", "部门"],
+  ["job", "岗位"],
+  ["phone", "联系电话"],
+  ["email", "电子邮箱"],
+  ["joined_on", "入职日期"],
+  ["left_on", "离职日期"],
+  ["status", "任职状态"],
+  ["note", "备注"],
+];
+const tools = computed<MasterTool[]>(() => {
+  const wait = busy.value || loading.value ? "正在处理，请稍候" : "";
+  const task =
+    wait || (staffEdit.value && editing.value ? "请先结束修订任务" : "");
+  const need =
+    task || (!selected.value || !editing.value ? "请先打开一份职员资料" : "");
+  return [
+    {
+      key: "revise",
+      label: "修订资料",
+      short: "修订",
+      icon: "✎",
+      group: "资料维护",
+      disabled: !writable.value ? "无维护权限" : need,
+    },
+    {
+      key: "refresh",
+      label: "刷新资料",
+      icon: "↻",
+      group: "资料维护",
+      disabled: task,
+    },
+    {
+      key: "new",
+      label: "新增职员",
+      short: "新建",
+      icon: "＋",
+      group: "资料维护",
+      disabled: !writable.value ? "无维护权限" : task,
+    },
+    {
+      key: "history",
+      label: "变更记录",
+      short: "记录",
+      icon: "◷",
+      group: "关联查阅",
+      disabled: need,
+    },
+    {
+      key: "copyCode",
+      label: "复制职员编码",
+      icon: "⧉",
+      group: "辅助操作",
+      disabled: need,
+    },
+  ];
+});
+async function cancelStaff() {
+  if (busy.value) return;
+  if (dirty.value) {
+    try {
+      await ElMessageBox.confirm("放弃尚未保存的职员修改？", "取消修订", {
+        confirmButtonText: "放弃修改",
+        cancelButtonText: "继续编辑",
+      });
+    } catch {
+      return;
+    }
+  }
+  if (selected.value) await open(selected.value);
+  else {
+    editing.value = false;
+    staffEdit.value = false;
+  }
+}
+async function chooseStaffScope(value: string) {
+  if (staffScope.value === value) return;
+  if (editing.value) {
+    await close();
+    if (editing.value) return;
+  }
+  staffScope.value = value;
+  selected.value = null;
+  await load(true);
+}
+async function toolAction(key: string) {
+  if (tools.value.find((t) => t.key === key)?.disabled) return;
+  if (key === "revise") staffEdit.value = true;
+  if (key === "new") await open();
+  if (key === "refresh") {
+    if (editing.value && selected.value) await open(selected.value);
+    else await load();
+  }
+  if (key === "history") historyOpen.value = true;
+  if (key === "copyCode") await copyMasterCode(selected.value?.payload.code);
+}
 </script>
 <template>
-  <section
-    class="panel management-page"
-    :aria-label="titles[kind]"
-    v-loading="loading"
+  <MasterDataLayout
+    :active="active"
+    :disabled="kind !== 'staff'"
+    :label="titles[kind]"
+    :tools="tools"
+    @action="toolAction"
   >
-    <header class="master-toolbar">
-      <div>
-        <h2>{{ titles[kind] }}</h2>
-        <small>{{
-          kind === "staff"
-            ? "职员档案与登录账号分开维护；离职不自动撤销账号权限。"
-            : kind === "maintenance"
-              ? "养护检查与处理留痕；记录本身不改变库存或购销状态。"
-              : "设计稿保存、节点排序、流程发布与采购审批执行。"
-        }}</small>
-      </div>
-      <el-button
-        v-if="editing"
-        :disabled="busy || publisher?.busy"
-        @click="close"
-        >返回查询</el-button
-      ><el-button v-else-if="writable" type="primary" @click="open()">{{
-        kind === "staff"
-          ? "新增职员"
-          : kind === "maintenance"
-            ? "新增养护记录"
-            : "新建审批设计"
-      }}</el-button>
-    </header>
-    <p v-if="failed" role="alert">读取失败，请重试查询。</p>
-    <template v-if="!editing"
-      ><form class="business-toolbar" @submit.prevent="load(true)">
-        <label
-          >查询<input
-            v-model="search"
-            maxlength="100"
-            placeholder="编码、名称或记录内容" /></label
-        ><el-button native-type="submit">查询</el-button
-        ><el-button
-          @click="
-            search = '';
-            load(true);
-          "
-          >重置</el-button
+    <aside v-if="kind === 'staff'" class="data-scope">
+      <h2>职员资料</h2>
+      <nav aria-label="职员范围">
+        <button
+          v-for="r in [
+            { key: '', name: '全部职员' },
+            { key: 'ACTIVE', name: '在职职员' },
+            { key: 'LEFT', name: '离职职员' },
+          ]"
+          :key="r.key"
+          :class="{ active: staffScope === r.key }"
+          @click="chooseStaffScope(r.key)"
         >
-      </form>
-      <div class="master-table-scroll">
-        <table class="master-list-table">
-          <thead>
-            <tr>
-              <th v-for="c in columns" :key="c[0]">{{ c[1] }}</th>
-              <th>更新时间</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in rows" :key="row.id">
-              <td v-for="c in columns" :key="c[0]">{{ cell(row, c[0]) }}</td>
-              <td>{{ localTime(row.updated_at) }}</td>
-              <td>
-                <button class="master-text-button" @click="open(row)">
-                  {{ writable ? "维护" : "查看" }}
-                </button>
-              </td>
-            </tr>
-            <tr v-if="!rows.length">
-              <td :colspan="columns.length + 2" class="master-empty-tab">
-                暂无记录
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="master-pagination">
-        <el-button
-          :disabled="!offset || loading"
-          @click="
-            offset -= 50;
-            load();
-          "
-          >上一页</el-button
-        ><span>{{ Math.floor(offset / 50) + 1 }} 页</span
-        ><el-button
-          :disabled="!more || loading"
-          @click="
-            offset += 50;
-            load();
-          "
-          >下一页</el-button
-        >
-      </div></template
+          {{ r.name }}
+        </button>
+      </nav>
+      <p>按任职状态浏览；登录账号权限独立管理。</p>
+    </aside>
+    <section
+      class="panel management-page"
+      :aria-label="kind === 'staff' ? '职员资料内容' : titles[kind]"
+      v-loading="loading"
     >
-    <form v-else class="business-form management-editor" @submit.prevent="save">
-      <div class="master-tabs">
-        <span class="active">{{
-          kind === "staff"
-            ? "基本信息"
-            : kind === "maintenance"
-              ? "养护记录"
-              : "流程设计"
-        }}</span
-        ><span
-          >{{ selected ? "v" + selected.version : "新建"
-          }}{{ dirty ? " · 未保存" : "" }}</span
-        >
-      </div>
-      <fieldset :disabled="busy || locked || publisher?.busy">
-        <div v-if="kind === 'staff'" class="form-grid">
-          <label
-            >职员编码<input
-              v-model="staff.code"
-              required
-              maxlength="60"
-              :disabled="!!selected"
-              pattern="[A-Za-z0-9][A-Za-z0-9_.-]*" /></label
-          ><label
-            >姓名<input v-model="staff.name" required maxlength="200" /></label
-          ><label
-            >部门<select v-model="staff.department_id">
-              <option :value="null">未指定</option>
-              <option
-                v-for="i in dictionary?.items.filter(
-                  (i) => i.active || i.id === staff.department_id,
-                )"
-                :key="i.id"
-                :value="i.id"
-              >
-                {{ i.value }}{{ i.active ? "" : "（已停用）" }}
-              </option>
-            </select></label
-          ><label>岗位<input v-model="staff.job" maxlength="100" /></label
-          ><label>联系电话<input v-model="staff.phone" maxlength="100" /></label
-          ><label
-            >电子邮箱<input
-              v-model="staff.email"
-              type="email"
-              maxlength="100" /></label
-          ><label>入职日期<DateInput v-model="staff.joined_on" /></label
-          ><label>离职日期<DateInput v-model="staff.left_on" /></label
-          ><label
-            >任职状态<select v-model="staff.status">
-              <option value="ACTIVE">在职</option>
-              <option value="LEFT">离职</option>
-            </select></label
-          ><label class="full-width"
-            >备注<textarea v-model="staff.note" maxlength="500"></textarea>
-          </label>
+      <header class="master-toolbar">
+        <div>
+          <h2>{{ titles[kind] }}</h2>
+          <small>{{
+            kind === "staff"
+              ? "职员档案与登录账号分开维护；离职不自动撤销账号权限。"
+              : kind === "maintenance"
+                ? "养护检查与处理留痕；记录本身不改变库存或购销状态。"
+                : "设计稿保存、节点排序、流程发布与采购审批执行。"
+          }}</small>
         </div>
-        <div v-else-if="kind === 'maintenance'" class="form-grid">
-          <div class="full-width business-toolbar">
-            <label
-              >查找养护商品<input
-                v-model="productSearch"
-                maxlength="100" /></label
-            ><el-button @click="findProducts">查找商品</el-button>
-          </div>
-          <label class="full-width"
-            >养护商品<select v-model="maintenance.product_id" required>
-              <option value="">请选择商品</option>
-              <option
-                v-if="
-                  maintenance.product_id &&
-                  !products.some((p) => p.id === maintenance.product_id)
-                "
-                :value="maintenance.product_id"
-              >
-                已关联商品 {{ maintenance.product_id }}
-              </option>
-              <option v-for="p in products" :key="p.id" :value="p.id">
-                {{ p.values.name }} · {{ p.values.code }}
-              </option>
-            </select></label
-          ><label
-            >批号<input v-model="maintenance.lot_no" maxlength="100" /></label
-          ><label
-            >养护人员<input
-              v-model="maintenance.operator_name"
-              required
-              maxlength="200" /></label
-          ><label
-            >养护日期<DateInput
-              v-model="maintenance.checked_on"
-              required /></label
-          ><label
-            >下次养护日期<DateInput v-model="maintenance.next_due" /></label
-          ><label
-            >养护类型<select v-model="maintenance.type_id">
-              <option :value="null">未指定</option>
-              <option
-                v-for="i in dictionary?.items.filter(
-                  (i) => i.active || i.id === maintenance.type_id,
-                )"
-                :key="i.id"
-                :value="i.id"
-              >
-                {{ i.value }}
-              </option>
-            </select></label
-          ><label
-            >检查结果<select v-model="maintenance.result">
-              <option value="NORMAL">正常</option>
-              <option value="ABNORMAL">异常</option>
-            </select></label
-          ><label class="full-width"
-            >检查项目与情况<textarea
-              v-model="maintenance.checks"
-              required
-              maxlength="200"
-            ></textarea></label
-          ><label class="full-width"
-            >处理说明<textarea
-              v-model="maintenance.actions"
-              :required="maintenance.result === 'ABNORMAL'"
-              maxlength="500"
-            ></textarea></label
-          ><label
-            >记录状态<select v-model="maintenance.state">
-              <option value="DRAFT">草稿</option>
-              <option value="COMPLETED">完成并留档</option>
-            </select></label
+        <el-button
+          v-if="editing"
+          :disabled="busy || publisher?.busy"
+          @click="close"
+          >返回查询</el-button
+        ><el-button
+          v-else-if="writable && kind !== 'staff'"
+          type="primary"
+          @click="open()"
+          >{{
+            kind === "maintenance" ? "新增养护记录" : "新建审批设计"
+          }}</el-button
+        >
+      </header>
+      <p v-if="failed" role="alert">读取失败，请重试查询。</p>
+      <template v-if="!editing"
+        ><form class="business-toolbar" @submit.prevent="load(true)">
+          <label
+            >查询<input
+              v-model="search"
+              maxlength="100"
+              placeholder="编码、名称或记录内容" /></label
+          ><el-button native-type="submit">查询</el-button
+          ><el-button
+            @click="
+              search = '';
+              load(true);
+            "
+            >重置</el-button
+          >
+        </form>
+        <div class="master-table-scroll">
+          <table class="master-list-table">
+            <thead>
+              <tr>
+                <th v-for="c in columns" :key="c[0]">{{ c[1] }}</th>
+                <th>更新时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in rows" :key="row.id">
+                <td v-for="c in columns" :key="c[0]">{{ cell(row, c[0]) }}</td>
+                <td>{{ localTime(row.updated_at) }}</td>
+                <td>
+                  <button class="master-text-button" @click="open(row)">
+                    {{
+                      kind === "staff" ? "资料详情" : writable ? "维护" : "查看"
+                    }}
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="!rows.length">
+                <td :colspan="columns.length + 2" class="master-empty-tab">
+                  暂无记录
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="master-pagination">
+          <el-button
+            :disabled="!offset || loading"
+            @click="
+              offset -= 50;
+              load();
+            "
+            >上一页</el-button
+          ><span>{{ Math.floor(offset / 50) + 1 }} 页</span
+          ><el-button
+            :disabled="!more || loading"
+            @click="
+              offset += 50;
+              load();
+            "
+            >下一页</el-button
+          >
+        </div></template
+      >
+      <form
+        v-else
+        class="business-form management-editor"
+        @submit.prevent="save"
+      >
+        <div class="master-tabs">
+          <span class="active">{{
+            kind === "staff"
+              ? "基本信息"
+              : kind === "maintenance"
+                ? "养护记录"
+                : "流程设计"
+          }}</span
+          ><span
+            >{{ selected ? "v" + selected.version : "新建"
+            }}{{ dirty ? " · 未保存" : "" }}</span
           >
         </div>
-        <div v-else>
-          <div class="form-grid">
+        <dl
+          v-if="kind === 'staff' && !staffEdit && selected"
+          class="data-read-grid"
+        >
+          <div v-for="[key, label] in staffFields" :key="key">
+            <dt>{{ label }}</dt>
+            <dd>{{ cell(selected, key) }}</dd>
+          </div>
+        </dl>
+        <fieldset
+          v-if="kind !== 'staff' || staffEdit"
+          :disabled="busy || locked || publisher?.busy"
+        >
+          <div v-if="kind === 'staff'" class="form-grid">
             <label
-              >设计名称<input
-                v-model="approval.name"
+              >职员编码<input
+                v-model="staff.code"
+                required
+                maxlength="60"
+                :disabled="!!selected"
+                pattern="[A-Za-z0-9][A-Za-z0-9_.-]*" /></label
+            ><label
+              >姓名<input
+                v-model="staff.name"
                 required
                 maxlength="200" /></label
             ><label
-              >适用业务<select v-model="approval.business">
-                <option value="PURCHASE">采购入库</option>
-                <option value="SALES">销售出库</option>
-                <option value="PRODUCT">商品审核</option>
-                <option value="PARTY">往来单位审核</option>
-                <option value="QUALITY">质量处置</option>
+              >部门<select v-model="staff.department_id">
+                <option :value="null">未指定</option>
+                <option
+                  v-for="i in dictionary?.items.filter(
+                    (i) => i.active || i.id === staff.department_id,
+                  )"
+                  :key="i.id"
+                  :value="i.id"
+                >
+                  {{ i.value }}{{ i.active ? "" : "（已停用）" }}
+                </option>
+              </select></label
+            ><label>岗位<input v-model="staff.job" maxlength="100" /></label
+            ><label
+              >联系电话<input v-model="staff.phone" maxlength="100" /></label
+            ><label
+              >电子邮箱<input
+                v-model="staff.email"
+                type="email"
+                maxlength="100" /></label
+            ><label>入职日期<DateInput v-model="staff.joined_on" /></label
+            ><label>离职日期<DateInput v-model="staff.left_on" /></label
+            ><label
+              >任职状态<select v-model="staff.status">
+                <option value="ACTIVE">在职</option>
+                <option value="LEFT">离职</option>
+              </select></label
+            ><label class="full-width"
+              >备注<textarea v-model="staff.note" maxlength="500"></textarea>
+            </label>
+          </div>
+          <div v-else-if="kind === 'maintenance'" class="form-grid">
+            <div class="full-width business-toolbar">
+              <label
+                >查找养护商品<input
+                  v-model="productSearch"
+                  maxlength="100" /></label
+              ><el-button @click="findProducts">查找商品</el-button>
+            </div>
+            <label class="full-width"
+              >养护商品<select v-model="maintenance.product_id" required>
+                <option value="">请选择商品</option>
+                <option
+                  v-if="
+                    maintenance.product_id &&
+                    !products.some((p) => p.id === maintenance.product_id)
+                  "
+                  :value="maintenance.product_id"
+                >
+                  已关联商品 {{ maintenance.product_id }}
+                </option>
+                <option v-for="p in products" :key="p.id" :value="p.id">
+                  {{ p.values.name }} · {{ p.values.code }}
+                </option>
+              </select></label
+            ><label
+              >批号<input v-model="maintenance.lot_no" maxlength="100" /></label
+            ><label
+              >养护人员<input
+                v-model="maintenance.operator_name"
+                required
+                maxlength="200" /></label
+            ><label
+              >养护日期<DateInput
+                v-model="maintenance.checked_on"
+                required /></label
+            ><label
+              >下次养护日期<DateInput v-model="maintenance.next_due" /></label
+            ><label
+              >养护类型<select v-model="maintenance.type_id">
+                <option :value="null">未指定</option>
+                <option
+                  v-for="i in dictionary?.items.filter(
+                    (i) => i.active || i.id === maintenance.type_id,
+                  )"
+                  :key="i.id"
+                  :value="i.id"
+                >
+                  {{ i.value }}
+                </option>
+              </select></label
+            ><label
+              >检查结果<select v-model="maintenance.result">
+                <option value="NORMAL">正常</option>
+                <option value="ABNORMAL">异常</option>
+              </select></label
+            ><label class="full-width"
+              >检查项目与情况<textarea
+                v-model="maintenance.checks"
+                required
+                maxlength="200"
+              ></textarea></label
+            ><label class="full-width"
+              >处理说明<textarea
+                v-model="maintenance.actions"
+                :required="maintenance.result === 'ABNORMAL'"
+                maxlength="500"
+              ></textarea></label
+            ><label
+              >记录状态<select v-model="maintenance.state">
+                <option value="DRAFT">草稿</option>
+                <option value="COMPLETED">完成并留档</option>
               </select></label
             >
           </div>
-          <div class="approval-flow">
-            <div class="approval-terminal">提交申请</div>
-            <template v-for="(step, i) in approval.steps" :key="step.id"
+          <div v-else>
+            <div class="form-grid">
+              <label
+                >设计名称<input
+                  v-model="approval.name"
+                  required
+                  maxlength="200" /></label
+              ><label
+                >适用业务<select v-model="approval.business">
+                  <option value="PURCHASE">采购入库</option>
+                  <option value="SALES">销售出库</option>
+                  <option value="PRODUCT">商品审核</option>
+                  <option value="PARTY">往来单位审核</option>
+                  <option value="QUALITY">质量处置</option>
+                </select></label
+              >
+            </div>
+            <div class="approval-flow">
+              <div class="approval-terminal">提交申请</div>
+              <template v-for="(step, i) in approval.steps" :key="step.id"
+                ><span class="approval-arrow">↓</span>
+                <section class="approval-node">
+                  <div class="approval-node-heading">
+                    <strong>审批节点 {{ i + 1 }}</strong
+                    ><el-button :disabled="i === 0" @click="moveStep(i, -1)"
+                      >上移</el-button
+                    ><el-button
+                      :disabled="i === approval.steps.length - 1"
+                      @click="moveStep(i, 1)"
+                      >下移</el-button
+                    ><el-button
+                      :disabled="approval.steps.length === 1"
+                      @click="approval.steps.splice(i, 1)"
+                      >移除</el-button
+                    >
+                  </div>
+                  <div class="form-grid">
+                    <label
+                      >节点名称<input
+                        v-model="step.name"
+                        required
+                        maxlength="200" /></label
+                    ><label
+                      >审批角色<select v-model="step.role">
+                        <option value="QUALITY">质量审核员</option>
+                        <option value="ADMIN">企业管理员</option>
+                        <option value="OWNER">企业所有者</option>
+                      </select></label
+                    ><label
+                      >审批方式<select v-model="step.mode">
+                        <option value="ANY">或签（一人通过）</option>
+                        <option value="ALL">会签（全部通过）</option>
+                      </select></label
+                    >
+                  </div>
+                  <small
+                    >申请人与资料修订人不得审核自己的申请。驳回后返回申请人重新提交。</small
+                  >
+                </section></template
               ><span class="approval-arrow">↓</span>
-              <section class="approval-node">
-                <div class="approval-node-heading">
-                  <strong>审批节点 {{ i + 1 }}</strong
-                  ><el-button :disabled="i === 0" @click="moveStep(i, -1)"
-                    >上移</el-button
-                  ><el-button
-                    :disabled="i === approval.steps.length - 1"
-                    @click="moveStep(i, 1)"
-                    >下移</el-button
-                  ><el-button
-                    :disabled="approval.steps.length === 1"
-                    @click="approval.steps.splice(i, 1)"
-                    >移除</el-button
-                  >
-                </div>
-                <div class="form-grid">
-                  <label
-                    >节点名称<input
-                      v-model="step.name"
-                      required
-                      maxlength="200" /></label
-                  ><label
-                    >审批角色<select v-model="step.role">
-                      <option value="QUALITY">质量审核员</option>
-                      <option value="ADMIN">企业管理员</option>
-                      <option value="OWNER">企业所有者</option>
-                    </select></label
-                  ><label
-                    >审批方式<select v-model="step.mode">
-                      <option value="ANY">或签（一人通过）</option>
-                      <option value="ALL">会签（全部通过）</option>
-                    </select></label
-                  >
-                </div>
-                <small
-                  >申请人与资料修订人不得审核自己的申请。驳回后返回申请人重新提交。</small
-                >
-              </section></template
-            ><span class="approval-arrow">↓</span>
-            <div class="approval-terminal">审批完成 · 交回原业务办理</div>
+              <div class="approval-terminal">审批完成 · 交回原业务办理</div>
+            </div>
+            <el-button
+              :disabled="
+                approval.steps.length >=
+                (['PRODUCT', 'PARTY'].includes(approval.business) ? 1 : 10)
+              "
+              @click="newStep"
+              >＋ 添加审批节点</el-button
+            ><label
+              >设计说明<textarea
+                v-model="approval.note"
+                maxlength="500"
+              ></textarea>
+            </label>
+            <p class="form-note">
+              采购可发布顺序或签流程，按节点角色在原采购单办理；会签、条件分支和其他业务执行继续后续接入。商品与往来单位只设置一个统一审核节点。
+            </p>
           </div>
-          <el-button
-            :disabled="
-              approval.steps.length >=
-              (['PRODUCT', 'PARTY'].includes(approval.business) ? 1 : 10)
-            "
-            @click="newStep"
-            >＋ 添加审批节点</el-button
-          ><label
-            >设计说明<textarea
-              v-model="approval.note"
-              maxlength="500"
-            ></textarea>
-          </label>
-          <p class="form-note">
-            采购可发布顺序或签流程，按节点角色在原采购单办理；会签、条件分支和其他业务执行继续后续接入。商品与往来单位只设置一个统一审核节点。
-          </p>
-        </div>
-      </fieldset>
-      <div v-if="writable" class="form-actions">
-        <label
-          >变更原因<input
-            v-model="reason"
-            required
-            maxlength="200"
-            :disabled="busy || publisher?.busy" /></label
-        ><el-button
-          v-if="!locked"
-          type="primary"
-          native-type="submit"
-          :loading="busy"
-          :disabled="publisher?.busy"
-          >{{
-            kind === "approval_design" ? "保存设计稿" : "保存资料"
-          }}</el-button
-        ><el-button
-          v-else-if="
-            kind === 'maintenance' && selected?.payload.state === 'COMPLETED'
-          "
-          type="danger"
-          :disabled="!reason.trim() || busy"
-          @click="voidRecord"
-          >作废记录</el-button
+        </fieldset>
+        <div
+          v-if="writable && (kind !== 'staff' || staffEdit)"
+          class="form-actions"
         >
-      </div>
-      <details v-if="selected?.history?.length">
-        <summary>变更记录</summary>
-        <p v-for="h in selected.history" :key="h.created_at">
-          {{ localTime(h.created_at) }} · {{ h.detail.reason }} ·
-          {{ h.created_by }}
-        </p>
-      </details>
-    </form>
-    <ApprovalPublisher
-      ref="publisher"
-      v-if="kind === 'approval_design' && editing && selected"
-      :id="selected.id"
-      :version="selected.version"
-      :business="approval.business"
-      :dirty="dirty"
-      :disabled="busy"
-      @failure="emit('failure', $event)"
-    />
-  </section>
+          <label
+            >变更原因<input
+              v-model="reason"
+              required
+              maxlength="200"
+              :disabled="busy || publisher?.busy" /></label
+          ><el-button
+            v-if="!locked"
+            type="primary"
+            native-type="submit"
+            :loading="busy"
+            :disabled="publisher?.busy"
+            >{{
+              kind === "approval_design" ? "保存设计稿" : "保存资料"
+            }}</el-button
+          ><el-button
+            v-else-if="
+              kind === 'maintenance' && selected?.payload.state === 'COMPLETED'
+            "
+            type="danger"
+            :disabled="!reason.trim() || busy"
+            @click="voidRecord"
+            >作废记录</el-button
+          >
+          <el-button
+            v-if="kind === 'staff'"
+            :disabled="busy"
+            @click="cancelStaff"
+            >取消修订</el-button
+          >
+        </div>
+        <details v-if="kind !== 'staff' && selected?.history?.length">
+          <summary>变更记录</summary>
+          <p v-for="h in selected.history" :key="h.created_at">
+            {{ localTime(h.created_at) }} · {{ h.detail.reason }} ·
+            {{ h.created_by }}
+          </p>
+        </details>
+      </form>
+      <ApprovalPublisher
+        ref="publisher"
+        v-if="kind === 'approval_design' && editing && selected"
+        :id="selected.id"
+        :version="selected.version"
+        :business="approval.business"
+        :dirty="dirty"
+        :disabled="busy"
+        @failure="emit('failure', $event)"
+      />
+    </section>
+    <el-drawer
+      v-if="kind === 'staff'"
+      v-model="historyOpen"
+      title="变更记录"
+      size="min(640px, 96vw)"
+      append-to-body
+      ><p class="data-task-heading">
+        {{ selected?.payload.name }} · {{ selected?.payload.code }}
+      </p>
+      <p v-if="!selected?.history?.length">暂无变更记录</p>
+      <p v-for="h in selected?.history" :key="h.created_at">
+        {{ localTime(h.created_at) }} · v{{ h.detail.version }} ·
+        {{ h.detail.reason }} · {{ h.created_by }}
+      </p></el-drawer
+    >
+  </MasterDataLayout>
 </template>
 <style scoped>
 .management-page {

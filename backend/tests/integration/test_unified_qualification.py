@@ -196,6 +196,14 @@ def test_exclusion_and_renewal_old_version_stays_active(flow):
         UUID(permit["id"]),
     )
     assert changed["has_changes"] and preview(f)["passed"]
+    listing = certs.list(f.maker, target)
+    active_permit = next(c for c in listing["active_items"] if c["id"] == permit["id"])
+    pending_permit = next(c for c in listing["items"] if c["id"] == permit["id"])
+    assert active_permit["validity"] == "IN_PERIOD"
+    assert pending_permit["validity"] == "EXPIRED"
+    scope_views = scopes.get(f.maker, target)
+    assert all(r["qualified"] for r in scope_views["active_results"])
+    assert not all(r["qualified"] for r in scope_views["results"])
     assert f.world.scalar(
         "SELECT valid_until FROM med.party_certificate WHERE id=:c", c=UUID(permit["id"])
     ) == f.day + timedelta(days=30)

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import MasterDataLayout from "./MasterDataLayout.vue";
+import CatalogAttachments from "./CatalogAttachments.vue";
+import { copyMasterCode, type MasterTool } from "./masterTools";
 import DateInput from "./DateInput.vue";
 import InformationCard from "./InformationCard.vue";
 import { activeEntity } from "./entityScope";
@@ -47,6 +50,7 @@ import { request, session } from "./api";
 import { can, labels, useCommand, type PageData } from "./business";
 import { clearReference, type ReferenceTarget } from "./workspace";
 const props = defineProps<{
+  active?: boolean;
   kind: "products" | "parties";
   initialTarget?: ReferenceTarget;
 }>();
@@ -132,12 +136,10 @@ const formTitle = computed(() =>
 );
 const data = ref<PageData<RecordData>>({ items: [], has_more: false });
 const selected = ref<RecordData | null>(null);
-const operationsCard = ref<InstanceType<typeof CatalogOperations> | null>(null);
-async function maintainParty(field: string) {
-  selectTab("operations");
-  await nextTick();
-  operationsCard.value?.focusField(field);
-}
+const editableRecord = ref<RecordData | null>(null);
+const task = ref("");
+const taskTab = ref("basic");
+const refreshVersion = ref(0);
 const detailPolicy = ref<ProductFieldPresentation | null>(null);
 function detailLabel(key: string, fallback: string) {
   const values = Object.fromEntries(
@@ -183,9 +185,12 @@ const tabs = computed(() => [
     name: "第三方对接",
     schemes: ["MEITUAN", "ELEME", "TAOBAO", "WANGDIANTONG", "CUSTOM"],
   },
-  { id: "history", name: "变更记录", schemes: [] },
 ]);
 function selectTab(id: string) {
+  if (id === "history") {
+    task.value = "history";
+    return;
+  }
   activeTab.value = id;
   if (!visitedTabs.value.includes(id)) visitedTabs.value.push(id);
 }
@@ -286,7 +291,13 @@ const signature = () => JSON.stringify([form.value, revisionReason.value]);
 const dirty = computed(() => creating.value && signature() !== baseline.value);
 onUnmounted(
   registerCatalogChanges(
-    () => ({ dirty: dirty.value, busy: busy.value }),
+    () => ({
+      dirty:
+        dirty.value ||
+        (task.value === "review" &&
+          !!(review.value.reason || review.value.evidence_ref)),
+      busy: busy.value,
+    }),
     props.kind,
   ),
 );
@@ -312,8 +323,11 @@ async function cancelForm() {
     }
   }
   creating.value = false;
-  if (editing.value) await detail(editing.value);
-  else await listReturn.restore();
+  if (editing.value) {
+    await detail(editing.value);
+    await nextTick();
+    focusTab(detailTabBeforeEdit);
+  } else await listReturn.restore();
   editing.value = null;
 }
 async function backToList() {
@@ -438,6 +452,7 @@ async function load(reset = false) {
 }
 function newRecord() {
   listReturn.capture();
+  selected.value = null;
   editing.value = null;
   form.value = fresh();
   organizationId.value = "";
@@ -455,6 +470,7 @@ async function detail(row: RecordData, reset = true, fromList = false) {
   try {
     const result = await request<{
       record: RecordData;
+      active_record: RecordData;
       field_policy: ProductFieldPresentation | null;
       history: CatalogEvent[];
       has_more: boolean;
@@ -464,8 +480,13 @@ async function detail(row: RecordData, reset = true, fromList = false) {
     const sku =
       result.record.skus?.find((s) => s.code === row.sku_code) ||
       result.record.skus?.[0];
+    editableRecord.value = result.record;
     selected.value = {
       ...result.record,
+      ...(!product.value ? result.active_record : {}),
+      version: result.record.version,
+      has_changes: result.record.has_changes,
+      revision_editors: result.record.revision_editors,
       ...(sku
         ? {
             sku_code: sku.code,
@@ -477,6 +498,7 @@ async function detail(row: RecordData, reset = true, fromList = false) {
     history.value = result.history;
     historyMore.value = result.has_more;
     review.value = { decision: "APPROVE", evidence_ref: "", reason: "" };
+    return true;
   } catch (error) {
     if (current === detailEpoch) emit("failure", error);
   } finally {
@@ -486,14 +508,14 @@ async function detail(row: RecordData, reset = true, fromList = false) {
 function revise() {
   if (!selected.value) return;
   detailTabBeforeEdit = activeTab.value;
-  editing.value = selected.value;
+  editing.value = editableRecord.value || selected.value;
   form.value = {
     ...fresh(),
     ...Object.fromEntries(
-      Object.entries(selected.value).filter(([, v]) => v != null),
+      Object.entries(editing.value).filter(([, v]) => v != null),
     ),
-    profile: readProductProfile(selected.value),
-    partyProfile: readPartyProfile(selected.value),
+    profile: readProductProfile(editing.value),
+    partyProfile: readPartyProfile(editing.value),
   };
   revisionReason.value = "";
   entryTab.value = "basic";
@@ -606,6 +628,7 @@ async function saveReview() {
       ...review.value,
     },
     async () => {
+      task.value = "";
       selected.value = null;
       await load();
       returned = true;
@@ -620,11 +643,13 @@ async function locateReference() {
   await nextTick();
   if (selected.value?.id === target.id)
     selectTab(
-      target.tab === "certificates" || target.tab === "review"
-        ? "quality"
-        : target.tab === "scopes"
-          ? "scopes"
-          : "basic",
+      target.tab === "history"
+        ? "history"
+        : target.tab === "certificates" || target.tab === "review"
+          ? "quality"
+          : target.tab === "scopes"
+            ? "scopes"
+            : "basic",
     );
 }
 watch(
@@ -637,9 +662,137 @@ onMounted(() => {
   void load();
   void locateReference();
 });
+
+const tools = computed<MasterTool[]>(() => {
+  const waiting = busy.value || detailLoading.value ? "正在处理，请稍候" : "";
+  const recordNeeded =
+    waiting ||
+    (!selected.value
+      ? "请先打开一份资料"
+      : creating.value
+        ? "请先结束当前任务"
+        : "");
+  return [
+    {
+      key: "revise",
+      label: "修订资料",
+      short: "修订",
+      icon: "✎",
+      group: "资料维护",
+      disabled: !can("catalog.write") ? "无维护权限" : recordNeeded,
+    },
+    {
+      key: "refresh",
+      label: "刷新资料",
+      icon: "↻",
+      group: "资料维护",
+      disabled: waiting || (creating.value ? "请先结束编辑" : ""),
+    },
+    {
+      key: "new",
+      label: "新建往来单位",
+      short: "新建",
+      icon: "＋",
+      group: "资料维护",
+      disabled: !can("catalog.write")
+        ? "无维护权限"
+        : waiting || (creating.value ? "请先结束编辑" : ""),
+    },
+    {
+      key: "review",
+      label: "主体审核 / 停用",
+      icon: "✓",
+      group: "资料维护",
+      disabled: !can("catalog.review") ? "无审核权限" : recordNeeded,
+    },
+    {
+      key: "history",
+      label: "变更记录",
+      short: "记录",
+      icon: "◷",
+      group: "关联查阅",
+      disabled: recordNeeded,
+    },
+    {
+      key: "attachments",
+      label: "证照附件",
+      short: "附件",
+      icon: "▤",
+      group: "关联查阅",
+      disabled: recordNeeded,
+    },
+    {
+      key: "card",
+      label: "单位信息卡",
+      icon: "▣",
+      group: "关联查阅",
+      disabled: recordNeeded,
+    },
+    {
+      key: "copyCode",
+      label: "复制单位编码",
+      icon: "⧉",
+      group: "辅助操作",
+      disabled: recordNeeded,
+    },
+    {
+      key: "columns",
+      label: "列表列设置",
+      icon: "☷",
+      group: "辅助操作",
+      disabled: waiting,
+    },
+  ];
+});
+async function closeTask(done: () => void) {
+  if (!(await guardCatalogLeave(props.kind))) return;
+  task.value = "";
+  codeEditing.value = {};
+  done();
+}
+async function chooseTaskTab(id: string) {
+  if (taskTab.value === id || !(await guardCatalogLeave(props.kind))) return;
+  taskTab.value = id;
+  codeEditing.value = {};
+}
+async function toolAction(key: string) {
+  if (tools.value.find((t) => t.key === key)?.disabled) return;
+  if (key === "copyCode") return copyMasterCode(selected.value?.code);
+  if (key === "columns") {
+    columnSettings.value = true;
+    return;
+  }
+  if (!(await guardCatalogLeave(props.kind))) return;
+  if (key === "new") {
+    newRecord();
+    return;
+  }
+  if (key === "refresh") {
+    if (selected.value) {
+      if (await detail(selected.value)) refreshVersion.value++;
+    } else await load();
+    return;
+  }
+  if (key === "card") {
+    infoOpen.value = true;
+    return;
+  }
+  taskTab.value = activeTab.value;
+  task.value = key;
+}
+function beginIdentityRevision() {
+  task.value = "";
+  revise();
+}
 </script>
 <template>
-  <div :class="{ 'master-workspace party-workspace': !product }">
+  <MasterDataLayout
+    :active="active"
+    class="party-workspace"
+    label="往来单位"
+    :tools="tools"
+    @action="toolAction"
+  >
     <aside v-if="!product" class="master-sidebar party-sidebar">
       <div class="master-side-heading">往来单位 <span>业务身份</span></div>
       <nav aria-label="往来单位分类">
@@ -704,18 +857,6 @@ onMounted(() => {
               <option value="DEVICE">医疗器械</option>
             </select></label
           >
-          <label v-else
-            >业务身份<select
-              v-model="roleFilter"
-              :disabled="detailLoading"
-              @change="load(true)"
-            >
-              <option value="">全部单位</option>
-              <option value="SUPPLIER">供应商（含双向单位）</option>
-              <option value="CUSTOMER">客户（含双向单位）</option>
-              <option value="BOTH">仅供应商及客户</option>
-            </select></label
-          >
           <label
             >资料状态<select
               v-model="stateFilter"
@@ -733,28 +874,6 @@ onMounted(() => {
           >
           <el-button :disabled="loading || detailLoading" @click="resetQuery"
             >重置</el-button
-          >
-          <el-button
-            v-if="!product"
-            :disabled="loading || detailLoading"
-            @click="columnSettings = true"
-            >列设置</el-button
-          >
-          <el-button
-            v-if="can('catalog.write')"
-            type="primary"
-            :disabled="busy || detailLoading || (!product && !entity)"
-            @click="newRecord"
-            >{{ product ? "新建商品" : "新建往来单位" }}</el-button
-          >
-          <el-button
-            v-if="product && can('catalog.write')"
-            :disabled="busy || detailLoading"
-            @click="
-              importVisited = true;
-              importing = true;
-            "
-            >批量导入商品</el-button
           >
         </form>
         <el-table
@@ -1213,13 +1332,6 @@ onMounted(() => {
               >← 返回资料列表</el-button
             >
             <h2>{{ product ? "商品资料详情" : "往来单位资料详情" }}</h2>
-            <el-button @click="infoOpen = true">{{
-              product
-                ? "商品信息卡"
-                : ["SUPPLIER", "BOTH"].includes(selected.kind || "")
-                  ? "供应商信息卡"
-                  : "客户信息卡"
-            }}</el-button>
             <span v-if="hasCodeEdits" class="form-note"
               >有未保存的卡片修改，返回列表时可选择保存或放弃。</span
             >
@@ -1234,6 +1346,16 @@ onMounted(() => {
               labels[selected.approval_state || selected.state || ""]
             }}</el-tag>
           </div>
+          <p class="form-note" role="status">
+            版本 {{ selected.version }} ·
+            {{
+              selected.has_changes
+                ? "当前正式资料 · 有待审核变更，审核通过后生效"
+                : selected.state === "APPROVED"
+                  ? "当前正式资料"
+                  : "待审核 / 已停用资料，请核对状态"
+            }}
+          </p>
           <div class="catalog-tabs" role="tablist" aria-label="资料分组">
             <button
               v-for="tab in tabs"
@@ -1313,11 +1435,7 @@ onMounted(() => {
               </p>
               <PartyOverview
                 :profile="readPartyProfile(selected)"
-                :editable="can('catalog.write')"
-                :disabled="busy || detailLoading"
                 :pending="!!codeEditing.operations"
-                @maintain="maintainParty"
-                @open="focusTab"
               />
             </template>
             <details v-if="product && hasLegacyCodes" class="legacy-codes">
@@ -1329,18 +1447,7 @@ onMounted(() => {
                 {{ sku.code }} · {{ sku.base_unit }}
               </p>
             </details>
-            <div class="business-toolbar">
-              <el-button
-                v-if="can('catalog.write')"
-                :disabled="busy || detailLoading || hasCodeEdits"
-                @click="revise"
-                >修订资料</el-button
-              ><el-button
-                :disabled="busy || detailLoading || hasCodeEdits"
-                @click="detail(selected)"
-                >刷新资料详情</el-button
-              ><el-button @click="selectTab('quality')">查看质量管控</el-button>
-            </div>
+
             <template v-if="product"
               ><div v-for="sku in selected.skus || []" :key="sku.id">
                 <CatalogCodes
@@ -1368,6 +1475,7 @@ onMounted(() => {
           >
             <h3>质量管控与主体审核</h3>
             <MasterChangeSummary
+              v-if="product"
               :kind="product ? 'product' : 'party'"
               :id="selected.id"
               :version="selected.version"
@@ -1439,67 +1547,10 @@ onMounted(() => {
               qualification-only
               section="quality"
             />
-            <div class="business-toolbar">
-              <el-button
-                v-if="can('catalog.write')"
-                :disabled="busy || detailLoading || hasCodeEdits"
-                @click="revise"
-                >修订资料</el-button
-              >
-              <el-button
-                :disabled="busy || detailLoading || hasCodeEdits"
-                @click="detail(selected)"
-                >刷新资料详情</el-button
-              >
-            </div>
-            <form
-              v-if="can('catalog.review')"
-              class="business-form"
-              @submit.prevent="saveReview"
-            >
-              <p v-if="cannotApprove" class="form-note">
-                您是建档人或参与了本轮修订，请由未参与的成员审核通过；您仍可停用该资料。
-              </p>
-              <div class="form-grid">
-                <label
-                  >审核结果<select v-model="review.decision">
-                    <option value="APPROVE" :disabled="cannotApprove">
-                      审核通过
-                    </option>
-                    <option value="SUSPEND">停用资料</option>
-                  </select></label
-                >
-                <label
-                  >核验凭据编号<input
-                    v-model="review.evidence_ref"
-                    required
-                    maxlength="120"
-                    placeholder="纸质档案号或内部核验编号"
-                /></label>
-                <label class="full-width"
-                  >审核说明<input
-                    v-model="review.reason"
-                    required
-                    maxlength="200"
-                /></label>
-              </div>
-              <div class="form-actions">
-                <el-button
-                  type="primary"
-                  native-type="submit"
-                  :loading="busy"
-                  :disabled="
-                    detailLoading ||
-                    hasCodeEdits ||
-                    (review.decision === 'APPROVE' && cannotApprove)
-                  "
-                  >统一审核主体及变更</el-button
-                >
-              </div>
-            </form>
+
             <ProductCertificates
               v-if="product && visitedTabs.includes('quality')"
-              :key="selected.id"
+              :key="`${selected.id}:${refreshVersion}`"
               :product="selected.id"
               :active="activeTab === 'quality'"
               @editing="codeEditing.certificates = $event"
@@ -1507,8 +1558,9 @@ onMounted(() => {
               @saved="detail(selected)"
             />
             <PartyCertificates
+              readonly
               v-if="!product && visitedTabs.includes('quality')"
-              :key="selected.id"
+              :key="`${selected.id}:${refreshVersion}`"
               :party="selected.id"
               :active="activeTab === 'quality'"
               @editing="codeEditing.certificates = $event"
@@ -1517,6 +1569,8 @@ onMounted(() => {
             />
           </div>
           <PartyScopes
+            readonly
+            :key="`${selected.id}:${refreshVersion}`"
             v-if="!product && visitedTabs.includes('scopes')"
             v-show="activeTab === 'scopes'"
             :party="selected.id"
@@ -1535,8 +1589,8 @@ onMounted(() => {
             :aria-labelledby="`${kind}-tab-operations`"
           >
             <CatalogOperations
-              ref="operationsCard"
-              :key="selected.id"
+              readonly
+              :key="`${selected.id}:${refreshVersion}`"
               :kind="kind"
               :target="selected.id"
               :active="activeTab === 'operations'"
@@ -1591,8 +1645,9 @@ onMounted(() => {
                   /></div
               ></template>
               <CatalogCodes
+                readonly
                 v-else
-                :key="selected.id"
+                :key="`${selected.id}:${refreshVersion}`"
                 kind="parties"
                 :target="selected.id"
                 :title="tab.name"
@@ -1602,32 +1657,6 @@ onMounted(() => {
               />
             </div>
           </template>
-          <div
-            v-show="activeTab === 'history'"
-            role="tabpanel"
-            :id="`${kind}-panel-history`"
-            :aria-labelledby="`${kind}-tab-history`"
-          >
-            <CatalogHistory :events="history" />
-            <div class="pager">
-              <el-button
-                :disabled="busy || detailLoading || !historyOffset"
-                @click="
-                  historyOffset -= 50;
-                  detail(selected, false);
-                "
-                >上一页记录</el-button
-              >
-              <el-button
-                :disabled="busy || detailLoading || !historyMore"
-                @click="
-                  historyOffset += 50;
-                  detail(selected, false);
-                "
-                >下一页记录</el-button
-              >
-            </div>
-          </div>
         </template>
       </section>
       <CatalogColumnSettings
@@ -1648,7 +1677,177 @@ onMounted(() => {
         :state="selected.state || selected.approval_state"
       />
     </div>
-  </div>
+
+    <el-drawer
+      :model-value="!!task && !!selected"
+      :title="
+        (
+          {
+            revise: '修订资料',
+            history: '变更记录',
+            attachments: '证照附件',
+            review: '主体审核 / 停用',
+          } as Record<string, string>
+        )[task]
+      "
+      :size="
+        task === 'revise' || task === 'review'
+          ? 'min(1000px, 96vw)'
+          : 'min(640px, 96vw)'
+      "
+      append-to-body
+      destroy-on-close
+      :before-close="closeTask"
+      :close-on-click-modal="task !== 'revise' && task !== 'review'"
+    >
+      <template v-if="selected">
+        <p class="data-task-heading">
+          {{ selected.name }} · {{ selected.code }} · v{{ selected.version }}
+        </p>
+        <template v-if="task === 'revise'">
+          <nav class="data-task-nav" aria-label="修订资料分区">
+            <button
+              v-for="t in tabs"
+              :key="t.id"
+              :class="{ active: taskTab === t.id }"
+              @click="chooseTaskTab(t.id)"
+            >
+              {{ t.name }}
+            </button>
+          </nav>
+          <section v-if="taskTab === 'basic'">
+            <h3>单位身份与资质修订</h3>
+            <p>
+              名称、单位身份、注册地址与资质保存后，随主体资料统一审核；已审核资料在变更通过前继续生效。
+            </p>
+            <el-button type="primary" @click="beginIdentityRevision"
+              >修订单位身份与资质</el-button
+            >
+          </section>
+          <CatalogOperations
+            v-else-if="taskTab === 'operations'"
+            :key="selected.id"
+            kind="parties"
+            :target="selected.id"
+            active
+            :master-version="selected.version"
+            @failure="emit('failure', $event)"
+            @saved="detail(selected)"
+          />
+          <PartyCertificates
+            v-else-if="taskTab === 'quality'"
+            :key="selected.id"
+            :party="selected.id"
+            active
+            @failure="emit('failure', $event)"
+            @saved="detail(selected)"
+          />
+          <PartyScopes
+            v-else-if="taskTab === 'scopes'"
+            :key="selected.id"
+            :party="selected.id"
+            active
+            :version="selected.version"
+            @failure="emit('failure', $event)"
+            @saved="detail(selected)"
+            @review="toolAction('review')"
+          />
+          <CatalogCodes
+            v-else
+            :key="`${selected.id}:${taskTab}`"
+            kind="parties"
+            :target="selected.id"
+            :title="tabs.find((t) => t.id === taskTab)?.name"
+            :schemes="tabs.find((t) => t.id === taskTab)?.schemes"
+            @failure="emit('failure', $event)"
+          />
+        </template>
+        <CatalogAttachments
+          v-if="task === 'attachments'"
+          readonly
+          area="parties"
+          :parent="selected.id"
+          :model-value="null"
+          :selectable="false"
+          :disabled="false"
+          @failure="emit('failure', $event)"
+        />
+        <MasterChangeSummary
+          v-if="task === 'review' || task === 'history'"
+          :readonly="task === 'history'"
+          kind="party"
+          :id="selected.id"
+          :version="selected.version"
+          @failure="emit('failure', $event)"
+          @saved="detail(selected)"
+        />
+        <form
+          v-if="task === 'review' && can('catalog.review')"
+          class="business-form"
+          @submit.prevent="saveReview"
+        >
+          <p v-if="cannotApprove" class="form-note">
+            您是建档人或参与了本轮修订，请由未参与的成员审核通过；您仍可停用该资料。
+          </p>
+          <div class="form-grid">
+            <label
+              >审核结果<select v-model="review.decision">
+                <option value="APPROVE" :disabled="cannotApprove">
+                  审核通过
+                </option>
+                <option value="SUSPEND">停用资料</option>
+              </select></label
+            >
+            <label
+              >核验凭据编号<input
+                v-model="review.evidence_ref"
+                required
+                maxlength="120"
+                placeholder="纸质档案号或内部核验编号"
+            /></label>
+            <label class="full-width"
+              >审核说明<input v-model="review.reason" required maxlength="200"
+            /></label>
+          </div>
+          <div class="form-actions">
+            <el-button
+              type="primary"
+              native-type="submit"
+              :loading="busy"
+              :disabled="
+                detailLoading ||
+                hasCodeEdits ||
+                (review.decision === 'APPROVE' && cannotApprove)
+              "
+              >统一审核主体及变更</el-button
+            >
+          </div>
+        </form>
+
+        <div v-if="task === 'history'" :id="`${kind}-panel-history`">
+          <CatalogHistory :events="history" />
+          <div class="pager">
+            <el-button
+              :disabled="busy || detailLoading || !historyOffset"
+              @click="
+                historyOffset -= 50;
+                detail(selected, false);
+              "
+              >上一页记录</el-button
+            >
+            <el-button
+              :disabled="busy || detailLoading || !historyMore"
+              @click="
+                historyOffset += 50;
+                detail(selected, false);
+              "
+              >下一页记录</el-button
+            >
+          </div>
+        </div>
+      </template>
+    </el-drawer>
+  </MasterDataLayout>
 </template>
 <style scoped>
 .party-sidebar nav {

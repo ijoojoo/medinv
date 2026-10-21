@@ -12,6 +12,7 @@ const props = defineProps<{
   title?: string;
   schemes?: string[];
   baseUnit?: string;
+  readonly?: boolean;
 }>();
 const emit = defineEmits<{
   failure: [error: unknown];
@@ -206,11 +207,13 @@ onMounted(load);
         }}<span v-if="title"> · {{ title }}</span>
       </h3>
       <el-button
-        v-if="can('catalog.write')"
+        v-if="!readonly && can('catalog.write')"
         :disabled="busy || adding || !!selected"
         @click="begin"
         >新增编码</el-button
-      ><el-button :disabled="busy" @click="load">刷新编码</el-button>
+      ><el-button v-if="!readonly" :disabled="busy" @click="load"
+        >刷新编码</el-button
+      >
     </div>
     <p v-if="barcodeOnly" class="form-note">
       每条条码对应一个计量单位。例如盒码选择基本单位，箱码选择已启用的“箱”；条码前面的0会保留。
@@ -252,7 +255,10 @@ onMounted(load);
           row.state === "ACTIVE" ? "启用" : "停用"
         }}</template></el-table-column
       >
-      <el-table-column v-if="can('catalog.write')" label="操作" width="85"
+      <el-table-column
+        v-if="!readonly && can('catalog.write')"
+        label="操作"
+        width="85"
         ><template #default="{ row }"
           ><el-button
             link

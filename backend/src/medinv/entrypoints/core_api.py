@@ -232,7 +232,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.34.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.35.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1270,9 +1270,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         entity_id: UUID,
         search: str = Query(default="", max_length=100),
         offset: int = Query(default=0, ge=0, le=100000),
+        staff_status: Literal["", "ACTIVE", "LEFT"] = "",
     ) -> dict[str, Any]:
         return envelope(
-            request, Management(catalog.uow).listing(auth(request), kind, entity_id, search, offset)
+            request,
+            Management(catalog.uow).listing(
+                auth(request), kind, entity_id, search, offset, staff_status
+            ),
         )
 
     @app.get("/api/v1/management/{kind}/{id}")

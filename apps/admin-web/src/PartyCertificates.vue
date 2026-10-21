@@ -15,7 +15,11 @@ import {
   emptyPartyCertificate,
   type PartyCertificateRecord,
 } from "./partyCertificates";
-const props = defineProps<{ party: string; active: boolean }>();
+const props = defineProps<{
+  party: string;
+  active: boolean;
+  readonly?: boolean;
+}>();
 const emit = defineEmits<{
   failure: [error: unknown];
   editing: [value: boolean];
@@ -23,6 +27,7 @@ const emit = defineEmits<{
 }>();
 interface Listing {
   items: PartyCertificateRecord[];
+  active_items: PartyCertificateRecord[];
   types: Record<string, string>;
   business_uses: Record<string, string>;
   legacy: {
@@ -79,7 +84,10 @@ async function load() {
   loading.value = true;
   try {
     const result = await request<Listing>(root.value);
-    if (current === epoch) data.value = result;
+    if (current === epoch)
+      data.value = props.readonly
+        ? { ...result, items: result.active_items }
+        : result;
   } catch (e) {
     if (current === epoch) emit("failure", e);
   } finally {
@@ -87,6 +95,11 @@ async function load() {
   }
 }
 async function select(id: string, offset = 0) {
+  if (props.readonly) {
+    const row = data.value?.items.find((r) => r.id === id);
+    if (row) detail.value = { record: row, history: [], has_more: false };
+    return;
+  }
   const current = ++epoch;
   loading.value = true;
   try {
@@ -179,7 +192,7 @@ onMounted(load);
         <span class="form-note">按原件维护证件，随主体资料一次审核</span>
       </div>
       <el-button
-        v-if="can('catalog.write')"
+        v-if="!readonly && can('catalog.write')"
         type="primary"
         plain
         :disabled="!!mode || busy || loading || !data"
@@ -190,7 +203,7 @@ onMounted(load);
     <p class="form-note">
       证件和授权随往来单位统一审核；证件有效期按关联经营范围参与准入，默认不整体停用单位。
     </p>
-    <details v-if="data?.legacy.number" class="legacy-certificate">
+    <details v-if="!readonly && data?.legacy.number" class="legacy-certificate">
       <summary>原有单证字段 · {{ data.legacy.number }} · 类型待核对</summary>
       <p>
         原始资质日期：{{ data.legacy.raw_valid_from || "未填写" }} 至
@@ -272,15 +285,19 @@ onMounted(load);
     >
       <div class="certificate-title">
         <h4>{{ detail.record.number }} · 第 {{ detail.record.version }} 版</h4>
-        <div>
+        <div v-if="!readonly">
           <el-button
-            v-if="can('catalog.write')"
+            v-if="!readonly && can('catalog.write')"
             :disabled="busy || loading"
             @click="start('edit')"
             >修订证照</el-button
           >
           <el-button
-            v-if="can('catalog.write') && detail.record.state !== 'INACTIVE'"
+            v-if="
+              !readonly &&
+              can('catalog.write') &&
+              detail.record.state !== 'INACTIVE'
+            "
             :disabled="busy || loading"
             @click="start('review')"
             >申请停用</el-button
@@ -308,7 +325,7 @@ onMounted(load);
           </dd>
         </template>
       </dl>
-      <details>
+      <details v-if="!readonly">
         <summary>证照变更记录</summary>
         <CatalogHistory
           :events="detail.history"
@@ -510,6 +527,7 @@ onMounted(load);
       </div>
     </form>
     <CatalogAttachments
+      v-if="!readonly"
       area="parties"
       :parent="party"
       :model-value="

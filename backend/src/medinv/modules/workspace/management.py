@@ -146,7 +146,13 @@ class Management:
         self.uow = uow
 
     def listing(
-        self, ctx: TenantContext, kind: Kind, entity: UUID, search: str = "", offset: int = 0
+        self,
+        ctx: TenantContext,
+        kind: Kind,
+        entity: UUID,
+        search: str = "",
+        offset: int = 0,
+        staff_status: str = "",
     ) -> dict[str, Any]:
         ctx.require(PERMISSIONS[kind][0], entity)
         with self.uow.open(ctx, readonly=True) as session:
@@ -156,8 +162,9 @@ class Management:
                 """SELECT id,payload,version,updated_at,updated_by FROM med.management_record
                 WHERE entity_id=:e AND kind=:k AND (:q='' OR
                 strpos(lower(payload::text),lower(:q))>0)
+                AND (:k <> 'staff' OR :status='' OR payload->>'status'=:status)
                 ORDER BY updated_at DESC,id LIMIT 51 OFFSET :o""",
-                {"e": entity, "k": kind, "q": search, "o": offset},
+                {"e": entity, "k": kind, "q": search, "o": offset, "status": staff_status},
             )
             return dict(
                 jsonable_encoder(

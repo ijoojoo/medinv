@@ -114,11 +114,14 @@ class PartyCertificates:
                 "ORDER BY created_at,id LIMIT 100",
                 {"id": party},
             )
+            active_rows = rows
+            active_parent = parent
             rows = certificate_rows(repo, "party", party, rows)
             parent = editable(repo, "party", parent)
             day = today(repo)
             return {
                 "items": [present(r, parent, day) for r in rows],
+                "active_items": [present(r, active_parent, day) for r in active_rows],
                 "types": TYPES,
                 "business_uses": {
                     k: v for k, v in USES.items() if compatibility(parent, [k]) == "MATCH"

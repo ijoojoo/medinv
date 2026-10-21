@@ -294,6 +294,18 @@ class PartyScopes:
                 "SELECT * FROM med.party_certificate WHERE party_id=:p", {"p": target}
             )
             certs = {str(c["id"]): c for c in certificate_rows(repo, "party", target, live_certs)}
+            active_certs = {str(c["id"]): c for c in live_certs}
+            active_results = []
+            for scope in active["scopes"]:
+                reasons = {
+                    channel: scope_problems(
+                        config, scope, active_certs, channel, str(today(repo)), preview=False
+                    )
+                    for channel in scope["channels"]
+                }
+                active_results.append(
+                    {"id": scope["id"], "reasons": reasons, "qualified": not any(reasons.values())}
+                )
             result = []
             for scope in payload["scopes"]:
                 reasons = {
@@ -315,6 +327,7 @@ class PartyScopes:
                         "legacy": current is None,
                         "rules": config,
                         "results": result,
+                        "active_results": active_results,
                         "party_kind": row["kind"],
                     }
                 )

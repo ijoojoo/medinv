@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import { request } from "./api";
 import { can, useCommand } from "./business";
 import { channelNames, subjectNames, certificateTypes } from "./qualification";
@@ -8,6 +8,7 @@ const props = defineProps<{
   kind: "product" | "party";
   id: string;
   version: string | number;
+  readonly?: boolean;
 }>();
 const emit = defineEmits<{ failure: [error: unknown]; saved: [] }>();
 interface Bundle {
@@ -189,6 +190,7 @@ async function load() {
   }
 }
 async function discard() {
+  if (props.readonly) return;
   await execute(
     `/api/v1/catalog/changes/${props.kind}/${props.id}/discard`,
     { expected_version: data.value!.version, reason: reason.value },
@@ -201,6 +203,7 @@ async function discard() {
   );
 }
 watch(() => [props.id, props.version], load, { immediate: true });
+onUnmounted(() => loadEpoch++);
 </script>
 <template>
   <div v-if="data?.has_changes" class="master-change-summary">
@@ -212,7 +215,7 @@ watch(() => [props.id, props.version], load, { immediate: true });
     <el-dialog
       v-model="opened"
       title="主体资料变更对比"
-      width="960px"
+      width="min(960px, 96vw)"
       :close-on-click-modal="false"
       ><div class="table-scroll">
         <table class="business-table change-table">
@@ -235,7 +238,10 @@ watch(() => [props.id, props.version], load, { immediate: true });
       <p class="form-note">
         关闭后从主体审核入口一次审核全部变更。撤回只丢弃当前变更草稿，操作记录仍保留。
       </p>
-      <div v-if="can('catalog.write')" class="qualification-actions">
+      <div
+        v-if="!readonly && can('catalog.write')"
+        class="qualification-actions"
+      >
         <input
           v-model="reason"
           placeholder="撤回变更原因"

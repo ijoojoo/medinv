@@ -19,6 +19,7 @@ interface Attachment {
 }
 const props = defineProps<{
   area: "products" | "parties";
+  readonly?: boolean;
   parent: string;
   modelValue: string | null;
   selectable: boolean;
@@ -179,7 +180,7 @@ onMounted(load);
     <p v-if="selected">
       当前证照关联：{{ selected.filename }} · 第 {{ selected.version }} 版
     </p>
-    <p v-else class="form-note">
+    <p v-else-if="!readonly" class="form-note">
       当前证照未关联附件。可在新增或修订证照时选择已上传的版本。
     </p>
     <label v-if="selectable" class="selection"
@@ -200,7 +201,11 @@ onMounted(load);
         </option>
       </select>
     </label>
-    <form v-if="can('catalog.write')" class="upload" @submit.prevent="upload">
+    <form
+      v-if="!readonly && can('catalog.write')"
+      class="upload"
+      @submit.prevent="upload"
+    >
       <fieldset :disabled="busy || disabled">
         <label
           >选择附件<input

@@ -1,0 +1,189 @@
+{
+  "date": "2026-10-21",
+  "version": "0.35.0",
+  "scope": [
+    "商品档案",
+    "往来单位",
+    "职员资料",
+    "仓库与库位",
+    "数据字典"
+  ],
+  "reference_files": [
+    "C:/Users/Administrator/Desktop/往来单位_固定工具箱_优化版.html",
+    "C:/Users/Administrator/Desktop/Codex_往来单位三栏布局与固定工具箱_低认知负担设计实施提示词.md"
+  ],
+  "backend": {
+    "passed": 64,
+    "warnings": 1,
+    "duration_seconds": 19.44,
+    "warning": "Existing Starlette TestClient/httpx deprecation warning",
+    "files": [
+      "tests/integration/test_management_workspaces.py",
+      "tests/integration/test_unified_qualification.py",
+      "tests/integration/test_party_certificates.py",
+      "tests/contracts/test_contract.py"
+    ],
+    "log": "artifacts/three-column/backend-regression.log"
+  },
+  "browser": {
+    "passed_distinct": 17,
+    "final_batches": [
+      {
+        "report": "artifacts/three-column/browser-final.json",
+        "stats": {
+          "startTime": "2026-10-21T10:57:56.786Z",
+          "duration": 101206.019,
+          "expected": 16,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "files": [
+          "master-three-column.spec.ts",
+          "master-trade-fields.spec.ts",
+          "master-usability.spec.ts",
+          "unified-qualification.spec.ts",
+          "warehouses.spec.ts"
+        ]
+      },
+      {
+        "report": "artifacts/three-column/browser-fixed-slots.json",
+        "stats": {
+          "startTime": "2026-10-21T10:59:38.889Z",
+          "duration": 3985.1829999999995,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "file": "product-master-workspace.spec.ts",
+        "grep": "all categories"
+      }
+    ],
+    "viewport_widths": [
+      390,
+      768,
+      1440,
+      2560
+    ],
+    "notes": [
+      "最终验证批次全部通过；早期迭代报告单独保留，不计入最终通过数。",
+      "包含真实保存、离开保护、窄屏焦点、非活动模块覆盖层保护、统一审核、权限及仓库库存身份回归。",
+      "数据字典测试在 finally 中恢复原配置。"
+    ]
+  },
+  "static_checks": {
+    "vue_tsc": "passed with production build",
+    "ruff": "passed",
+    "mypy": {
+      "status": "passed",
+      "source_files": 174
+    },
+    "prettier": "passed for src and changed browser tests",
+    "git_diff_check": "passed"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0054",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "runtime_smoke": {
+    "status": "passed",
+    "nonroot": true,
+    "databases": [
+      "med",
+      "control"
+    ],
+    "api_paths": 192,
+    "expiry_scan_errors": 0
+  },
+  "database": {
+    "business_revision": "b0054",
+    "control_revision": "c0017",
+    "forced_rls_tables": 102,
+    "migration_added": false
+  },
+  "images": {
+    "medinv-web:0.35.0": "9ef3fd470889",
+    "medinv-core:0.35.0": "4a0811d36fd8",
+    "nginx:stable-alpine": "970364228b1e",
+    "postgres:18": "74935e722416",
+    "quay.io/keycloak/keycloak:26.8.0": "599f909022d7"
+  },
+  "cleanup": {
+    "removed_unused_images": [
+      "medinv-web:0.34.0",
+      "medinv-core:0.34.0"
+    ],
+    "removed_volumes": [],
+    "retained_volumes": [
+      "medinv-dev_medinv_pg",
+      "medinv-restore-10d11e461929_pg",
+      "medinv-restore-932344c61ae8_pg"
+    ]
+  },
+  "screenshots": [
+    "outputs/three-column/qualification/change-comparison.png",
+    "outputs/three-column/qualification/editable-rules.png",
+    "outputs/three-column/qualification/party-scopes.png",
+    "outputs/three-column/qualification/unified-review.png",
+    "outputs/three-column/trade/价格直接录入.png",
+    "outputs/three-column/trade/包装换算录入.png",
+    "outputs/three-column/trade/基本信息与其他包装.png",
+    "outputs/three-column/仓库与库位.png",
+    "outputs/three-column/商品档案.png",
+    "outputs/three-column/固定槽位预览.png",
+    "outputs/three-column/往来单位-1440.png",
+    "outputs/three-column/往来单位-2560.png",
+    "outputs/three-column/往来单位-390.png",
+    "outputs/three-column/往来单位-768.png",
+    "outputs/three-column/往来单位-展开.png",
+    "outputs/three-column/数据字典.png",
+    "outputs/three-column/直接输入与顶部主体.png",
+    "outputs/three-column/职员资料.png"
+  ],
+  "not_run": [
+    "全量后端测试",
+    "全站浏览器测试",
+    "完整备份恢复演练"
+  ],
+  "not_added": [
+    "历史版本全量检索",
+    "统一导入引擎",
+    "新打印引擎"
+  ],
+  "next_three_phases": [
+    "N07 日期与正式业务备注",
+    "N08 往来单位导入",
+    "N09 常用单据查看、导出与固定打印"
+  ]
+}

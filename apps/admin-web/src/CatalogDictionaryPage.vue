@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MasterDataLayout from "./MasterDataLayout.vue";
+import { copyMasterCode, type MasterTool } from "./masterTools";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import { request } from "./api";
@@ -6,7 +8,11 @@ import { can, useCommand } from "./business";
 import { registerCatalogChanges } from "./catalogChanges";
 import { localTime } from "./sales";
 import { checkDictionary, type CatalogDictionary } from "./catalogDictionaries";
-const props = defineProps<{ initialKey?: string; embedded?: boolean }>();
+const props = defineProps<{
+  active?: boolean;
+  initialKey?: string;
+  embedded?: boolean;
+}>();
 const emit = defineEmits<{
   failure: [error: unknown];
   editing: [value: boolean];
@@ -15,6 +21,8 @@ const emit = defineEmits<{
 type Item = CatalogDictionary["items"][number];
 type Group = { key: string; name: string; icon: string; description: string };
 const root = ref<HTMLElement>();
+const editMode = ref(!!props.embedded),
+  historyOpen = ref(false);
 const groups = ref<Group[]>([]),
   definitions = ref<CatalogDictionary[]>([]);
 const selected = ref<CatalogDictionary | null>(null),
@@ -198,6 +206,7 @@ async function load(key?: string) {
     groups.value = nav.groups;
     definitions.value = nav.items;
     selected.value = detail;
+    editMode.value = !!props.embedded;
     group.value = detail.group_key || "product";
     remembered.set(group.value, detail.key);
     reset();
@@ -297,7 +306,13 @@ function toggleTree(id: string) {
   collapsed.value = next;
 }
 async function save() {
-  if (!selected.value || blocked.value || !writable.value || drawer.value)
+  if (
+    !editMode.value ||
+    !selected.value ||
+    blocked.value ||
+    !writable.value ||
+    drawer.value
+  )
     return;
   const key = selected.value.key;
   await execute(
@@ -360,14 +375,66 @@ onMounted(() => {
   void load(props.initialKey);
   document.addEventListener("keydown", shortcut);
 });
+
+const tools = computed<MasterTool[]>(() => {
+  const wait = busy.value || loading.value ? "正在处理，请稍候" : "";
+  const task = wait || (editMode.value ? "请先结束修订任务" : "");
+  const need = task || (!selected.value ? "请先选择一个字典" : "");
+  return [
+    {
+      key: "revise",
+      label: "修订字典",
+      short: "修订",
+      icon: "✎",
+      group: "资料维护",
+      disabled: !writable.value ? "无配置权限" : need,
+    },
+    {
+      key: "refresh",
+      label: "刷新资料",
+      icon: "↻",
+      group: "资料维护",
+      disabled: task,
+    },
+    {
+      key: "history",
+      label: "变更记录",
+      short: "记录",
+      icon: "◷",
+      group: "关联查阅",
+      disabled: need,
+    },
+    {
+      key: "search",
+      label: "搜索全部字典 / 字典值",
+      short: "搜索",
+      icon: "⌕",
+      group: "辅助操作",
+      disabled: wait,
+    },
+    {
+      key: "copyCode",
+      label: "复制字典编码",
+      icon: "⧉",
+      group: "辅助操作",
+      disabled: !selected.value ? "请先选择一个字典" : "",
+    },
+  ];
+});
+async function finishEdit() {
+  if (await discard()) editMode.value = false;
+}
+async function toolAction(key: string) {
+  if (tools.value.find((t) => t.key === key)?.disabled) return;
+  if (key === "revise") editMode.value = true;
+  if (key === "refresh") await load(selected.value?.key);
+  if (key === "history") historyOpen.value = true;
+  if (key === "search") globalOpen.value = true;
+  if (key === "copyCode") await copyMasterCode(selected.value?.key);
+}
 </script>
 <template>
-  <section
-    ref="root"
-    class="dictionary-workspace"
-    aria-label="数据字典"
-    v-loading="loading"
-  >
+  <section ref="root" class="dictionary-workspace" v-loading="loading">
     <p v-if="failed" role="alert">
       字典读取失败，当前修改已保留。<el-button
         @click="!dirty && load(selected?.key)"
@@ -375,7 +442,13 @@ onMounted(() => {
         >重试读取</el-button
       >
     </p>
-    <div class="dictionary-grid" :class="{ embedded }">
+    <MasterDataLayout
+      :active="active"
+      :disabled="embedded"
+      label="数据字典"
+      :tools="tools"
+      @action="toolAction"
+    >
       <aside v-if="!embedded" class="dictionary-sidebar">
         <div class="dictionary-sidehead">
           一级大分类 <span>{{ groups.length }}</span>
@@ -407,9 +480,6 @@ onMounted(() => {
         <div v-if="!embedded" class="dictionary-content-top">
           <div class="dictionary-sectionbar">
             <h2>{{ currentGroup?.name }}</h2>
-            <el-button @click="globalOpen = true"
-              >⌕　搜索全部字典 / 字典值　 <kbd>Ctrl K</kbd></el-button
-            >
           </div>
           <nav class="dictionary-tabs" aria-label="具体字典">
             <button
@@ -471,7 +541,7 @@ onMounted(() => {
                 </button>
               </div>
               <el-button
-                v-if="writable && selected.extendable"
+                v-if="editMode && writable && selected.extendable"
                 type="primary"
                 :disabled="busy || form.items.length >= 200"
                 @click="edit(-1)"
@@ -482,13 +552,13 @@ onMounted(() => {
               <table class="dictionary-table">
                 <thead>
                   <tr>
-                    <th>排序</th>
+                    <th v-if="editMode">排序</th>
                     <th>字典值 / 说明</th>
                     <th>稳定编码</th>
                     <th>来源</th>
                     <th>启用</th>
                     <th>当前资料引用</th>
-                    <th>操作</th>
+                    <th v-if="editMode">操作</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -497,7 +567,7 @@ onMounted(() => {
                     :key="r.item.id || r.index"
                     :class="{ highlight: highlighted === r.item.id }"
                   >
-                    <td>
+                    <td v-if="editMode">
                       <button
                         type="button"
                         :disabled="!writable || busy"
@@ -543,7 +613,11 @@ onMounted(() => {
                       >
                     </td>
                     <td>
+                      <span v-if="!editMode">{{
+                        r.item.active ? "已启用" : "已停用"
+                      }}</span>
                       <el-switch
+                        v-else
                         v-model="r.item.active"
                         :disabled="!writable || busy"
                         :aria-label="`${r.item.value}启用状态`"
@@ -558,7 +632,7 @@ onMounted(() => {
                           : "未统计"
                       }}
                     </td>
-                    <td>
+                    <td v-if="editMode">
                       <button
                         type="button"
                         class="dictionary-link"
@@ -597,19 +671,22 @@ onMounted(() => {
             </footer>
           </div>
           <details class="dictionary-rules">
-            <summary>选值规则、引用范围与变更记录</summary>
+            <summary>选值规则与引用范围</summary>
             <label
               >选值规则
               <select
                 v-model="form.mode"
-                :disabled="fixed || !writable || busy"
+                :disabled="!editMode || fixed || !writable || busy"
               >
                 <option value="SUGGEST">建议选用，可输入其他值</option>
                 <option value="STRICT">只能选用启用值</option>
               </select></label
             ><label v-if="defaultEnabled"
               >默认结论
-              <select v-model="defaultValue" :disabled="!writable || busy">
+              <select
+                v-model="defaultValue"
+                :disabled="!editMode || !writable || busy"
+              >
                 <option value="">请选择一个启用值</option>
                 <option
                   v-for="i in form.items.filter((i) => i.active)"
@@ -632,12 +709,8 @@ onMounted(() => {
                 c.blocked ? "，必填规则冲突，请处理后保存" : ""
               }}
             </p>
-            <p v-for="h in selected.history" :key="h.created_at">
-              {{ localTime(h.created_at) }} · v{{ h.detail.version }} ·
-              {{ h.detail.reason }} · {{ h.created_by }}
-            </p>
           </details>
-          <div v-if="writable" class="dictionary-savebar">
+          <div v-if="editMode && writable" class="dictionary-savebar">
             <label
               >变更原因<input
                 v-model="reason"
@@ -651,12 +724,30 @@ onMounted(() => {
               :disabled="!dirty || blocked || drawer"
               :loading="busy"
               >保存配置</el-button
+            ><el-button v-if="!embedded" :disabled="busy" @click="finishEdit"
+              >取消修订</el-button
             >
           </div>
         </form>
         <div v-else class="dictionary-empty">此分类尚无可见字典</div>
       </div>
-    </div>
+      <el-drawer
+        v-model="historyOpen"
+        title="变更记录"
+        size="min(640px,96vw)"
+        append-to-body
+        ><template v-if="selected"
+          ><p class="data-task-heading">
+            {{ selected.name }} · {{ selected.key }}
+          </p>
+          <p v-if="!selected.history?.length">暂无变更记录</p>
+          <p v-for="h in selected.history" :key="h.created_at">
+            {{ localTime(h.created_at) }} · v{{ h.detail.version }} ·
+            {{ h.detail.reason }} · {{ h.created_by }}
+          </p>
+        </template></el-drawer
+      >
+    </MasterDataLayout>
     <el-drawer
       v-model="drawer"
       :title="(editIndex < 0 ? '新增' : writable ? '编辑' : '查看') + '字典值'"

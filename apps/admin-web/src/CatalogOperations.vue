@@ -17,6 +17,7 @@ const props = defineProps<{
   active: boolean;
   masterVersion: string;
   hideSearchAlias?: boolean;
+  readonly?: boolean;
 }>();
 const emit = defineEmits<{
   failure: [error: unknown];
@@ -154,6 +155,7 @@ function reset() {
   reason.value = "";
 }
 async function save() {
+  if (props.readonly) return;
   if (!data.value) return;
   const changes = Object.fromEntries(
     Object.entries(values.value).filter(
@@ -195,6 +197,7 @@ onMounted(load);
       <el-tag v-if="data">{{ labels[data.state] }}</el-tag
       ><span class="form-note">直接保存 · 不改变资质审核状态</span>
       <el-button
+        v-if="!readonly"
         :disabled="busy || loading || dirty"
         @click="load().then(() => emit('saved'))"
         >刷新经营信息</el-button
@@ -215,7 +218,7 @@ onMounted(load);
           'party-operations': kind === 'parties',
           'form-grid': kind === 'products',
         }"
-        :disabled="busy || loading || !can('catalog.write')"
+        :disabled="busy || loading || !can('catalog.write') || readonly"
       >
         <ProductFields
           v-if="data.field_policy && !hideSearchAlias"
@@ -246,8 +249,11 @@ onMounted(load);
               }"
             >
               {{ operationalNames[key] }}
+              <span v-if="readonly" class="data-read-value">{{
+                values[key] || "未填写"
+              }}</span>
               <DictionaryValue
-                v-if="dictionary(key)"
+                v-else-if="dictionary(key)"
                 v-model="values[key]"
                 :dictionary="dictionary(key)!"
                 :label="operationalNames[key]"
@@ -274,7 +280,7 @@ onMounted(load);
             </label>
           </div>
         </section>
-        <label v-if="can('catalog.write')" class="full-width"
+        <label v-if="!readonly && can('catalog.write')" class="full-width"
           >变更说明<input
             v-model="reason"
             required
@@ -282,7 +288,7 @@ onMounted(load);
             placeholder="简要说明调整原因，便于追查"
         /></label>
       </fieldset>
-      <div class="form-actions" v-if="can('catalog.write')">
+      <div class="form-actions" v-if="!readonly && can('catalog.write')">
         <span class="form-note"
           >{{
             dirty ? "尚未保存；切换卡片会保留编辑内容。" : "已与当前档案同步"

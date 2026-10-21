@@ -47,7 +47,9 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   page.on("pageerror", (e) => errors.push(e.message));
   const detail = await openParty(page, party.id, code);
   await detail.getByRole("tab", { name: /经营范围与准入/ }).click();
-  const scopes = page.getByRole("region", {
+  await page.locator(".data-toolbox [data-tool=revise]").click();
+  const editing = page.getByRole("dialog", { name: "修订资料", exact: true });
+  const scopes = editing.getByRole("region", {
     name: "经营范围与准入",
     exact: true,
   });
@@ -68,9 +70,9 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   const pending = await read(context, `${root}/scopes`);
   expect(pending.payload.scopes[0].codes).toEqual(["06", "08-01"]);
   expect(pending.active_payload.scopes).toEqual([]);
-  await mkdir("../../outputs/qualification", { recursive: true });
+  await mkdir("../../outputs/three-column/qualification", { recursive: true });
   await page.screenshot({
-    path: "../../outputs/qualification/party-scopes.png",
+    path: "../../outputs/three-column/qualification/party-scopes.png",
     fullPage: true,
   });
 
@@ -78,8 +80,15 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   try {
     await wholesale(reviewer, "demo.quality");
     const qualityPage = await reviewer.newPage();
-    const quality = await openParty(qualityPage, party.id, code);
-    await quality.getByRole("tab", { name: /^质量管控/ }).click();
+    await openParty(qualityPage, party.id, code);
+    await qualityPage
+      .getByRole("button", { name: "展开工具箱", exact: true })
+      .click();
+    await qualityPage.locator(".data-toolbox [data-tool=review]").click();
+    const quality = qualityPage.getByRole("dialog", {
+      name: "主体审核 / 停用",
+      exact: true,
+    });
     await expect(quality).toContainText("待审核变更");
     await quality
       .getByLabel("核验凭据编号", { exact: true })
@@ -96,7 +105,7 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
       (await read(context, `${root}/scopes`)).active_payload.scopes,
     ).toHaveLength(1);
     await qualityPage.screenshot({
-      path: "../../outputs/qualification/unified-review.png",
+      path: "../../outputs/three-column/qualification/unified-review.png",
       fullPage: true,
     });
   } finally {
@@ -105,6 +114,7 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   await page.reload();
   const fresh = await openParty(page, party.id, code);
   await fresh.getByRole("tab", { name: /经营范围与准入/ }).click();
+  await page.locator(".data-toolbox [data-tool=revise]").click();
   await scopes.getByRole("button", { name: "停用", exact: true }).click();
   await scopes.getByLabel("范围变更说明").fill("软件验收撤回操作");
   await scopes.getByRole("button", { name: "保存范围变更" }).click();
@@ -112,25 +122,40 @@ test("scope tab, certificate linkage, one quality review and withdrawal preserve
   expect(
     (await read(context, `${root}/scopes`)).active_payload.scopes[0].enabled,
   ).toBe(true);
-  await fresh.getByRole("tab", { name: /^质量管控/ }).click();
-  await fresh.getByRole("button", { name: "查看变更对比" }).click();
+  await editing
+    .getByRole("button", { name: "关闭此对话框", exact: true })
+    .click();
+  await page.getByRole("button", { name: "展开工具箱", exact: true }).click();
+  await page.locator(".data-toolbox [data-tool=review]").click();
+  const reviewTask = page.getByRole("dialog", {
+    name: "主体审核 / 停用",
+    exact: true,
+  });
+  await reviewTask.getByRole("button", { name: "查看变更对比" }).click();
   const comparison = page.getByRole("dialog", { name: "主体资料变更对比" });
   await expect(comparison).toBeVisible();
   await expect(comparison.locator("tbody tr")).toHaveCount(1);
   await expect(comparison).toContainText("第一类器械 06 软件验收 · 启用");
   await page.screenshot({
-    path: "../../outputs/qualification/change-comparison.png",
+    path: "../../outputs/three-column/qualification/change-comparison.png",
     animations: "disabled",
   });
   await comparison.getByPlaceholder("撤回变更原因").fill("取消测试变更");
   await comparison.getByRole("button", { name: /撤回/ }).click();
   await expect(fresh.locator(".master-change-summary")).toHaveCount(0);
   await expect(comparison).not.toBeVisible();
-  await fresh.getByRole("tab", { name: "变更记录", exact: true }).click();
-  await expect(fresh.getByTestId("catalog-history")).toContainText(
+  await reviewTask
+    .getByRole("button", { name: "关闭此对话框", exact: true })
+    .click();
+  await page.locator(".data-toolbox [data-tool=history]").click();
+  const historyTask = page.getByRole("dialog", {
+    name: "变更记录",
+    exact: true,
+  });
+  await expect(historyTask.getByTestId("catalog-history")).toContainText(
     "撤回主体待审核变更",
   );
-  await expect(fresh.getByTestId("catalog-history")).toContainText(
+  await expect(historyTask.getByTestId("catalog-history")).toContainText(
     "主体变更统一审核通过",
   );
   expect(errors).toEqual([]);
@@ -158,9 +183,9 @@ test("built-in legal rules can be edited and source links remain visible", async
     .fill("测试可修改内置规则");
   await dialog.getByRole("button", { name: "取消", exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  await mkdir("../../outputs/qualification", { recursive: true });
+  await mkdir("../../outputs/three-column/qualification", { recursive: true });
   await page.screenshot({
-    path: "../../outputs/qualification/editable-rules.png",
+    path: "../../outputs/three-column/qualification/editable-rules.png",
     fullPage: true,
   });
   for (const width of [3440, 768, 390]) {
