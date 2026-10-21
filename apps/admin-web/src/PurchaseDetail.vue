@@ -7,6 +7,7 @@ import {
   inspectionDictionary,
 } from "./purchaseEntry";
 import DateInput from "./DateInput.vue";
+import AdmissionWarnings from "./AdmissionWarnings.vue";
 import DocumentLineGrid from "./DocumentLineGrid.vue";
 import { documentCell, type DocumentValues } from "./documentColumns";
 import { businessToday } from "./dates";
@@ -637,6 +638,7 @@ disposeGuard(
       ><el-button :disabled="busy" @click="load">刷新单据</el-button>
     </div>
     <template v-if="doc">
+      <AdmissionWarnings :lines="doc.lines" />
       <el-alert
         v-if="taskNote"
         :title="taskNote"

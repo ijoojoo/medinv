@@ -16,6 +16,9 @@ ROOT = Path(__file__).resolve().parents[3]
 MIGRATION = runpy.run_path(
     str(ROOT / "backend/migrations/business/versions/0041_master_professional_fields.py")
 )
+CLASSIFICATION = runpy.run_path(
+    str(ROOT / "backend/migrations/business/versions/0051_device_classification.py")
+)
 
 
 def original():
@@ -39,7 +42,7 @@ def test_field_pack_is_frozen_and_preserves_all_original_slots_and_rules():
     for profile, rules in before["rules"].items():
         assert all(after["rules"][profile][key] == rule for key, rule in rules.items())
         assert all(not after["rules"][profile][f["key"]]["required"] for f in PROFESSIONAL_FIELDS)
-    assert configuration_errors(after, before) == []
+    assert configuration_errors(CLASSIFICATION["extend_schema"](after), before) == []
     assert MIGRATION["extend_schema"](after) == after
     assert default_schema()["slots"][:15] == before["slots"][:15]
 
@@ -77,7 +80,7 @@ def test_upgrade_keeps_custom_fields_and_handles_slot_name_collisions():
         }
     after = MIGRATION["extend_schema"](before)
     assert after["slots"][:59] == before["slots"]
-    assert configuration_errors(after, before) == []
+    assert configuration_errors(CLASSIFICATION["extend_schema"](after), before) == []
     assert len({s["slot_id"] for s in after["slots"]}) == 77
 
 

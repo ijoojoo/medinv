@@ -103,6 +103,11 @@ def evaluate(
     draft: bool = False,
 ) -> dict[str, Any]:
     """Caller holds entity, party and product locks through the business commit."""
+    from medinv.modules.catalog.application.scoped_admission import evaluate as evaluate_scoped
+
+    scoped = evaluate_scoped(repo, entity, channel, party, products, own_policy=row, draft=draft)
+    if scoped is not None:
+        return scoped
     row = row or policy(repo, entity, channel)
     payload = row["payload" if draft else "active_payload"]
     result: dict[str, Any] = {
@@ -214,15 +219,18 @@ def enforce(
         raise BusinessError("ADMISSION_BLOCKED", "；".join(result["issues"][:3]) + suffix, 422)
 
 
-def reserve_admission(repo: SqlSession, entity: UUID, source: UUID, sku_ids: list[UUID]) -> None:
+def reserve_admission(repo: SqlSession, entity: UUID, source: UUID, sku_ids: list[UUID]) -> bool:
     # Public inventory reservation must also recheck a real wholesale source.
-    if not policy(repo, entity, "WHOLESALE")["active_payload"]["enabled"]:
-        return
+    from medinv.modules.catalog.application.scoped_admission import profile, uses_legacy_dates
+
+    legacy_enabled = policy(repo, entity, "WHOLESALE")["active_payload"]["enabled"]
     orders = repo.rows(
         "SELECT customer_id FROM med.sales_order WHERE id=:id AND entity_id=:e",
         {"id": source, "e": entity},
     )
     if not orders:
+        if not legacy_enabled:
+            return False
         raise BusinessError(
             "ADMISSION_SOURCE_REQUIRED", "启用批发准入后须使用可见的销售订单预占", 422
         )
@@ -232,6 +240,18 @@ def reserve_admission(repo: SqlSession, entity: UUID, source: UUID, sku_ids: lis
     )
     if not parties:
         raise BusinessError("NOT_FOUND", "客户不可见", 404)
+    if parties[0]["state"] != "APPROVED" or parties[0]["kind"] not in {"CUSTOMER", "BOTH"}:
+        raise BusinessError("CUSTOMER_INELIGIBLE", "客户未审核、已停用或供销身份不符", 422)
+    scoped = profile(repo, parties[0]["id"]) is not None
+    customer = parties[0]
+    if uses_legacy_dates(repo, customer["id"]) and (
+        not customer["valid_from"]
+        or not customer["valid_until"]
+        or not customer["valid_from"] <= today(repo) <= customer["valid_until"]
+    ):
+        raise BusinessError("CUSTOMER_INELIGIBLE", "客户旧资料资质未填写或已失效", 422)
+    if not legacy_enabled and not scoped:
+        return False
     rows = repo.rows(
         """SELECT s.id,p.name,p.category,p.drug_business_scope,p.device_business_scope
         FROM med.sku s JOIN med.product p ON (p.tenant_id,p.id)=(s.tenant_id,s.product_id)
@@ -241,6 +261,7 @@ def reserve_admission(repo: SqlSession, entity: UUID, source: UUID, sku_ids: lis
     if len(rows) != len(set(sku_ids)):
         raise BusinessError("NOT_FOUND", "商品不可见", 404)
     enforce(repo, entity, "WHOLESALE", parties[0], rows)
+    return scoped
 
 
 class AdmissionPolicies:
@@ -302,8 +323,10 @@ class AdmissionPolicies:
         values = dictionaries(repo)
         day = str(today(repo))
         for grant in payload["own_scopes"] + payload["party_scopes"]:
-            if payload["enabled"] and grant["value"] not in values.get(
-                FIELDS[grant["category"]], set()
+            if (
+                payload["enabled"]
+                and not grant.get("codes")
+                and grant["value"] not in values.get(FIELDS[grant["category"]], set())
             ):
                 raise BusinessError(
                     "ADMISSION_SCOPE_INVALID", "范围类别须选用当前启用的统一字典值", 422
@@ -328,6 +351,10 @@ class AdmissionPolicies:
             else {}
         )
         for grant in payload["party_scopes"]:
+            from medinv.modules.catalog.application.scoped_admission import profile
+
+            if profile(repo, UUID(grant["party_id"])) is not None:
+                continue
             cert = certs.get(grant["certificate_id"])
             if not cert or str(cert["party_id"]) != grant["party_id"]:
                 raise BusinessError("NOT_FOUND", "证照不可见或不属于配置的往来单位", 404)

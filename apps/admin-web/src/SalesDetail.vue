@@ -4,6 +4,7 @@ import { onUnmounted as disposeGuard } from "vue";
 import SaleStockPanel from "./SaleStockPanel.vue";
 import { createEditor } from "./workspace";
 import SalesHistory from "./SalesHistory.vue";
+import AdmissionWarnings from "./AdmissionWarnings.vue";
 import DocumentLineGrid from "./DocumentLineGrid.vue";
 import ReplenishmentPanel from "./ReplenishmentPanel.vue";
 import {
@@ -193,6 +194,7 @@ disposeGuard(
       ><el-button :disabled="busy" @click="load">刷新销售详情</el-button>
     </div>
     <template v-if="data">
+      <AdmissionWarnings :lines="data.lines" />
       <section class="panel">
         <div class="panel-heading">
           <div>

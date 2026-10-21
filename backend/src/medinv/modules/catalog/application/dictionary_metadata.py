@@ -44,7 +44,7 @@ def metadata(key: str) -> dict[str, Any]:
     return {
         "dictionary_id": identity("definition", key),
         "group_key": GROUP_KEYS.get(key, "product"),
-        "kind": "SYSTEM"
+        "kind": "HYBRID"
         if key == "staff_status"
         else "TREE"
         if key == "department"
@@ -119,8 +119,6 @@ def validate_metadata(key: str, before: list[dict[str, Any]], after: list[dict[s
             raise BusinessError(
                 "DICTIONARY_IDENTITY_IMMUTABLE", "已保存值的身份、编码和来源不可修改", 422
             )
-    if key == "staff_status" and after != before:
-        raise BusinessError("DICTIONARY_PROTECTED", "系统标准值由系统管理，企业不能修改", 422)
     for field in ("id", "code"):
         values = [i[field] for i in after]
         if len(values) != len(set(values)):

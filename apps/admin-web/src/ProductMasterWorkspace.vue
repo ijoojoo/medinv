@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MasterChangeSummary from "./MasterChangeSummary.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { request, session } from "./api";
@@ -100,7 +101,7 @@ const listColumns = useCatalogColumns(ref("products"), columnDefinitions);
 function listCell(row: MasterRow, key: string) {
   if (key === "category_path") return row.category_path.slice(1).join(" / ");
   if (key === "approval_state")
-    return labels[row.approval_state] || row.approval_state;
+    return `${labels[row.approval_state] || row.approval_state}${row.has_changes ? " · 变更待审" : ""}`;
   const stateLabels: Record<string, string> = {
     NOT_APPLICABLE: "本品类不适用",
     NO_PERMISSION: "无查看权限",
@@ -569,7 +570,7 @@ async function loadOrganizations() {
 }
 async function loadCertificates() {
   const r = await request<{ items: typeof certificates.value }>(
-    `/api/v1/catalog/master/certificates?search=${encodeURIComponent(certSearch.value)}`,
+    `/api/v1/catalog/master/certificates?search=${encodeURIComponent(certSearch.value)}${record.value ? `&product_id=${record.value.id}` : ""}`,
   );
   certificates.value = r.items;
 }
@@ -809,6 +810,24 @@ async function review() {
       await load();
     },
   );
+}
+async function certificateSaved() {
+  await loadCertificates();
+  if (record.value) {
+    const latest = await request<MasterRecord>(
+      `/api/v1/catalog/master/products/${record.value.id}`,
+    );
+    record.value.version = latest.version;
+    record.value.has_changes = latest.has_changes;
+    const revisions = new Map(certificates.value.map((c) => [c.id, c.version]));
+    for (const link of (values.value.product_certificates || []) as Record<
+      string,
+      unknown
+    >[]) {
+      const version = revisions.get(String(link.certificate_id));
+      if (version !== undefined) link.certificate_version = Number(version);
+    }
+  }
 }
 </script>
 <template>
@@ -1173,12 +1192,18 @@ async function review() {
             数据 v{{ h.data_version }} / 表单 v{{ h.form_revision }}
           </button>
         </details>
+        <MasterChangeSummary
+          v-if="record"
+          kind="product"
+          :id="record.id"
+          :version="record.version"
+          @failure="emit('failure', $event)"
+          @saved="open(record!.id, true)"
+        />
         <footer class="master-footer">
           <span
             >编码：{{ values.code || "保存时生成"
-            }}<small
-              >Ctrl / ⌘ + S 保存资料 · 审核状态按原有规则处理</small
-            ></span
+            }}<small>Ctrl / ⌘ + S 保存变更 · 证件随商品一次审核</small></span
           ><input
             v-model="reason"
             aria-label="主数据修订说明"
@@ -1392,7 +1417,7 @@ async function review() {
                 }
               "
             />{{ c.number }} · {{ c.holder_name }} · v{{ c.version }} ·
-            {{ c.state === "VERIFIED" ? "已核验" : "待核验" }}</label
+            {{ c.state === "VERIFIED" ? "已核验" : "随主体待审核" }}</label
           >
           <label style="margin-left: 18px">
             <input
@@ -1423,13 +1448,13 @@ async function review() {
           >应用证件关联</el-button
         >
         <details v-if="record" class="master-history">
-          <summary>维护本商品发起的证件原件 / 核验</summary>
+          <summary>维护证件原件 / 续期（随商品审核）</summary>
           <ProductCertificates
             :product="record.id"
             active
             @failure="emit('failure', $event)"
             @editing="nestedDirty.child0 = $event"
-            @saved="loadCertificates"
+            @saved="certificateSaved"
           />
         </details>
         <p v-else>新建商品请先保存资料草稿，再维护证件原件。</p></template

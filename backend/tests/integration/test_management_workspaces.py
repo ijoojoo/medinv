@@ -86,8 +86,8 @@ def test_dictionary_identity_legacy_references_usage_and_protection(flow):
     with pytest.raises(BusinessError, match="不可删除"):
         dictionary(f, "base_unit", [i for i in after["items"] if i["id"] != item["id"]])
     standard = dictionary(f, "staff_status")
-    with pytest.raises(BusinessError, match="系统标准"):
-        dictionary(f, "staff_status", [{**i, "active": False} for i in standard["items"]])
+    changed = dictionary(f, "staff_status", [{**i, "active": False} for i in standard["items"]])
+    assert all(not i["active"] for i in changed["items"])
 
 
 def test_hierarchy_cycles_parent_state_and_tenant_search(flow):

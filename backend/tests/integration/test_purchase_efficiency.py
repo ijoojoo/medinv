@@ -15,6 +15,10 @@ pytestmark = pytest.mark.integration
 
 
 def update_dictionary(f, key, items, mode="STRICT"):
+    default = next(
+        (i["value"] for i in sorted(items, key=lambda i: i["order"]) if i["active"]), None
+    )
+    items = [{**i, "is_default": i["value"] == default} for i in items]
     service = CatalogDictionaries(f.world.uow)
     old = service.detail(f.maker, key)
     return service.update(

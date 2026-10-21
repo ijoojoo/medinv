@@ -342,6 +342,14 @@ for _f in PROFESSIONAL_FIELDS:
     elif _f["key"].startswith("service_"):
         _f["help_text"] = "项目资料说明；实际收费按适用地区政策核定"
 FIELDS.extend(PROFESSIONAL_FIELDS)
+for _key, _label in [
+    ("device_classification_code", "器械分类编码"),
+    ("device_classification_version", "器械分类目录版本"),
+]:
+    _field = field(_key, _label, "quality", profiles="device", binding="product")
+    _field["max_length"] = 30
+    _field["help_text"] = "按已核对证照填写，例如 06-01-01 / 2017；与Ⅰ、Ⅱ、Ⅲ管理类别分别维护。"
+    FIELDS.append(_field)
 FIELD_MAP = {f["key"]: f for f in FIELDS}
 DETAIL_FIELDS = [f for f in FIELDS if f["binding_key"].startswith("detail.")]
 
@@ -468,9 +476,7 @@ def presentation(
         f = deepcopy(definition)
         rule = schema["rules"][profile][f["key"]]
         f.update(rule)
-        f["required"] = rule["required"] or (
-            definition["required"] and profile in definition["profiles"]
-        )
+        f["required"] = rule["required"]
         f["label"] = rule["label"] or f["default_label"]
         if f["key"] == "regulatory_subtype":
             f["options"] = [{"value": v, "label": label} for v, label in SUBTYPES[profile]]

@@ -229,8 +229,6 @@ class CatalogDictionaries:
                 repo, key, sorted(raw, key=lambda i: (i["order"], i["value"])), DEFINITIONS[key][3]
             )
             validate_metadata(key, before["items"], after)
-            if key == "staff_status" and body.mode != before["mode"]:
-                raise BusinessError("DICTIONARY_PROTECTED", "系统标准字典规则不可修改", 422)
             if before["items"] == after and before["mode"] == body.mode:
                 raise BusinessError("DICTIONARY_UNCHANGED", "字典没有变化", 422)
             reject_dictionary_conflicts(

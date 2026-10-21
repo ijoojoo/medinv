@@ -277,18 +277,7 @@ def test_shared_certificate_explicit_business_selection_and_real_purchase(master
         ),
         str(uuid4()),
     )
-    verified = certificates.review(
-        reviewer,
-        UUID(first["id"]),
-        UUID(cert["id"]),
-        CertificateReview(
-            expected_version=cert["version"],
-            decision="VERIFY",
-            evidence_ref="核验原件",
-            reason="核验",
-        ),
-        str(uuid4()),
-    )
+    verified = cert
     link = {
         "certificate_id": cert["id"],
         "certificate_version": int(verified["version"]),
@@ -305,7 +294,7 @@ def test_shared_certificate_explicit_business_selection_and_real_purchase(master
         product_id=UUID(first["id"]),
         category_node_id=UUID(stable_id("node:device")),
         form_revision=0,
-        expected_version=1,
+        expected_version=service.detail(ctx, UUID(first["id"]))["version"],
         values={"product_certificates": [link]},
     )
     first = service.save(ctx, request, str(uuid4()))
@@ -342,7 +331,7 @@ def test_shared_certificate_explicit_business_selection_and_real_purchase(master
         assert snapshot["approval_number"] == "MDM-FILE"
         assert snapshot["manufacturer_name"] == ""
         assert snapshot["master_identity"]["organizations"][0]["role_code"] == "DEVICE_FILER"
-        assert snapshot["master_identity"]["business_certificate"]["version"] == 2
+        assert snapshot["master_identity"]["business_certificate"]["version"] == 1
     posted_snapshot = post_master_purchase(world, ctx, reviewer, UUID(first["id"]))
     # Tightened business rules cannot be bypassed by a previously approved product
     # or by editing only an operational field after publication.
@@ -381,7 +370,7 @@ def test_shared_certificate_explicit_business_selection_and_real_purchase(master
         ),
         str(uuid4()),
     )
-    assert service.detail(ctx, UUID(second["id"]))["approval_state"] == "DRAFT"
+    assert service.detail(ctx, UUID(second["id"]))["has_changes"]
     certificates.review(
         reviewer,
         UUID(first["id"]),
@@ -395,7 +384,7 @@ def test_shared_certificate_explicit_business_selection_and_real_purchase(master
         str(uuid4()),
     )
     with world.uow.open(ctx) as session:
-        with pytest.raises(BusinessError, match="商品未审核"):
+        with pytest.raises(BusinessError, match="规则已变更"):
             ProcurementService(world.uow).products(
                 SqlSession(session),
                 ctx,

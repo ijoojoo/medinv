@@ -82,6 +82,11 @@ function add(party: boolean) {
     valid_from: businessToday(),
     valid_until: "",
     evidence_ref: "",
+    device_class: "III",
+    directory_version: "2017",
+    codes: [],
+    excluded_codes: [],
+    include_children: true,
   };
   if (party)
     Object.assign(grant, {
@@ -209,7 +214,7 @@ onMounted(load);
         }}</strong>
         · 生效版本 {{ data.active_version }} ·
         {{ data.has_draft ? `有待复核草稿 v${data.version}` : "没有待复核草稿"
-        }}<br />草稿保存后须独立复核才会生效；原有业务校验始终执行。
+        }}<br />此处配置本企业范围并进行交易试算；往来单位范围随单位资料统一审核。
       </div>
       <form @submit.prevent="save" aria-label="准入配置草稿">
         <fieldset :disabled="blocked || !can('catalog.configure')">
@@ -221,7 +226,7 @@ onMounted(load);
             />启用本业务的结构化范围校验</label
           >
           <p>
-            启用后，每个商品的范围必须同时匹配本企业与往来单位的核验记录。核验有效期含起止日；只匹配统一字典的完整值。
+            启用后，每个商品的范围必须同时匹配本企业与往来单位的核验记录。核验有效期含起止日；药品按统一范围匹配；器械可按管理类别、目录版本及分类编码匹配。
           </p>
           <h3>本企业范围</h3>
           <p v-if="!form.own_scopes.length">尚未配置本企业范围。</p>
@@ -244,30 +249,10 @@ onMounted(load);
           >
             添加本企业范围
           </button>
-          <h3>往来单位范围</h3>
-          <p v-if="!form.party_scopes.length">
-            尚未配置往来单位范围。启用后，缺少匹配范围的往来单位将被拦截。
+          <p class="form-note">
+            往来单位的经营范围请在“往来单位 →
+            经营范围与准入”维护，随单位资料一次审核。原有集中配置保留历史兼容，不在此重复编辑。
           </p>
-          <AdmissionScopeRow
-            v-for="(grant, i) in form.party_scopes"
-            :key="i"
-            :grant="grant"
-            party
-            :entity="activeEntity"
-            :channel="channel"
-            :dictionaries="dictionaries"
-            :disabled="blocked || !can('catalog.configure')"
-            @remove="form.party_scopes.splice(i, 1)"
-            @failure="emit('failure', $event)"
-          />
-          <button
-            v-if="can('catalog.configure')"
-            type="button"
-            :disabled="form.party_scopes.length >= 1000"
-            @click="add(true)"
-          >
-            添加往来单位范围
-          </button>
           <div v-if="can('catalog.configure')" class="admission-actions">
             <label
               >配置原因<input

@@ -106,6 +106,8 @@ class ProcurementService:
     def supplier(
         self, repo: SqlSession, entity: UUID, supplier: UUID, validate: bool = True
     ) -> dict[str, Any]:
+        from medinv.modules.catalog.application.scoped_admission import uses_legacy_dates
+
         row = one(
             repo,
             "SELECT * FROM med.party WHERE id=:id AND entity_id=:e FOR SHARE",
@@ -114,7 +116,14 @@ class ProcurementService:
         if validate and (
             row["state"] != "APPROVED"
             or row["kind"] not in {"SUPPLIER", "BOTH"}
-            or not row["valid_from"] <= today(repo) <= row["valid_until"]
+            or (
+                uses_legacy_dates(repo, supplier)
+                and (
+                    not row["valid_from"]
+                    or not row["valid_until"]
+                    or not row["valid_from"] <= today(repo) <= row["valid_until"]
+                )
+            )
         ):
             raise BusinessError("SUPPLIER_INELIGIBLE", "供应商未审核、停用或资质不在有效期内", 422)
         return row

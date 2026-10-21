@@ -17,7 +17,7 @@ export const partyCertificateNames: Record<string, string> = {
   evidence_ref: "原件凭据编号",
   note: "证照备注",
   attachment_id: "关联附件版本",
-  state: "证照核验状态",
+  state: "证照审核状态",
 };
 export const partyCertificateLabels: Record<string, string> = {
   ...certificateLabels,

@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
 import {
   chooseParty,
+  approveCatalogParent,
   command,
   nav,
   read,
@@ -14,7 +15,7 @@ import {
 } from "./business-helpers";
 import { headers } from "./helpers";
 
-test("isolated enterprise: configure, independently publish, preview and recheck certificate changes", async ({
+test("isolated enterprise: own scope configuration retains legacy party grants and rechecks parent-approved certificate changes", async ({
   page,
   context,
   browser,
@@ -143,17 +144,22 @@ test("isolated enterprise: configure, independently publish, preview and recheck
       evidence_ref: "TEST-FILE",
       reason: "测试建档",
     });
-    const verified = await command(
-      reviewer,
-      quality,
-      `${certRoot}/${cert.id}/review`,
-      {
-        expected_version: cert.version,
-        decision: "VERIFY",
-        evidence_ref: "TEST-REVIEW",
-        reason: "测试核验",
-      },
-    );
+    await approveCatalogParent(reviewer, quality, "parties", party.id);
+    // Retain a pre-existing legacy grant while the UI edits only enterprise scopes.
+    const legacyScope = {
+      category: "DEVICE",
+      value: "软件测试范围A",
+      ...dates,
+      evidence_ref: "TEST-SCOPE",
+      party_id: party.id,
+      certificate_id: cert.id,
+      certificate_version: cert.version,
+    };
+    await command(context, owner, root, {
+      expected_version: "0",
+      reason: "历史范围兼容软件验收",
+      payload: { enabled: false, own_scopes: [], party_scopes: [legacyScope] },
+    });
     await page.goto("/");
     await nav(page, "经营范围与准入");
     const panel = page.getByRole("region", {
@@ -163,34 +169,28 @@ test("isolated enterprise: configure, independently publish, preview and recheck
     await expect(panel).toContainText("未启用结构化准入");
     const form = panel.getByRole("form", { name: "准入配置草稿" });
     await form.getByRole("button", { name: "添加本企业范围" }).click();
-    await form.getByRole("button", { name: "添加往来单位范围" }).click();
+    await expect(
+      form.getByRole("button", { name: "添加往来单位范围" }),
+    ).toHaveCount(0);
     const grants = form.locator(".admission-grant");
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 1; i++) {
       const grant = grants.nth(i);
+      await grant.getByLabel("范围名称", { exact: true }).fill("软件测试范围A");
       await grant
-        .getByRole("combobox", { name: "经营范围类别", exact: true })
-        .selectOption("软件测试范围A");
+        .getByRole("combobox", { name: "器械管理类别", exact: true })
+        .selectOption({ label: "旧式范围（按字典匹配）" });
       await grant
         .getByLabel("核验截止日期", { exact: true })
         .fill(dates.valid_until);
       await grant.getByLabel("核验截止日期", { exact: true }).press("Tab");
       await grant.getByLabel("核验凭据编号").fill("TEST-SCOPE");
     }
-    await chooseParty(
-      grants.nth(1).getByLabel("往来单位", { exact: true }),
-      party.id,
-    );
-    await grants
-      .nth(1)
-      .getByRole("combobox", { name: "关联证照", exact: true })
-      .selectOption(cert.id);
-    await expect(grants.nth(1)).toContainText("仅软件测试原文");
     await form
       .getByRole("checkbox", { name: "启用本业务的结构化范围校验" })
       .check();
     await form.getByLabel("配置原因").fill("软件验收配置，等待独立复核");
     await form.getByRole("button", { name: "保存草稿" }).click();
-    await expect(panel).toContainText("有待复核草稿 v1");
+    await expect(panel).toContainText("有待复核草稿 v2");
     await expect(
       panel.getByRole("button", { name: "复核并生效" }),
     ).toBeDisabled();
@@ -224,7 +224,7 @@ test("isolated enterprise: configure, independently publish, preview and recheck
       reviewPage.getByRole("region", { name: "经营范围与准入", exact: true }),
     ).toContainText("已启用结构化准入");
     await panel.getByRole("button", { name: "刷新配置" }).click();
-    await expect(panel).toContainText("生效版本 2");
+    await expect(panel).toContainText("生效版本 3");
     const orderBody = {
       entity_id: opened.entity_id,
       supplier_id: party.id,
@@ -239,12 +239,13 @@ test("isolated enterprise: configure, independently publish, preview and recheck
       ],
     };
     await command(context, owner, "/api/v1/purchase-orders", orderBody);
-    await command(reviewer, quality, `${certRoot}/${cert.id}/review`, {
-      expected_version: verified.version,
+    await command(context, owner, `${certRoot}/${cert.id}/review`, {
+      expected_version: cert.version,
       decision: "INACTIVATE",
       evidence_ref: "TEST-CHANGE",
       reason: "测试证照停用",
     });
+    await approveCatalogParent(reviewer, quality, "parties", party.id);
     await trial
       .getByRole("combobox", { name: "试算依据", exact: true })
       .selectOption("ACTIVE");

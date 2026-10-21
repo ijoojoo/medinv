@@ -9,6 +9,8 @@ import CatalogOperations from "./CatalogOperations.vue";
 import CatalogPrices from "./CatalogPrices.vue";
 import ProductCertificates from "./ProductCertificates.vue";
 import PartyCertificates from "./PartyCertificates.vue";
+import PartyScopes from "./PartyScopes.vue";
+import MasterChangeSummary from "./MasterChangeSummary.vue";
 import ProductImport from "./ProductImport.vue";
 import DictionaryValue from "./DictionaryValue.vue";
 import PartyProfileFields from "./PartyProfileFields.vue";
@@ -46,6 +48,7 @@ import { can, labels, useCommand, type PageData } from "./business";
 const props = defineProps<{ kind: "products" | "parties" }>();
 const emit = defineEmits<{ failure: [error: unknown] }>();
 interface RecordData extends Partial<ProductProfile>, Partial<PartyProfile> {
+  has_changes?: boolean;
   id: string;
   name: string;
   code: string;
@@ -150,6 +153,9 @@ const tabs = computed(() => [
   { id: "basic", name: "基本信息", schemes: [] },
   { id: "operations", name: "经营信息", schemes: [] },
   { id: "quality", name: "质量管控", schemes: [] },
+  ...(!product.value
+    ? [{ id: "scopes", name: "经营范围与准入", schemes: [] }]
+    : []),
   ...(product.value ? [{ id: "prices", name: "价格信息", schemes: [] }] : []),
   {
     id: "insurance",
@@ -515,8 +521,8 @@ async function create(returnToList = false) {
       {
         expected_version: original.version,
         name: f.name,
-        valid_from: f.valid_from,
-        valid_until: f.valid_until,
+        valid_from: f.valid_from || null,
+        valid_until: f.valid_until || null,
         reason: revisionReason.value,
         ...(product.value
           ? {
@@ -552,8 +558,8 @@ async function create(returnToList = false) {
   const common = {
     code: f.code,
     name: f.name,
-    valid_from: f.valid_from,
-    valid_until: f.valid_until,
+    valid_from: f.valid_from || null,
+    valid_until: f.valid_until || null,
   };
   const body = product.value
     ? {
@@ -850,6 +856,8 @@ onMounted(() => load());
                     : 'info'
                 "
                 >{{ labels[row.approval_state || row.state] }}</el-tag
+              ><small v-if="row.has_changes" class="cell-sub"
+                >变更待审核</small
               ></template
             ></el-table-column
           >
@@ -1097,9 +1105,8 @@ onMounted(() => load());
               class="form-grid"
             >
               <label
-                >经营许可 / 备案编号<input
+                >旧资料许可 / 备案编号（选填）<input
                   v-model="form.license_no"
-                  required
                   maxlength="120"
               /></label>
               <label
@@ -1109,14 +1116,16 @@ onMounted(() => load());
                 </select></label
               >
               <label
-                >资质生效日期<DateInput v-model="form.valid_from" required
+                >旧资料生效日期（选填）<DateInput v-model="form.valid_from"
               /></label>
               <label
-                >资质截止日期<DateInput
+                >旧资料截止日期（选填）<DateInput
                   v-model="form.valid_until"
                   :min="form.valid_from"
-                  required
               /></label>
+              <p class="full-width form-note">
+                按类目管理时，保存单位后在“经营范围与准入”关联实际证件，最后随主体一次审核；这里无需填写统一有效期。
+              </p>
               <PartyProfileFields
                 v-model="form.partyProfile"
                 section="quality"
@@ -1217,7 +1226,8 @@ onMounted(() => load());
               }}<span
                 v-if="
                   (tab.id === 'operations' && codeEditing.operations) ||
-                  (tab.id === 'quality' && codeEditing.certificates)
+                  (tab.id === 'quality' && codeEditing.certificates) ||
+                  (tab.id === 'scopes' && codeEditing.scopes)
                 "
                 aria-label="未保存"
               >
@@ -1328,9 +1338,16 @@ onMounted(() => load());
             :aria-labelledby="`${kind}-tab-quality`"
             class="catalog-card"
           >
-            <h3>质量管控与资质审核</h3>
+            <h3>质量管控与主体审核</h3>
+            <MasterChangeSummary
+              :kind="product ? 'product' : 'party'"
+              :id="selected.id"
+              :version="selected.version"
+              @failure="emit('failure', $event)"
+              @saved="detail(selected)"
+            />
             <p class="form-note">
-              经营范围类别、证照和储存要求集中核验。范围类别的实际业务拦截将在后续接入。
+              证件、经营范围和主体资料统一审核，无需逐项另审；审核前查看待处理变更。
             </p>
             <dl class="facts">
               <dt>编码</dt>
@@ -1363,12 +1380,12 @@ onMounted(() => load());
                 <dd>{{ selected.credit_code }}</dd>
                 <dt>经营资质</dt>
                 <dd>{{ selected.license_no }}</dd>
-                <dt>经营范围</dt>
+                <dt>经营商品大类</dt>
                 <dd>
                   {{ categoryNames }}
                 </dd></template
               >
-              <dt>资质有效期</dt>
+              <dt>{{ product ? "资质有效期" : "旧资料有效期" }}</dt>
               <dd>
                 {{ selected.valid_from || "待补齐" }} 至
                 {{ selected.valid_until || "待补齐" }}
@@ -1448,7 +1465,7 @@ onMounted(() => load());
                     hasCodeEdits ||
                     (review.decision === 'APPROVE' && cannotApprove)
                   "
-                  >提交审核</el-button
+                  >统一审核主体及变更</el-button
                 >
               </div>
             </form>
@@ -1471,6 +1488,17 @@ onMounted(() => load());
               @saved="detail(selected)"
             />
           </div>
+          <PartyScopes
+            v-if="!product && visitedTabs.includes('scopes')"
+            v-show="activeTab === 'scopes'"
+            :party="selected.id"
+            :version="selected.version"
+            :active="activeTab === 'scopes'"
+            @failure="emit('failure', $event)"
+            @saved="detail(selected)"
+            @editing="codeEditing.scopes = $event"
+            @review="selectTab('quality')"
+          />
           <div
             v-if="visitedTabs.includes('operations')"
             v-show="activeTab === 'operations'"

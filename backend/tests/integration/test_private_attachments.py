@@ -4,6 +4,7 @@ from hashlib import sha256
 from uuid import UUID, uuid4
 
 import pytest
+from qualification_helpers import review_parent
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from test_api import api as api
@@ -61,7 +62,7 @@ def test_certificate_pins_immutable_file_and_revision_history(flow, kind):
     row = certificates.save(f.maker, parent, request(attachment_id=first["id"]), str(uuid4()))
     target = UUID(row["id"])
     # Existing original-reference requirement and independent review still apply.
-    row = certificates.review(f.reviewer, parent, target, verification(row), str(uuid4()))
+    row = review_parent(certificates, f.reviewer, parent, target, verification(row), str(uuid4()))
     assert row["state"] == "VERIFIED"
     second = upload(f, kind, PDF2, previous=UUID(first["id"]))
     assert second["root_id"] == first["id"] and second["version"] == 2

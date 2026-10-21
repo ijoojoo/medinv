@@ -11,7 +11,7 @@ export const certificateNames: Record<string, string> = {
   evidence_ref: "原件凭据编号",
   note: "证照备注",
   attachment_id: "关联附件版本",
-  state: "证照核验状态",
+  state: "证照审核状态",
 };
 export const certificateLabels: Record<string, string> = {
   DRUG_APPROVAL: "药品批准证明",
@@ -20,7 +20,7 @@ export const certificateLabels: Record<string, string> = {
   FIXED: "固定有效期",
   NOT_STATED: "原件未载明有效期",
   UNCONFIRMED: "待核实",
-  DRAFT: "待核验",
+  DRAFT: "随主体待审核",
   VERIFIED: "已核验",
   INACTIVE: "已停用",
   UPCOMING: "尚未生效",

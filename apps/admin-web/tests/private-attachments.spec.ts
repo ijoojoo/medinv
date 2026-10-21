@@ -34,10 +34,10 @@ async function open(page: Page, area: string, id: string, code: string) {
       .getByRole("button", { name: "维护", exact: true })
       .click();
     await page
-      .getByRole("button", { name: "证件详情与核验", exact: true })
+      .getByRole("button", { name: "证件详情与维护", exact: true })
       .click();
     await page
-      .getByText("维护本商品发起的证件原件 / 核验", { exact: true })
+      .getByText("维护证件原件 / 续期（随商品审核）", { exact: true })
       .click();
   }
   const card = page.getByRole("region", {

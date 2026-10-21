@@ -7,6 +7,7 @@ import AttachmentLink from "./AttachmentLink.vue";
 import { partyCertificateLabels } from "./partyCertificates";
 import type { CatalogDictionary } from "./catalogDictionaries";
 import type { ScopeGrant } from "./admission";
+import { splitCodes } from "./qualification";
 const props = defineProps<{
   grant: ScopeGrant;
   party?: boolean;
@@ -105,7 +106,58 @@ function certificateChanged(event: Event) {
           <option value="DRUG">药品</option>
         </select></label
       >
-      <label
+      <label v-if="grant.category === 'DEVICE' && !party"
+        >范围名称<input
+          v-model="grant.value"
+          :disabled="disabled"
+          required
+          placeholder="如第三类器械 06 医用成像器械"
+      /></label>
+      <label v-if="grant.category === 'DEVICE' && !party"
+        >器械管理类别<select v-model="grant.device_class" :disabled="disabled">
+          <option :value="null">旧式范围（按字典匹配）</option>
+          <option value="I">第一类</option>
+          <option value="II">第二类</option>
+          <option value="III">第三类</option>
+        </select></label
+      >
+      <template
+        v-if="grant.category === 'DEVICE' && grant.device_class && !party"
+        ><label
+          >分类目录版本<input
+            v-model="grant.directory_version"
+            required
+            :disabled="disabled"
+            placeholder="2017" /></label
+        ><label
+          >覆盖编码<input
+            :value="(grant.codes || []).join('，')"
+            @change="
+              grant.codes = splitCodes(
+                ($event.target as HTMLInputElement).value,
+              )
+            "
+            required
+            :disabled="disabled"
+            placeholder="06，08-01" /></label
+        ><label
+          >排除编码<input
+            :value="(grant.excluded_codes || []).join('，')"
+            @change="
+              grant.excluded_codes = splitCodes(
+                ($event.target as HTMLInputElement).value,
+              )
+            "
+            :disabled="disabled" /></label
+        ><label
+          ><input
+            type="checkbox"
+            v-model="grant.include_children"
+            :disabled="disabled"
+          />覆盖下级分类</label
+        ></template
+      >
+      <label v-if="grant.category !== 'DEVICE' || party"
         >经营范围类别<select
           v-model="grant.value"
           :disabled="disabled"

@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from pydantic import ValidationError
+from qualification_helpers import review_parent
 from sqlalchemy import text
 from test_catalog_revisions import body, document, revise
 from test_party_identity import data
@@ -96,7 +97,8 @@ def test_multiple_certificates_idempotency_and_existing_trade_gate_remain_indepe
     assert listing["legacy"]["number"] == before["license_no"]
     assert listing["legacy"]["type"] == "LEGACY_UNCLASSIFIED"
     assert listing["business_uses"] == {"SUPPLY": "作为供应商供货"}
-    assert document(f, "party")["record"] == before
+    assert document(f, "party")["record"]["state"] == "APPROVED"
+    assert document(f, "party")["record"]["name"] == before["name"]
     f.order()
 
 
@@ -118,11 +120,11 @@ def test_authorized_contacts_independent_review_and_daily_changes_keep_separate_
         str(uuid4()),
     )
     target = UUID(row["id"])
-    with pytest.raises(BusinessError, match="不能核验"):
-        service.review(f.maker, party, target, verification(row), str(uuid4()))
+    with pytest.raises(BusinessError, match="不能审核"):
+        review_parent(service, f.maker, party, target, verification(row), str(uuid4()))
     key = str(uuid4())
-    verified = service.review(f.reviewer, party, target, verification(row), key)
-    assert service.review(f.reviewer, party, target, verification(row), key) == verified
+    verified = review_parent(service, f.reviewer, party, target, verification(row), key)
+    assert service.detail(f.reviewer, party, target)["record"] == verified
     parent = document(f, "party")["record"]
     CatalogOperations(f.world.uow).update(
         f.maker,
@@ -148,14 +150,14 @@ def test_authorized_contacts_independent_review_and_daily_changes_keep_separate_
         second_editor, party, revision(edited, note="补充原件说明"), str(uuid4()), target
     )
     for actor in [f.maker, editor, second_editor]:
-        with pytest.raises(BusinessError, match="不能核验"):
-            service.review(actor, party, target, verification(edited), str(uuid4()))
-    service.review(f.reviewer, party, target, verification(edited), str(uuid4()))
+        with pytest.raises(BusinessError, match="不能审核"):
+            review_parent(service, actor, party, target, verification(edited), str(uuid4()))
+    review_parent(service, f.reviewer, party, target, verification(edited), str(uuid4()))
     events = service.detail(f.maker, party, target)["history"]
     assert len(events) == 5
     assert events[2]["detail"]["before"]["authorization_duties"] == "仅业务洽谈及供货"
     assert events[2]["detail"]["after"]["authorization_duties"] == "仅供货"
-    assert all(e["detail"]["certificate_domain"] == "party" for e in events)
+    assert events[0]["detail"]["source"] == "parent_review"
 
 
 @pytest.mark.parametrize(
@@ -181,7 +183,9 @@ def test_incomplete_evidence_or_authorization_cannot_be_verified(flow, missing):
     }
     row = service.save(flow.maker, party, request(**values), str(uuid4()))
     with pytest.raises(BusinessError) as exc:
-        service.review(flow.reviewer, party, UUID(row["id"]), verification(row), str(uuid4()))
+        review_parent(
+            service, flow.reviewer, party, UUID(row["id"]), verification(row), str(uuid4())
+        )
     assert exc.value.code == "CERTIFICATE_NOT_READY"
     assert service.detail(flow.maker, party, UUID(row["id"]))["record"]["state"] == "DRAFT"
 
@@ -204,11 +208,13 @@ def test_record_verification_does_not_hide_current_validity_or_approve_party(
         ),
         str(uuid4()),
     )
-    # Independent certificate review is evidence verification, not parent admission.
+    # One parent review confirms all evidence, while validity remains a separate result.
     revise(f, "party", request=body(f, "party", name="修订后待审核单位"))
-    reviewed = service.review(f.reviewer, party, UUID(row["id"]), verification(row), str(uuid4()))
+    reviewed = review_parent(
+        service, f.reviewer, party, UUID(row["id"]), verification(row), str(uuid4())
+    )
     assert reviewed["state"] == "VERIFIED" and reviewed["validity"] == status
-    assert document(f, "party")["record"]["state"] == "DRAFT"
+    assert document(f, "party")["record"]["state"] == "APPROVED"
 
 
 def test_business_use_revalidated_after_party_role_change(flow):
@@ -222,10 +228,14 @@ def test_business_use_revalidated_after_party_role_change(flow):
         revise(f, "party", request=body(f, "party", kind="SUPPLIER"))
     # Defend against incompatible legacy/imported records as well; the current
     # maintenance command intentionally does not allow shrinking established roles.
-    f.world.execute("UPDATE med.party SET kind='SUPPLIER' WHERE id=:id", id=party)
+    f.world.execute(
+        "UPDATE med.catalog_change_bundle SET payload=jsonb_set("
+        "payload,'{record,kind}','\"SUPPLIER\"'::jsonb) WHERE target_id=:id",
+        id=party,
+    )
     assert service.list(f.maker, party)["items"][0]["compatibility"] == "MISMATCH"
     with pytest.raises(BusinessError, match="供销身份"):
-        service.review(f.reviewer, party, UUID(row["id"]), verification(row), str(uuid4()))
+        review_parent(service, f.reviewer, party, UUID(row["id"]), verification(row), str(uuid4()))
     fixed = service.save(
         f.maker, party, revision(row, business_uses=["SUPPLY"]), str(uuid4()), UUID(row["id"])
     )
@@ -263,7 +273,9 @@ def test_shared_organization_has_separate_entity_certificates_and_read_write_per
         lambda: service.detail(ctx, UUID(second["id"]), target),
         lambda: service.detail(allowed, UUID(second["id"]), target),
         lambda: service.save(viewer, UUID(first["id"]), request(number="NO"), str(uuid4())),
-        lambda: service.review(viewer, UUID(first["id"]), target, verification(row), str(uuid4())),
+        lambda: review_parent(
+            service, viewer, UUID(first["id"]), target, verification(row), str(uuid4())
+        ),
         lambda: service.save(
             ctx, UUID(second["id"]), revision(other, note="越界"), str(uuid4()), UUID(other["id"])
         ),
@@ -324,7 +336,7 @@ def test_commit_failure_rolls_back_record_and_audit(flow, action):
             elif action == "revise":
                 service.save(f.maker, party, revision(row, note="回滚"), str(uuid4()), target)
             else:
-                service.review(f.reviewer, party, target, verification(row), str(uuid4()))
+                review_parent(service, f.reviewer, party, target, verification(row), str(uuid4()))
     finally:
         before_business_commit.reset(token)
     assert service.detail(f.maker, party, target) == before
@@ -338,15 +350,15 @@ def test_inactivation_history_and_reactivation_require_new_revision(flow):
     target = UUID(row["id"])
     with pytest.raises(BusinessError, match="没有变化"):
         service.save(f.maker, party, revision(row), str(uuid4()), target)
-    row = service.review(f.reviewer, party, target, verification(row), str(uuid4()))
-    row = service.review(
-        f.reviewer, party, target, verification(row, decision="INACTIVATE"), str(uuid4())
+    row = review_parent(service, f.reviewer, party, target, verification(row), str(uuid4()))
+    row = review_parent(
+        service, f.reviewer, party, target, verification(row, decision="INACTIVATE"), str(uuid4())
     )
-    with pytest.raises(BusinessError, match="仅待核验"):
+    with pytest.raises(BusinessError, match="随主体"):
         service.review(f.reviewer, party, target, verification(row), str(uuid4()))
     revised = service.save(f.maker, party, revision(row, note="重新提供原件"), str(uuid4()), target)
     with pytest.raises(BusinessError, match="已变化"):
-        service.review(f.reviewer, party, target, verification(row), str(uuid4()))
+        service.save(f.reviewer, party, revision(row, note="旧版本"), str(uuid4()), target)
     assert revised["state"] == "DRAFT"
 
 

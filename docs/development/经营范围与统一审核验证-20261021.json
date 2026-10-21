@@ -1,0 +1,125 @@
+{
+  "recorded_at": "2026-10-21T13:29:46.571648+08:00",
+  "application": "0.30.0",
+  "business_revision": "b0052",
+  "control_revision": "c0017",
+  "business_rls_tables": 99,
+  "core_api_paths": 184,
+  "branch": "codex/qualification-unified-review",
+  "source_baseline": "c878071c3b7e60287bf0ff9c2bf54d35f3ca92ac",
+  "scope": "Editable legal defaults, category-specific party scope admission, one parent review, preserved live data and withdrawable change drafts",
+  "legal_default_rules": 9,
+  "legal_updates_automatic": false,
+  "backend_full": {
+    "passed": 1066,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 677.9,
+    "command": "pytest tests/integration tests/unit tests/contracts --tb=short",
+    "log": "artifacts/qualification/backend-full-regression.log",
+    "sha256": "f13b459db901ba8d343081797dc68e0c8402d83f45f710dc63d3f81ac3336f24",
+    "note": "全量通过后补充审计元数据和前端历史/对比显示修复；最终相关后端再次复验69项。"
+  },
+  "backend_final_targeted": {
+    "passed": 69,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 20.59,
+    "new_qualification_cases": 21,
+    "log": "artifacts/qualification/backend-regression.log",
+    "sha256": "951c135b2f4af4ff14db75d8f73fde1008c0bd3d833ccaef03a98148a09f2cd9"
+  },
+  "browser": {
+    "unique_scenarios_passed": 10,
+    "final_unresolved_failures": 0,
+    "files": {
+      "unified-qualification.spec.ts": 2,
+      "product-certificates.spec.ts": 1,
+      "party-certificates.spec.ts": 2,
+      "private-attachments.spec.ts": 2,
+      "admission.spec.ts": 1,
+      "page-layout.spec.ts": 2
+    },
+    "run_notes": "第二轮9项通过；本企业范围保存入口修复后独立1项通过。最后对证照、统一审核、变更对比与历史再次复验5项通过。计数为10个不同场景，不累计重复执行。",
+    "final_recheck": {
+      "startTime": "2026-10-21T05:28:31.163Z",
+      "duration": 61007.798,
+      "expected": 5,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "final_report": "artifacts/qualification/browser-final.json"
+  },
+  "checks": {
+    "mypy_strict": "169 source files passed",
+    "ruff_changed_python": "42 changed Python files passed",
+    "ruff_source": "passed",
+    "changed_frontend_prettier": "passed",
+    "frontend_types_and_production_build": "passed",
+    "git_diff_check": "passed",
+    "container_nonroot_and_api_smoke": "passed, 184 paths",
+    "full_frontend_format_note": "全仓检查显示14个未改动的历史测试脚本格式提示；本次改动文件已通过，未混入无关格式重写。"
+  },
+  "runtime": {
+    "configuration": "valid",
+    "images": "match",
+    "database_revisions": {
+      "med": "b0052",
+      "control": "c0017"
+    },
+    "services": {
+      "auth": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "core": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "expiry": {
+        "state": "running",
+        "health": ""
+      },
+      "keycloak": {
+        "state": "running",
+        "health": ""
+      },
+      "postgres": {
+        "state": "running",
+        "health": "healthy"
+      },
+      "web": {
+        "state": "running",
+        "health": "healthy"
+      }
+    }
+  },
+  "release_created_at": "2026-10-21T05:27:34.535824+00:00",
+  "images": {
+    "core": {
+      "tag": "medinv-core:0.30.0",
+      "id": "sha256:87c585f76ba48d0a76ed24cb445900e42392ebde5799404c649b7d9e8b225945"
+    },
+    "web": {
+      "tag": "medinv-web:0.30.0",
+      "id": "sha256:03a5a5eec7725e53471734f1a57bda6bbd32a435f30194241e2eee7c1c35b0c1"
+    }
+  },
+  "backup": {
+    "before_business_revision": "b0049",
+    "scope": "encrypted business database snapshot only",
+    "three_database_backup_completed_this_turn": false,
+    "restore_drill_this_turn": false,
+    "note": "三库备份工具的两次源码指纹不一致尝试未写入业务数据；另行保留一致的加密业务库快照，不据此声称完成三库恢复验收。"
+  },
+  "screenshots": [
+    "outputs/qualification/admission-block.png",
+    "outputs/qualification/certificate-history.png",
+    "outputs/qualification/change-comparison.png",
+    "outputs/qualification/editable-rules.png",
+    "outputs/qualification/enterprise-scopes.png",
+    "outputs/qualification/party-scopes.png",
+    "outputs/qualification/unified-review.png"
+  ]
+}

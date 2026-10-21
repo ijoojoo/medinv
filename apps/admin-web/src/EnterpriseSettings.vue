@@ -5,11 +5,13 @@ import { activeEntity } from "./entityScope";
 import { goPage } from "./workspace";
 import { can, useCommand } from "./business";
 import { registerCatalogChanges } from "./catalogChanges";
+import QualificationRules from "./QualificationRules.vue";
 const emit = defineEmits<{ failure: [error: unknown] }>();
 const tabs = [
   { id: "catalog", name: "基础资料" },
   { id: "purchase", name: "采购与销售" },
   { id: "warehouse", name: "仓储与质量" },
+  { id: "qualification", name: "质量与准入" },
   { id: "finance", name: "财务结算" },
   { id: "members", name: "人员与权限" },
   { id: "reminders", name: "消息与提醒" },
@@ -72,7 +74,8 @@ const links = [
   {
     tab: "purchase",
     title: "经营范围与交易准入",
-    description: "本企业经营范围与往来单位准入；独立审核后生效。",
+    description:
+      "本企业范围配置与交易试算；往来单位范围在单位资料中随主体审核。",
     page: "admission",
     permission: "catalog.read",
   },
@@ -184,7 +187,14 @@ onMounted(load);
         {{ t.name }}
       </button>
     </nav>
-    <div v-if="!['reminders', 'system'].includes(tab)" class="settings-options">
+    <QualificationRules
+      v-show="tab === 'qualification'"
+      @failure="emit('failure', $event)"
+    />
+    <div
+      v-if="!['qualification', 'reminders', 'system'].includes(tab)"
+      class="settings-options"
+    >
       <button
         v-for="link in links.filter(
           (l) => l.tab === tab && (!l.permission || can(l.permission)),
@@ -238,7 +248,7 @@ onMounted(load);
         >
       </fieldset>
     </form>
-    <div v-else class="settings-boundary">
+    <div v-else-if="tab === 'system'" class="settings-boundary">
       <h3>系统级设置</h3>
       <p>
         租户管理、平台标准字典、系统开关、第三方接入凭据、升级与运维配置属于系统管理范围。

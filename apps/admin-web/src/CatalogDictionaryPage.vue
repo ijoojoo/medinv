@@ -44,9 +44,7 @@ const dirty = computed(
       !!reason.value ||
       drawerDirty.value),
 );
-const writable = computed(
-  () => can("catalog.configure") && selected.value?.kind !== "SYSTEM",
-);
+const writable = computed(() => can("catalog.configure"));
 const kindNames = {
   SYSTEM: "系统标准",
   HYBRID: "系统与企业扩展",

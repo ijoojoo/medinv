@@ -3,7 +3,7 @@ import CatalogAttachments from "./CatalogAttachments.vue";
 import DateInput from "./DateInput.vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ElMessageBox } from "element-plus";
-import { request, session } from "./api";
+import { request } from "./api";
 import { can, useCommand } from "./business";
 import { registerCatalogChanges } from "./catalogChanges";
 import CatalogHistory, { type CatalogEvent } from "./CatalogHistory.vue";
@@ -47,7 +47,7 @@ const mode = ref<"create" | "edit" | "review" | null>(null),
   values = ref(emptyCertificate());
 const baseline = ref(""),
   reason = ref(""),
-  decision = ref("VERIFY"),
+  decision = ref("INACTIVATE"),
   evidence = ref("");
 const historyOffset = ref(0);
 const { busy, execute } = useCommand((e) => emit("failure", e));
@@ -68,15 +68,7 @@ onUnmounted(
 );
 let epoch = 0;
 onUnmounted(() => epoch++);
-const canVerify = computed(
-  () =>
-    !!detail.value &&
-    detail.value.record.state === "DRAFT" &&
-    detail.value.record.created_by !== session.value?.principal_id &&
-    !detail.value.record.revision_editors.includes(
-      session.value?.principal_id || "",
-    ),
-);
+
 async function load() {
   const current = ++epoch;
   loading.value = true;
@@ -114,7 +106,7 @@ function start(action: "create" | "edit" | "review") {
       ? certificateValues(detail.value.record)
       : emptyCertificate(Object.keys(data.value?.types || {})[0]);
   baseline.value = JSON.stringify(values.value);
-  decision.value = canVerify.value ? "VERIFY" : "INACTIVATE";
+  decision.value = "INACTIVATE";
 }
 async function cancel() {
   if (dirty.value) {
@@ -177,7 +169,7 @@ onMounted(load);
     <div class="certificate-title">
       <div>
         <h3>商品证照档案</h3>
-        <span class="form-note">按原件维护多份证照，核验与有效期分别显示</span>
+        <span class="form-note">按原件维护证件，随主体资料一次审核</span>
       </div>
       <el-button
         v-if="can('catalog.write')"
@@ -189,7 +181,7 @@ onMounted(load);
       >
     </div>
     <p class="form-note">
-      当前为补充档案，购销仍按上方商品资质审核结果校验。核验记录不代表商品已获准经营。
+      新增、续期和停用均纳入商品资料变更，统一审核；待审核期间保留当前有效证件。
     </p>
     <details v-if="data?.legacy.number" class="legacy-certificate">
       <summary>原有证照字段 · {{ data.legacy.number }} · 类型待核对</summary>
@@ -206,7 +198,7 @@ onMounted(load);
           <tr>
             <th>类型 / 编号</th>
             <th>持有人</th>
-            <th>核验状态</th>
+            <th>审核状态</th>
             <th>有效期情况</th>
             <th>操作</th>
           </tr>
@@ -271,10 +263,10 @@ onMounted(load);
             >修订证照</el-button
           >
           <el-button
-            v-if="can('catalog.review') && detail.record.state !== 'INACTIVE'"
+            v-if="can('catalog.write') && detail.record.state !== 'INACTIVE'"
             :disabled="busy || loading"
             @click="start('review')"
-            >核验 / 停用</el-button
+            >申请停用</el-button
           >
           <el-button
             :disabled="busy || loading"
@@ -332,7 +324,7 @@ onMounted(load);
             ? "新增证照"
             : mode === "edit"
               ? "修订证照"
-              : "证照核验 / 停用"
+              : "申请停用证件"
         }}
       </h4>
       <fieldset class="form-grid" :disabled="busy || loading">
@@ -355,13 +347,13 @@ onMounted(load);
             >持有人 / 注册人 / 备案人<input
               v-model="values.holder_name"
               maxlength="200"
-              placeholder="按原件登记，核验前补齐"
+              placeholder="按原件登记，主体审核前核对"
           /></label>
           <label
             >发证 / 备案机关<input
               v-model="values.issuer"
               maxlength="200"
-              placeholder="按原件登记，核验前补齐"
+              placeholder="按原件登记，主体审核前核对"
           /></label>
           <label
             >签发 / 备案日期<DateInput
@@ -409,7 +401,7 @@ onMounted(load);
             >原件凭据编号<input
               v-model="values.evidence_ref"
               maxlength="120"
-              placeholder="纸质档案号或内部文档编号，核验前补齐"
+              placeholder="纸质档案号或内部文档编号，主体审核前核对"
           /></label>
           <label class="full-width"
             >证照备注<textarea v-model="values.note" maxlength="500" rows="2" />
@@ -418,13 +410,10 @@ onMounted(load);
         <template v-else>
           <p class="full-width form-note">
             {{ detail?.record.number }} ·
-            核验资料内容与原件是否一致，有效期单独显示。{{
-              canVerify ? "" : "仅独立于建档及本轮修订的人员可以核验通过。"
-            }}
+            停用作为主体资料变更保存，随商品或往来单位一次审核后生效。
           </p>
           <label
             >证照处理<select v-model="decision">
-              <option value="VERIFY" :disabled="!canVerify">核验通过</option>
               <option value="INACTIVATE">停用证照</option>
             </select></label
           >
@@ -439,8 +428,8 @@ onMounted(load);
       <div class="form-actions">
         <span class="form-note">{{
           mode === "review"
-            ? "仅更新本证照的核验状态。"
-            : "保存后为待核验，变更保留前后版本记录。"
+            ? "保存停用变更，随主体审核后生效。"
+            : "保存后纳入主体待审核资料，保留当前有效版本。"
         }}</span>
         <el-button :disabled="busy || loading" @click="cancel"
           >取消证照编辑</el-button
@@ -450,7 +439,7 @@ onMounted(load);
           native-type="submit"
           :loading="busy"
           :disabled="loading || attachmentEditing || !dirty"
-          >{{ mode === "review" ? "提交证照核验" : "保存证照草稿" }}</el-button
+          >{{ mode === "review" ? "保存停用变更" : "保存证照草稿" }}</el-button
         >
       </div>
     </form>

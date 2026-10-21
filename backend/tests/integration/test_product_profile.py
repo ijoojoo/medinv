@@ -101,9 +101,7 @@ def test_revision_keeps_omitted_fields_and_audits_explicit_clear(flow):
     revise(f, "product", request=body(f, "product", search_alias=""))
     detail = document(f, "product")
     assert detail["record"]["search_alias"] == ""
-    event = next(
-        e["detail"] for e in detail["history"] if e["action"] == "catalog.business_updated"
-    )
+    event = next(e["detail"] for e in detail["history"] if e["action"] == "catalog.change_staged")
     assert event["before"]["search_alias"] == "QX-SAMPLE" and event["after"]["search_alias"] == ""
 
 

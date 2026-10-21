@@ -174,7 +174,7 @@ onMounted(load);
     </div>
     <p class="form-note">
       PDF、PNG、JPEG，单份不超过 5
-      MiB。替换保留历史；上传后仍须保存证照关联并独立核验。
+      MiB。替换保留历史；上传后保存证照关联，随主体资料一起审核。
     </p>
     <p v-if="selected">
       当前证照关联：{{ selected.filename }} · 第 {{ selected.version }} 版

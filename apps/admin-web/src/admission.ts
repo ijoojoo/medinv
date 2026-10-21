@@ -4,6 +4,11 @@ export interface ScopeGrant {
   valid_from: string;
   valid_until: string;
   evidence_ref: string;
+  device_class?: "I" | "II" | "III" | null;
+  directory_version?: string;
+  codes?: string[];
+  excluded_codes?: string[];
+  include_children?: boolean;
   party_id?: string;
   certificate_id?: string;
   certificate_version?: string;

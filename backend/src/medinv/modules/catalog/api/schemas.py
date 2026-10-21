@@ -46,6 +46,12 @@ class ProductProfile(DTO):
         StrictStr, StringConstraints(strip_whitespace=True, max_length=300)
     ] = ""
     device_class: Literal["UNKNOWN", "I", "II", "III"] = "UNKNOWN"
+    device_classification_code: Annotated[
+        StrictStr, StringConstraints(strip_whitespace=True, max_length=30)
+    ] = ""
+    device_classification_version: Annotated[
+        StrictStr, StringConstraints(strip_whitespace=True, max_length=30)
+    ] = ""
     device_model: Annotated[StrictStr, StringConstraints(strip_whitespace=True, max_length=200)] = (
         ""
     )
@@ -83,11 +89,17 @@ class ProductCreate(ProductProfile):
     name: Text
     category: Literal["DRUG", "DEVICE"]
     drug_sale_class: Literal["UNKNOWN", "OTC", "RX"] = "UNKNOWN"
-    manufacturer_name: Annotated[Text, Field(max_length=100)]
-    specification: Text
-    approval_number: Annotated[Text, Field(max_length=120)]
-    valid_from: date
-    valid_until: date
+    manufacturer_name: Annotated[
+        StrictStr, StringConstraints(strip_whitespace=True, max_length=100)
+    ] = ""
+    specification: Annotated[
+        StrictStr, StringConstraints(strip_whitespace=True, max_length=200)
+    ] = ""
+    approval_number: Annotated[
+        StrictStr, StringConstraints(strip_whitespace=True, max_length=120)
+    ] = ""
+    valid_from: date | None = None
+    valid_until: date | None = None
     sku_code: Code | None = None
     base_unit: Annotated[Text, Field(max_length=30)]
     qty_scale: Annotated[int, Field(strict=True, ge=0, le=6)] = 0
@@ -99,7 +111,7 @@ class ProductCreate(ProductProfile):
         self.validate_category(self.category)
         if self.category != "DRUG" and self.drug_sale_class != "UNKNOWN":
             raise ValueError("drug classification only applies to drugs")
-        if self.valid_until < self.valid_from:
+        if self.valid_from and self.valid_until and self.valid_until < self.valid_from:
             raise ValueError("qualification date range is invalid")
         return self
 
@@ -117,14 +129,14 @@ class PartyCreate(PartyProfile):
     name: Text
     credit_code: Annotated[Text, Field(max_length=32)]
     kind: Literal["SUPPLIER", "CUSTOMER", "BOTH"]
-    license_no: Annotated[Text, Field(max_length=120)]
-    valid_from: date
-    valid_until: date
+    license_no: Annotated[StrictStr, StringConstraints(strip_whitespace=True, max_length=120)] = ""
+    valid_from: date | None = None
+    valid_until: date | None = None
     categories: list[Literal["DRUG", "DEVICE"]] = Field(min_length=1, max_length=2)
 
     @model_validator(mode="after")
     def dates(self) -> PartyCreate:
-        if self.valid_until < self.valid_from:
+        if self.valid_from and self.valid_until and self.valid_until < self.valid_from:
             raise ValueError("qualification date range is invalid")
         self.categories = sorted(set(self.categories))
         return self
@@ -140,27 +152,33 @@ class Review(DTO):
 class QualificationRevision(DTO):
     expected_version: Version
     name: Text
-    valid_from: date
-    valid_until: date
+    valid_from: date | None = None
+    valid_until: date | None = None
     reason: Text
 
     @model_validator(mode="after")
     def dates(self) -> QualificationRevision:
-        if self.valid_until < self.valid_from:
+        if self.valid_from and self.valid_until and self.valid_until < self.valid_from:
             raise ValueError("qualification date range is invalid")
         return self
 
 
 class ProductRevision(QualificationRevision, ProductProfile):
-    manufacturer_name: Annotated[Text, Field(max_length=100)]
-    specification: Text
-    approval_number: Annotated[Text, Field(max_length=120)]
+    manufacturer_name: Annotated[
+        StrictStr, StringConstraints(strip_whitespace=True, max_length=100)
+    ] = ""
+    specification: Annotated[
+        StrictStr, StringConstraints(strip_whitespace=True, max_length=200)
+    ] = ""
+    approval_number: Annotated[
+        StrictStr, StringConstraints(strip_whitespace=True, max_length=120)
+    ] = ""
     drug_sale_class: Literal["UNKNOWN", "OTC", "RX"]
 
 
 class PartyRevision(QualificationRevision, PartyProfile):
     kind: Literal["SUPPLIER", "CUSTOMER", "BOTH"] | None = None
-    license_no: Annotated[Text, Field(max_length=120)]
+    license_no: Annotated[StrictStr, StringConstraints(strip_whitespace=True, max_length=120)] = ""
     categories: list[Literal["DRUG", "DEVICE"]] = Field(min_length=1, max_length=2)
 
     @model_validator(mode="after")

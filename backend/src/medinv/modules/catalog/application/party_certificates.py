@@ -13,6 +13,12 @@ from medinv.modules.catalog.api.party_certificates import (
     PartyCertificateRevision,
 )
 from medinv.modules.catalog.application.attachments import attachment_record
+from medinv.modules.catalog.application.change_bundle import (
+    certificate_rows,
+    editable,
+    pending,
+    stage_certificate,
+)
 from medinv.modules.catalog.application.maintenance import CatalogMaintenance
 from medinv.platform.database.commands import command
 from medinv.platform.database.events import audit
@@ -84,6 +90,8 @@ def record(repo: SqlSession, party: UUID, certificate: UUID, lock: bool = False)
         + (" FOR UPDATE" if lock else ""),
         {"party": party, "id": certificate},
     )
+    if not lock:
+        rows = [r for r in certificate_rows(repo, "party", party, rows) if r["id"] == certificate]
     if not rows:
         raise BusinessError("NOT_FOUND", "证照不可见或不属于此往来单位", 404)
     return rows[0]
@@ -106,6 +114,8 @@ class PartyCertificates:
                 "ORDER BY created_at,id LIMIT 100",
                 {"id": party},
             )
+            rows = certificate_rows(repo, "party", party, rows)
+            parent = editable(repo, "party", parent)
             day = today(repo)
             return {
                 "items": [present(r, parent, day) for r in rows],
@@ -190,7 +200,51 @@ class PartyCertificates:
         def run(repo: SqlSession) -> dict[str, Any]:
             # Serialize certificate writes with classification changes, before locking the child.
             parent = CatalogMaintenance.record(repo, "party", party, lock=True)
+            active_parent = parent
+            parent = editable(repo, "party", parent)
             self.check_business_uses(parent, body.business_uses)
+            if active_parent.get(
+                "state", active_parent.get("approval_state")
+            ) == "APPROVED" or pending(repo, "party", party):
+                if body.attachment_id:
+                    attachment_record(repo, "party", party, body.attachment_id)
+                target = certificate or uuid4()
+                old = record(repo, party, certificate) if certificate else None
+                if old:
+                    assert isinstance(body, PartyCertificateRevision)
+                if old and str(old["version"]) != getattr(body, "expected_version", None):
+                    raise BusinessError("VERSION_CONFLICT", "证件或变更草稿已变化，请刷新", 409)
+                values = {k: getattr(body, k) for k in PARTY_CERTIFICATE_FIELDS}
+                if old and "attachment_id" not in body.model_fields_set:
+                    values["attachment_id"] = old["attachment_id"]
+                if (
+                    old
+                    and old["state"] != "INACTIVE"
+                    and values == {k: old[k] for k in PARTY_CERTIFICATE_FIELDS}
+                ):
+                    raise BusinessError("CERTIFICATE_UNCHANGED", "证件内容没有变化", 422)
+                self.check_duplicate(repo, party, body.certificate_type, body.number, target)
+                rows = certificate_rows(
+                    repo,
+                    "party",
+                    party,
+                    repo.rows(
+                        "SELECT * FROM med.party_certificate WHERE party_id=:p", {"p": party}
+                    ),
+                )
+                if len(rows) >= 100 and not old:
+                    raise BusinessError("CERTIFICATE_LIMIT", "每份主体资料最多维护100份证件", 422)
+                if any(
+                    r["id"] != target
+                    and r["certificate_type"] == body.certificate_type
+                    and r["number"].strip().lower() == body.number.strip().lower()
+                    for r in rows
+                ):
+                    raise BusinessError("CERTIFICATE_EXISTS", "变更草稿中已有同类型同编号证件", 409)
+                saved = stage_certificate(
+                    repo, ctx, "party", active_parent, target, values, old, body.reason
+                )
+                return present(saved, parent, today(repo))
             if body.attachment_id:
                 attachment_record(repo, "party", party, body.attachment_id)
             target = certificate or uuid4()
@@ -242,6 +296,13 @@ class PartyCertificates:
                       {",".join(":" + k for k in PARTY_CERTIFICATE_FIELDS)})""",
                     params,
                 )
+            repo.execute(
+                (
+                    "UPDATE med.party SET version=version+1,revision_ed"
+                    "itors=array_append(revision_editors,:a) WHERE id=:p"
+                ),
+                {"p": party, "a": ctx.principal_id},
+            )
             after = record(repo, party, target)
             audit(
                 repo,
@@ -286,67 +347,22 @@ class PartyCertificates:
         body: PartyCertificateReview,
         key: str,
     ) -> dict[str, Any]:
-        self.scope(ctx, party, "catalog.review")
+        self.scope(ctx, party, "catalog.write")
+        if body.decision == "VERIFY":
+            raise BusinessError(
+                "REVIEW_WITH_PARENT", "证件随主体资料一次审核，请使用商品或往来单位的审核入口", 409
+            )
 
         def run(repo: SqlSession) -> dict[str, Any]:
             parent = CatalogMaintenance.record(repo, "party", party, lock=True)
-            row = record(repo, party, certificate, lock=True)
+            row = record(repo, party, certificate)
             if str(row["version"]) != body.expected_version:
-                raise BusinessError("VERSION_CONFLICT", "证照已变化，请重新加载后核验", 409)
-            if body.decision == "VERIFY":
-                if row["state"] != "DRAFT":
-                    raise BusinessError("CERTIFICATE_STATE", "仅待核验记录可以核验通过", 409)
-                if (
-                    ctx.principal_id == row["created_by"]
-                    or ctx.principal_id in row["revision_editors"]
-                ):
-                    raise BusinessError(
-                        "SEPARATION_REQUIRED", "建档人及本轮修订人员不能核验通过", 403
-                    )
-                self.check_business_uses(parent, row["business_uses"])
-                if not row["holder_name"] or not row["issuer"] or not row["evidence_ref"]:
-                    raise BusinessError(
-                        "CERTIFICATE_NOT_READY", "请补齐证照主体、签发单位和原件凭据", 422
-                    )
-                if row["validity_mode"] == "UNCONFIRMED":
-                    raise BusinessError("CERTIFICATE_NOT_READY", "请按原件核实有效期", 422)
-                if row["certificate_type"] == "AUTHORIZATION" and not all(
-                    row[k] for k in ("authorized_name", "authorized_phone", "authorization_duties")
-                ):
-                    raise BusinessError(
-                        "CERTIFICATE_NOT_READY", "请补齐授权联系人、联系电话和授权事项", 422
-                    )
-                state = "VERIFIED"
-            else:
-                if row["state"] == "INACTIVE":
-                    raise BusinessError("CERTIFICATE_STATE", "证照已停用", 409)
-                state = "INACTIVE"
-            repo.execute(
-                """UPDATE med.party_certificate SET state=:state,version=version+1,
-                reviewed_by=:actor,reviewed_at=clock_timestamp(),updated_by=:actor,
-                updated_at=clock_timestamp(),revision_editors=CASE
-                WHEN CAST(:state AS varchar)='VERIFIED'
-                THEN ARRAY[]::uuid[] ELSE revision_editors END WHERE id=:id""",
-                {"state": state, "actor": ctx.principal_id, "id": certificate},
+                raise BusinessError("VERSION_CONFLICT", "证件已变化，请刷新", 409)
+            values = {k: row[k] for k in PARTY_CERTIFICATE_FIELDS}
+            saved = stage_certificate(
+                repo, ctx, "party", parent, certificate, values, row, body.reason, "INACTIVE"
             )
-            after = record(repo, party, certificate)
-            audit(
-                repo,
-                ctx,
-                "party",
-                party,
-                "catalog.certificate_reviewed",
-                {
-                    **body.model_dump(mode="json"),
-                    "certificate_domain": "party",
-                    "certificate_id": str(certificate),
-                    "version": str(after["version"]),
-                    "before": snapshot(row),
-                    "after": snapshot(after),
-                    "party_version": str(parent["version"]),
-                },
-            )
-            return present(after, parent, today(repo))
+            return present(saved, parent, today(repo))
 
         return command(
             self.uow,

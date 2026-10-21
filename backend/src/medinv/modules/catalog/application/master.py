@@ -102,6 +102,7 @@ def validation(
     submitted: dict[str, Any],
     previous: dict[str, Any] | None,
     formal: bool,
+    product_id: UUID | None = None,
 ) -> list[dict[str, str]]:
     issues: list[dict[str, str]] = []
     definitions = {f["key"]: f for f in presentation(schema, profile, values)}
@@ -246,7 +247,15 @@ def validation(
         except InvalidOperation:
             pass
     role = regulatory_role(profile, values)
-    if formal and role and not values.get("regulatory_subject"):
+    from medinv.modules.catalog.application.qualification_rules import settings
+
+    qualification = settings(repo)
+    if (
+        formal
+        and role
+        and qualification["product_regulatory_subject_required"]
+        and not values.get("regulatory_subject")
+    ):
         error("regulatory_subject", "请明确关联当前监管主体的真实组织身份")
     for field, allowed in [
         ("regulatory_subject", {role} if role else set()),
@@ -306,6 +315,11 @@ def validation(
                 if not linked:
                     error(field, "组织关系引用的证件版本须明确关联到本商品")
     certificates = values.get("product_certificates") or []
+    from medinv.modules.catalog.application.qualification_rules import (
+        settings as qualification_settings,
+    )
+
+    qualification = qualification_settings(repo)
     if isinstance(certificates, list):
         expected = CERT_TYPES.get(role or "")
         primary = [c for c in certificates if isinstance(c, dict) and c.get("business_use") is True]
@@ -314,7 +328,12 @@ def validation(
             for c in certificates
         ):
             error("product_certificates", "业务适用证件须明确选择一份，不能指定多个默认证件")
-        if formal and expected and len(primary) != 1:
+        if (
+            formal
+            and qualification["product_certificate_required"]
+            and expected
+            and len(primary) != 1
+        ):
             error("product_certificates", "请在证件关系中明确指定本商品的业务适用证件")
         seen_certs = set()
         for link in certificates:
@@ -324,9 +343,7 @@ def validation(
                         "product_certificates", "请输入有效证件编号，并先明确监管子类型 / 器械类别"
                     )
                 elif formal:
-                    error(
-                        "product_certificates", "请先保存商品以匹配或添加证件；新增证件须完成核验"
-                    )
+                    error("product_certificates", "请先保存商品以关联证件，证件随本商品一并审核")
                 continue
             try:
                 cid = UUID(str(link["certificate_id"]))
@@ -338,19 +355,45 @@ def validation(
                 error("product_certificates", "证件身份重复或版本无效")
                 continue
             rows = repo.rows("SELECT * FROM med.product_certificate WHERE id=:id", {"id": cid})
+            if product_id:
+                from medinv.modules.catalog.application.change_bundle import certificate_rows
+
+                rows = [
+                    c for c in certificate_rows(repo, "product", product_id, rows) if c["id"] == cid
+                ]
             if not rows or rows[0]["version"] != version:
                 error("product_certificates", "证件不可见或已修订，请重新选择明确版本")
                 continue
             certificate = rows[0]
-            if certificate["certificate_type"] != expected:
+            if (
+                qualification["product_certificate_type_check"]
+                and certificate["certificate_type"] != expected
+            ):
                 error("product_certificates", "证件类型与当前监管子类型 / 器械类别不一致")
             if formal and (
                 certificate["state"] != "VERIFIED"
-                or (certificate["valid_until"] and certificate["valid_until"] < date.today())
-                or (certificate["valid_from"] and certificate["valid_from"] > date.today())
+                or (
+                    qualification["product_certificate_dates"]
+                    and certificate["validity_mode"] == "UNCONFIRMED"
+                )
+                or (
+                    qualification["product_certificate_dates"]
+                    and certificate["valid_until"]
+                    and certificate["valid_until"] < date.today()
+                )
+                or (
+                    qualification["product_certificate_dates"]
+                    and certificate["valid_from"]
+                    and certificate["valid_from"] > date.today()
+                )
             ):
-                error("product_certificates", "正式审核须选择已核验且适用期内的证件")
-        if formal and expected and not certificates:
+                error("product_certificates", "证件未随主体确认、已停用或不在适用期内")
+        if (
+            formal
+            and qualification["product_certificate_required"]
+            and expected
+            and not certificates
+        ):
             error("product_certificates", "当前监管类别须明确关联适用产品证件")
     return issues
 
@@ -379,6 +422,14 @@ class ProductMaster:
             node = category_node(schema, actual_node(row))
             profile = node["field_profile_id"]
             values = values_of(repo, row)
+            from medinv.modules.catalog.application.change_bundle import (
+                pending,
+                product_draft_values,
+            )
+
+            draft = pending(repo, "product", target)
+            active_values = dict(values)
+            values = product_draft_values(repo, target, values)
             history = repo.rows(
                 (
                     "SELECT "
@@ -408,8 +459,12 @@ class ProductMaster:
                         "profile": profile,
                         "approval_state": row["approval_state"],
                         "values": safe_values(ctx, schema, values),
+                        "active_values": safe_values(ctx, schema, active_values),
+                        "has_changes": bool(draft),
                         "skus": skus,
-                        "issues": validation(repo, ctx, schema, profile, values, {}, values, True),
+                        "issues": validation(
+                            repo, ctx, schema, profile, values, {}, values, True, target
+                        ),
                         "history": history,
                         "legacy": {
                             "manufacturer_name": row["manufacturer_name"],
@@ -461,6 +516,10 @@ class ProductMaster:
             previous = (
                 values_of(repo, raw_record(repo, body.product_id)) if body.product_id else None
             )
+            if body.product_id and previous is not None:
+                from medinv.modules.catalog.application.change_bundle import product_draft_values
+
+                previous = product_draft_values(repo, body.product_id, previous)
             values = {**(previous or {}), **body.values}
             node = category_node(
                 current["payload"], str(body.category_node_id), creating=not body.product_id
@@ -475,6 +534,7 @@ class ProductMaster:
                 body.values,
                 previous,
                 True,
+                body.product_id,
             )
             return {"valid": not issues, "issues": issues}
 
@@ -490,7 +550,9 @@ class ProductMaster:
             lambda repo: self.insert(repo, ctx, body),
         )
 
-    def insert(self, repo: SqlSession, ctx: TenantContext, body: MasterSave) -> dict[str, Any]:
+    def insert(
+        self, repo: SqlSession, ctx: TenantContext, body: MasterSave, *, stage_changes: bool = True
+    ) -> dict[str, Any]:
         schema_lock(repo, ctx)
         current = ensure_schema(repo, ctx)
         schema = current["payload"]
@@ -514,15 +576,73 @@ class ProductMaster:
         node = category_node(schema, str(body.category_node_id), creating=row is None)
         profile = node["field_profile_id"]
         previous = values_of(repo, row) if row else None
+        from medinv.modules.catalog.application.change_bundle import (
+            pending,
+            product_draft_values,
+            stage,
+        )
+
+        draft = pending(repo, "product", row["id"]) if row and stage_changes else None
+        if row and stage_changes and previous is not None:
+            previous = product_draft_values(repo, row["id"], previous)
         values = {**(previous or {}), **body.values}
-        check_trade_fields(ctx, schema, profile, values, body)
+        if stage_changes:
+            check_trade_fields(ctx, schema, profile, values, body)
         if not values.get("record_status"):
             values["record_status"] = "ACTIVE"
-        issues = validation(repo, ctx, schema, profile, values, body.values, previous, False)
+        issues = validation(
+            repo,
+            ctx,
+            schema,
+            profile,
+            values,
+            body.values if stage_changes else {},
+            previous,
+            False,
+            body.product_id if stage_changes else None,
+        )
         if issues:
             raise BusinessError(
                 "MASTER_VALIDATION", "；".join(i["message"] for i in issues[:10]), 422
             )
+        if row and stage_changes:
+            changed = {k for k in body.values if values.get(k) != (previous or {}).get(k)}
+            direct = {f["key"] for f in FIELDS if f["tab"] in {"operations", "price"}}
+            if draft or (
+                row["approval_state"] == "APPROVED"
+                and (
+                    not changed <= direct
+                    or business_rules_changed(repo, row["form_revision"], profile, current)
+                )
+            ):
+                write_trade_fields(repo, ctx, row["id"], body)
+                staged_body = body.model_dump(mode="json")
+                active_values = values_of(repo, row)
+                staged_body["values"] = {
+                    k: v
+                    for k, v in values.items()
+                    if k not in EXTERNAL and v != active_values.get(k)
+                }
+                staged_body["basic_unit_barcode"] = None
+                staged_body["reference_prices"] = None
+                staged_result = stage(
+                    repo,
+                    ctx,
+                    "product",
+                    row,
+                    "master",
+                    staged_body,
+                    body.reason,
+                    {"values": values_of(repo, row)},
+                )
+                return {
+                    **staged_result,
+                    "version": int(staged_result["version"]),
+                    "data_version": row["data_version"],
+                    "form_revision": current["revision"],
+                    "code": row["code"],
+                    "approval_state": row["approval_state"],
+                }
         pid = body.product_id or uuid4()
         if row:
             if values.get("code") != row["code"]:
@@ -609,7 +729,14 @@ class ProductMaster:
         # Revalidate resolved identities, including duplicate roles and certificates.
         # Any failure rolls back both the product and newly added dictionary records.
         resolved_issues = validation(
-            repo, ctx, schema, profile, values, body.values, previous, False
+            repo,
+            ctx,
+            schema,
+            profile,
+            values,
+            body.values if stage_changes else {},
+            previous,
+            False,
         )
         if resolved_issues:
             raise BusinessError(
@@ -817,21 +944,35 @@ class ProductMaster:
             run,
         )
 
-    def certificates(self, ctx: TenantContext, search: str = "") -> dict[str, Any]:
+    def certificates(
+        self, ctx: TenantContext, search: str = "", product_id: UUID | None = None
+    ) -> dict[str, Any]:
         ctx.require("catalog.read")
         with self.uow.open(ctx, readonly=True) as session:
+            repo = SqlSession(session)
+            rows = repo.rows(
+                (
+                    "SELECT "
+                    "id,product_id,certificate_type,number,holder_name,version,state "
+                    "FROM med.product_certificate WHERE state<>'INACTIVE' AND "
+                    "strpos(lower(concat_ws(' ',number,holder_name)),lower(:q))>0 "
+                    "ORDER BY number,id LIMIT 200"
+                ),
+                {"q": search},
+            )
+            if product_id:
+                from medinv.modules.catalog.application.change_bundle import certificate_rows
+
+                raw_record(repo, product_id)
+                rows = certificate_rows(repo, "product", product_id, rows)
             return {
                 "items": jsonable_encoder(
-                    SqlSession(session).rows(
-                        (
-                            "SELECT "
-                            "id,product_id,certificate_type,number,holder_name,version,state "
-                            "FROM med.product_certificate WHERE state<>'INACTIVE' AND "
-                            "strpos(lower(concat_ws(' ',number,holder_name)),lower(:q))>0 "
-                            "ORDER BY number,id LIMIT 200"
-                        ),
-                        {"q": search},
-                    )
+                    [
+                        r
+                        for r in rows
+                        if r["state"] != "INACTIVE"
+                        and search.lower() in (r["number"] + " " + r["holder_name"]).lower()
+                    ]
                 )
             }
 
@@ -877,7 +1018,9 @@ class ProductMaster:
                 "COALESCE(p.category_node_id,CASE WHEN p.category='DRUG' THEN "
                 "CAST(:drug AS uuid) ELSE CAST(:device AS uuid) "
                 "END)=ANY(CAST(:nodes AS uuid[]))\n"
-                "              AND (:state='' OR p.approval_state=:state)\n"
+                "              AND (:state='' OR p.approval_state=:state OR (:state='DRAFT' "
+                "AND EXISTS(SELECT 1 FROM med.catalog_change_bundle b "
+                "WHERE b.kind='product' AND b.target_id=p.id)))\n"
                 "              AND (strpos(lower(concat_ws(' ',p.code,p.name,p.sea"
                 "rch_alias,p.generic_name,p.manufacturer_name,p.specification,p.ap"
                 "proval_number,d.brand)),lower(:q))>0\n"
@@ -906,7 +1049,9 @@ class ProductMaster:
             )[0]["total"]
             rows = repo.rows(
                 (
-                    "SELECT p.* FROM med.product p LEFT JOIN med.product_master_detail"
+                    "SELECT p.*,EXISTS(SELECT 1 FROM med.catalog_change_bundle b "
+                    "WHERE b.kind='product' AND b.target_id=p.id) AS has_changes "
+                    "FROM med.product p LEFT JOIN med.product_master_detail"
                     " d ON (d.tenant_id,d.product_id)=(p.tenant_id,p.id) WHERE "
                 )
                 + where
@@ -949,6 +1094,7 @@ class ProductMaster:
                         "category_node_id": actual_node(row),
                         "category_path": node_path(nodes, actual_node(row)),
                         "approval_state": row["approval_state"],
+                        "has_changes": row["has_changes"],
                         "values": safe_values(ctx, schema, values),
                         "states": states,
                     }

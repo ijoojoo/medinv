@@ -149,6 +149,9 @@ def project(
     schema: dict[str, Any] | None = None,
     permissions: frozenset[str] | None = None,
 ) -> None:
+    evidence = (order_line.get("document_snapshot") or {}).get("admission") or {}
+    if evidence.get("enforcement") == "WARN" and evidence.get("issues"):
+        line["qualification_notices"] = evidence["issues"]
     values, status = master_values(order_line.get("document_snapshot"), schema, permissions)
     for key in (
         "qty",

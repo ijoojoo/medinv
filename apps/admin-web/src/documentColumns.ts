@@ -27,6 +27,7 @@ export interface DocumentField {
   default: EntryColumn;
 }
 export interface DocumentValues {
+  qualification_notices?: string[];
   row_key?: string;
   document_values?: Record<string, unknown>;
   document_status?: Record<string, string>;

@@ -12,6 +12,12 @@ from medinv.modules.catalog.api.certificates import (
     CertificateRevision,
 )
 from medinv.modules.catalog.application.attachments import attachment_record
+from medinv.modules.catalog.application.change_bundle import (
+    certificate_rows,
+    editable,
+    pending,
+    stage_certificate,
+)
 from medinv.modules.catalog.application.maintenance import CatalogMaintenance
 from medinv.platform.database.commands import command
 from medinv.platform.database.events import audit
@@ -95,6 +101,10 @@ def record(
         + (" FOR UPDATE" if lock else ""),
         {"product": product, "id": certificate},
     )
+    if not lock:
+        rows = [
+            r for r in certificate_rows(repo, "product", product, rows) if r["id"] == certificate
+        ]
     if not rows:
         raise BusinessError("NOT_FOUND", "证照不可见或不属于此商品", 404)
     return rows[0]
@@ -117,10 +127,19 @@ class ProductCertificates:
                 "ORDER BY created_at,id LIMIT 100",
                 {"id": product},
             )
+            rows = certificate_rows(repo, "product", product, rows)
+            parent = editable(repo, "product", parent)
             day = today(repo)
+            from medinv.modules.catalog.application.qualification_rules import settings
+
+            type_check = settings(repo)["product_certificate_type_check"]
             return {
                 "items": [present(r, parent, day) for r in rows],
-                "types": {k: v for k, v in TYPES.items() if compatibility(parent, k) != "MISMATCH"},
+                "types": {
+                    k: v
+                    for k, v in TYPES.items()
+                    if not type_check or compatibility(parent, k) != "MISMATCH"
+                },
                 "legacy": jsonable_encoder(
                     {
                         "type": "LEGACY_UNCLASSIFIED",
@@ -198,7 +217,54 @@ class ProductCertificates:
         def run(repo: SqlSession) -> dict[str, Any]:
             # Serialize certificate writes with classification changes, before locking the child.
             parent = CatalogMaintenance.record(repo, "product", product, lock=True)
-            self.check_type(parent, body.certificate_type)
+            active_parent = parent
+            parent = editable(repo, "product", parent)
+            from medinv.modules.catalog.application.qualification_rules import settings
+
+            if settings(repo)["product_certificate_type_check"]:
+                self.check_type(parent, body.certificate_type)
+            if active_parent.get(
+                "state", active_parent.get("approval_state")
+            ) == "APPROVED" or pending(repo, "product", product):
+                if body.attachment_id:
+                    attachment_record(repo, "product", product, body.attachment_id)
+                target = certificate or uuid4()
+                old = record(repo, product, certificate) if certificate else None
+                if old:
+                    assert isinstance(body, CertificateRevision)
+                if old and str(old["version"]) != getattr(body, "expected_version", None):
+                    raise BusinessError("VERSION_CONFLICT", "证件或变更草稿已变化，请刷新", 409)
+                values = {k: getattr(body, k) for k in CERTIFICATE_FIELDS}
+                if old and "attachment_id" not in body.model_fields_set:
+                    values["attachment_id"] = old["attachment_id"]
+                if (
+                    old
+                    and old["state"] != "INACTIVE"
+                    and values == {k: old[k] for k in CERTIFICATE_FIELDS}
+                ):
+                    raise BusinessError("CERTIFICATE_UNCHANGED", "证件内容没有变化", 422)
+                self.check_duplicate(repo, product, body.certificate_type, body.number, target)
+                rows = certificate_rows(
+                    repo,
+                    "product",
+                    product,
+                    repo.rows(
+                        "SELECT * FROM med.product_certificate WHERE product_id=:p", {"p": product}
+                    ),
+                )
+                if len(rows) >= 100 and not old:
+                    raise BusinessError("CERTIFICATE_LIMIT", "每份主体资料最多维护100份证件", 422)
+                if any(
+                    r["id"] != target
+                    and r["certificate_type"] == body.certificate_type
+                    and r["number"].strip().lower() == body.number.strip().lower()
+                    for r in rows
+                ):
+                    raise BusinessError("CERTIFICATE_EXISTS", "变更草稿中已有同类型同编号证件", 409)
+                saved = stage_certificate(
+                    repo, ctx, "product", active_parent, target, values, old, body.reason
+                )
+                return present(saved, parent, today(repo))
             if body.attachment_id:
                 attachment_record(repo, "product", product, body.attachment_id)
             target = certificate or uuid4()
@@ -250,6 +316,13 @@ class ProductCertificates:
                       {",".join(":" + k for k in CERTIFICATE_FIELDS)})""",
                     params,
                 )
+            repo.execute(
+                (
+                    "UPDATE med.product SET version=version+1,revision_e"
+                    "ditors=array_append(revision_editors,:a) WHERE id=:p"
+                ),
+                {"p": product, "a": ctx.principal_id},
+            )
             after = record(repo, product, target)
             audit(
                 repo,
@@ -291,70 +364,22 @@ class ProductCertificates:
         body: CertificateReview,
         key: str,
     ) -> dict[str, Any]:
-        self.scope(ctx, product, "catalog.review")
+        self.scope(ctx, product, "catalog.write")
+        if body.decision == "VERIFY":
+            raise BusinessError(
+                "REVIEW_WITH_PARENT", "证件随主体资料一次审核，请使用商品或往来单位的审核入口", 409
+            )
 
         def run(repo: SqlSession) -> dict[str, Any]:
             parent = CatalogMaintenance.record(repo, "product", product, lock=True)
-            row = record(repo, product, certificate, lock=True)
+            row = record(repo, product, certificate)
             if str(row["version"]) != body.expected_version:
-                raise BusinessError("VERSION_CONFLICT", "证照已变化，请重新加载后核验", 409)
-            if body.decision == "VERIFY":
-                if row["state"] != "DRAFT":
-                    raise BusinessError("CERTIFICATE_STATE", "仅待核验记录可以核验通过", 409)
-                if (
-                    ctx.principal_id == row["created_by"]
-                    or ctx.principal_id in row["revision_editors"]
-                ):
-                    raise BusinessError(
-                        "SEPARATION_REQUIRED", "建档人及本轮修订人员不能核验通过", 403
-                    )
-                self.check_type(parent, row["certificate_type"])
-                if compatibility(parent, row["certificate_type"]) == "UNCONFIRMED":
-                    raise BusinessError("CERTIFICATE_NOT_READY", "请先核定商品的器械分类", 422)
-                if not row["holder_name"] or not row["issuer"] or not row["evidence_ref"]:
-                    raise BusinessError(
-                        "CERTIFICATE_NOT_READY", "请补齐持有人、发证/备案机关和原件凭据", 422
-                    )
-                if row["validity_mode"] == "UNCONFIRMED" or (
-                    row["certificate_type"]
-                    not in {"DEVICE_FILING", "HEALTH_FILING", "COSMETIC_FILING"}
-                    and row["validity_mode"] != "FIXED"
-                ):
-                    raise BusinessError(
-                        "CERTIFICATE_NOT_READY",
-                        "请按原件核实有效期，批准/注册证须填写起止日期",
-                        422,
-                    )
-                state = "VERIFIED"
-            else:
-                if row["state"] == "INACTIVE":
-                    raise BusinessError("CERTIFICATE_STATE", "证照已停用", 409)
-                state = "INACTIVE"
-            repo.execute(
-                """UPDATE med.product_certificate SET state=:state,version=version+1,
-                reviewed_by=:actor,reviewed_at=clock_timestamp(),updated_by=:actor,
-                updated_at=clock_timestamp(),revision_editors=CASE
-                WHEN CAST(:state AS varchar)='VERIFIED'
-                THEN ARRAY[]::uuid[] ELSE revision_editors END WHERE id=:id""",
-                {"state": state, "actor": ctx.principal_id, "id": certificate},
+                raise BusinessError("VERSION_CONFLICT", "证件已变化，请刷新", 409)
+            values = {k: row[k] for k in CERTIFICATE_FIELDS}
+            saved = stage_certificate(
+                repo, ctx, "product", parent, certificate, values, row, body.reason, "INACTIVE"
             )
-            after = record(repo, product, certificate)
-            audit(
-                repo,
-                ctx,
-                "product",
-                product,
-                "catalog.certificate_reviewed",
-                {
-                    **body.model_dump(mode="json"),
-                    "certificate_id": str(certificate),
-                    "version": str(after["version"]),
-                    "before": snapshot(row),
-                    "after": snapshot(after),
-                    "product_version": str(parent["version"]),
-                },
-            )
-            return present(after, parent, today(repo))
+            return present(saved, parent, today(repo))
 
         return command(
             self.uow,

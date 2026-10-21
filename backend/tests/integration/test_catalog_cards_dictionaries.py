@@ -91,7 +91,7 @@ def test_legacy_revision_splits_business_only_and_mixed_changes(flow, kind):
     )
     assert result["state"] == "APPROVED"
     result = revise(f, kind, request=body(f, kind, search_alias="alias2", name="资质名称变化"))
-    assert result["state"] == "DRAFT"
+    assert result["state"] == "APPROVED" and result["has_changes"]
     before = document(f, kind)["record"]
     operation(f, kind)
     assert document(f, kind)["record"]["revision_editors"] == before["revision_editors"]

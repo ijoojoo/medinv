@@ -139,7 +139,7 @@ def test_format_length_and_hidden_value_checks(flow, validator, good, bad):
 def test_configuration_rejects_weakened_core_rules_bad_fields_and_cyclic_conditions(flow):
     f = flow
     for changes in [
-        {"approval_number": {"required": False}},
+        {"name": {"required": False}},
         {"device_class": {"visible": False}},
         {"device_model": {"max_length": 201}},
         {"device_model": {"required": True, "visible": False}},

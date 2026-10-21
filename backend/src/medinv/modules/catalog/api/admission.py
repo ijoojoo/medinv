@@ -15,6 +15,11 @@ class ScopeGrant(DTO):
     valid_from: date
     valid_until: date
     evidence_ref: Text
+    device_class: Literal["I", "II", "III"] | None = None
+    directory_version: str = "2017"
+    codes: list[str] = Field(default_factory=list, max_length=200)
+    excluded_codes: list[str] = Field(default_factory=list, max_length=200)
+    include_children: StrictBool = True
 
     @model_validator(mode="after")
     def dates(self) -> ScopeGrant:

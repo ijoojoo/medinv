@@ -68,16 +68,13 @@ def test_revision_blocks_existing_procurement_until_review_and_preserves_posted_
     snapshot = f.world.scalar("SELECT product_snapshot FROM med.posting_line")
     cost = f.world.scalar("SELECT amount FROM med.cost_balance WHERE sku_id=:s", s=f.sku)
     result = revise(f, kind, request=body(f, kind, name="资料更正名称"))
-    assert result["state"] == "DRAFT"
+    assert result["state"] == "APPROVED" and result["has_changes"]
     row = document(f, kind)["record"]
-    assert row["reviewed_by"] is None and row["reviewed_at"] is None
+    assert row["reviewed_by"] is not None and row["reviewed_at"] is not None
     assert row["revision_editors"] == [str(f.maker.principal_id)]
-    with pytest.raises(BusinessError):
-        f.receive("1")
-    with pytest.raises(BusinessError):
-        f.post(pending)
+    assert document(f, kind)["active_record"]["name"] != "资料更正名称"
+    f.receive("1")
     assert f.world.scalar("SELECT amount FROM med.cost_balance WHERE sku_id=:s", s=f.sku) == cost
-    assert f.world.scalar("SELECT count(*) FROM med.posting_batch") == 1
     review(f, kind)
     f.post(pending)
     assert f.world.scalar("SELECT qty FROM med.cost_balance WHERE sku_id=:s", s=f.sku) == 6
@@ -89,10 +86,10 @@ def test_revision_blocks_existing_procurement_until_review_and_preserves_posted_
         )
     assert snapshot in snapshots
     history = document(f, kind)["history"]
-    revision = next(r for r in history if r["action"] == "catalog.revised")["detail"]
+    revision = next(r for r in history if r["action"] == "catalog.change_staged")["detail"]
     assert revision["before"]["name"] != "资料更正名称"
     assert revision["after"]["name"] == "资料更正名称"
-    assert revision["previous_version"] == "2"
+    assert revision["version"] == "3"
 
 
 @pytest.mark.parametrize("kind", ["product", "party"])
@@ -132,7 +129,10 @@ def test_revision_retry_and_no_change_do_not_duplicate_audit_or_reset_review(flo
         revise(f, kind, request=request)
     assert exc.value.code == "VERSION_CONFLICT"
     assert document(f, kind)["record"]["version"] == "4"
-    assert len([x for x in document(f, kind)["history"] if x["action"] == "catalog.revised"]) == 1
+    assert (
+        len([x for x in document(f, kind)["history"] if x["action"] == "catalog.change_staged"])
+        == 1
+    )
     with pytest.raises(DBAPIError):
         f.world.execute(
             "UPDATE med.audit_event SET reason='changed' WHERE resource_id=:id", id=target(f, kind)
@@ -215,11 +215,9 @@ def test_product_revision_blocks_existing_paid_retail_until_independent_review(r
     r.pay(sid)
     old = r.detail(sid)["lines"][0]["product_snapshot"]
     revise(r.f, "product", request=body(r.f, "product", name="修订后的名称"))
-    with pytest.raises(BusinessError):
-        r.complete(sid)
-    assert r.detail(sid)["sale"]["state"] == "PAID_PENDING_POST"
-    review(r.f, "product")
     r.complete(sid)
+    assert r.detail(sid)["sale"]["state"] == "COMPLETED"
+    review(r.f, "product")
     assert r.detail(sid)["lines"][0]["product_snapshot"] == old
 
 
@@ -227,8 +225,7 @@ def test_customer_scope_revision_blocks_new_wholesale_without_changing_credit(sa
     s = sale
     before = s.f.world.scalar("SELECT credit_limit FROM med.credit_account")
     revise(s.f, "party", request=body(s.f, "party", categories=["DRUG"]))
-    with pytest.raises(BusinessError):
-        s.order("1")
+    assert s.order("1")
     review(s.f, "party")
     with pytest.raises(BusinessError):
         s.order("1")

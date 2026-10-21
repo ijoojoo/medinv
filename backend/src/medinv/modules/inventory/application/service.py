@@ -220,10 +220,11 @@ class InventoryService:
         )
         if not entities or entities[0]["status"] != "ACTIVE":
             raise BusinessError("ENTITY_UNAVAILABLE", "主体不存在或已停用", 404)
+        scoped_admission = False
         if req.source_type == "SALES_ORDER":
             from medinv.modules.catalog.application.admission import reserve_admission
 
-            reserve_admission(repo, req.entity_id, req.source_id, params["skus"])
+            scoped_admission = reserve_admission(repo, req.entity_id, req.source_id, params["skus"])
         gates = repo.rows(
             """SELECT * FROM med.stock_gate
             WHERE entity_id=:entity AND sku_id=ANY(:skus) ORDER BY sku_id FOR SHARE""",
@@ -269,7 +270,7 @@ class InventoryService:
         if (
             source["state"] != "APPROVED"
             or not source["checks_completed"]
-            or source["eligible_until"] <= now
+            or (not scoped_admission and source["eligible_until"] <= now)
         ):
             raise BusinessError("SOURCE_NOT_APPROVED", "来源单据前置审核未通过或已失效")
         lines = repo.rows(

@@ -291,7 +291,7 @@ def _configuration_errors(payload: dict[str, Any], previous: dict[str, Any]) -> 
             if (rule["required"] or rule["required_when"]) and not rule["applicable"]:
                 errors.append(f"不适用字段不能必填：{profile}/{key}")
             if (
-                f["required"]
+                key in {"name", "base_unit"}
                 and profile in f["profiles"]
                 and (not rule["required"] or not rule["applicable"])
             ):

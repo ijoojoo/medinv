@@ -22,7 +22,7 @@ SELECTORS = {
 
 
 def definitions(category: str) -> list[dict[str, Any]]:
-    # Names, types, capacities and statutory semantics are system-owned.
+    # Storage identity is stable; enterprise business requirements are editable.
     common = [
         ("name", "名称", 200, True),
         ("manufacturer_name", "生产企业", 100, True),
@@ -71,7 +71,8 @@ def definitions(category: str) -> list[dict[str, Any]]:
             "key": key,
             "label": label,
             "capacity": capacity,
-            "locked_required": locked,
+            "locked_required": key == "name",
+            "default_required": locked,
             "kind": "select" if key == selector else "date" if key.startswith("valid_") else "text",
             "options": options if key == selector else {},
             "label_when": [
@@ -104,7 +105,7 @@ def defaults(category: str) -> list[FieldRule]:
         FieldRule(
             key=d["key"],
             order=(i + 1) * 10,
-            required=d["locked_required"],
+            required=d["default_required"],
             max_length=d["capacity"],
         )
         for i, d in enumerate(definitions(category))

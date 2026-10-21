@@ -150,7 +150,8 @@ def test_quality_scope_uses_dictionary_and_changes_require_independent_review(fl
         "product",
         request=body(f, "product", device_business_scope="TEST-14", quality_note="按文件核对"),
     )
-    assert document(f, "product")["record"]["approval_state"] == "DRAFT"
+    assert document(f, "product")["record"]["has_changes"]
+    assert document(f, "product")["active_record"]["device_business_scope"] == ""
     with pytest.raises(BusinessError):
         review(f, "product", ctx=f.maker)
     review(f, "product")

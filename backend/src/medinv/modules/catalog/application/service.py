@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 from fastapi.encoders import jsonable_encoder
@@ -30,10 +30,14 @@ class CatalogService:
             repo = SqlSession(session)
             rows = repo.rows(
                 """SELECT p.*,s.id AS sku_id,s.code AS sku_code,s.base_unit,s.qty_scale,
+                EXISTS(SELECT 1 FROM med.catalog_change_bundle b
+                  WHERE b.kind='product' AND b.target_id=p.id) AS has_changes,
                 count(*) OVER() AS total FROM med.product p
                 JOIN med.sku s ON (s.tenant_id,s.product_id)=(p.tenant_id,p.id)
                 WHERE (:category='' OR p.category=:category)
-                AND (:state='' OR p.approval_state=:state)
+                AND (:state='' OR p.approval_state=:state OR (:state='DRAFT' AND EXISTS(
+                  SELECT 1 FROM med.catalog_change_bundle b
+                  WHERE b.kind='product' AND b.target_id=p.id)))
                 AND (strpos(lower(concat_ws(' ',p.name,p.code,s.code,p.generic_name,
                   p.search_alias,p.trade_name,p.manufacturer_name,p.approval_number,p.device_model)),
                 lower(:search))>0 OR EXISTS (SELECT 1 FROM med.catalog_code c
@@ -59,9 +63,13 @@ class CatalogService:
         ctx.require("catalog.read", entity)
         with self.uow.open(ctx, readonly=True) as session:
             rows = SqlSession(session).rows(
-                """SELECT p.*,count(*) OVER() AS total FROM med.party p
+                """SELECT p.*,EXISTS(SELECT 1 FROM med.catalog_change_bundle b
+                  WHERE b.kind='party' AND b.target_id=p.id) AS has_changes,
+                count(*) OVER() AS total FROM med.party p
                 WHERE entity_id=:e AND (:role='' OR kind=:role OR kind='BOTH')
-                AND (:state='' OR p.state=:state)
+                AND (:state='' OR p.state=:state OR (:state='DRAFT' AND EXISTS(
+                  SELECT 1 FROM med.catalog_change_bundle b
+                  WHERE b.kind='party' AND b.target_id=p.id)))
                 AND (strpos(lower(concat_ws(' ',name,code,short_name,search_alias,credit_code,
                   contact_name,contact_phone)),lower(:search))>0
                   OR EXISTS (SELECT 1 FROM med.catalog_code c WHERE c.party_id=p.id
@@ -233,7 +241,12 @@ class CatalogService:
         )
 
     def review(
-        self, ctx: TenantContext, kind: str, target: UUID, body: Review, key: str
+        self,
+        ctx: TenantContext,
+        kind: Literal["product", "party"],
+        target: UUID,
+        body: Review,
+        key: str,
     ) -> dict[str, Any]:
         ctx.require("catalog.review")
         table = "product" if kind == "product" else "party"
@@ -254,13 +267,24 @@ class CatalogService:
                 raise BusinessError("VERSION_CONFLICT", "资料已变化，请刷新", 409)
             rules_version = None
             if body.decision == "APPROVE":
-                if (
-                    row["created_by"] == ctx.principal_id
-                    or ctx.principal_id in row["revision_editors"]
-                ):
+                from medinv.modules.catalog.application.change_bundle import apply_pending, pending
+
+                draft = pending(repo, kind, target)
+                child_editors = repo.rows(
+                    f"SELECT created_by,revision_editors FROM med.{kind}_certificate "
+                    f"WHERE {kind}_id=:id AND state='DRAFT'",
+                    {"id": target},
+                )
+                editors = set(row["revision_editors"]) | set(draft["editors"] if draft else [])
+                for child in child_editors:
+                    editors.update(child["revision_editors"])
+                    editors.add(child["created_by"])
+                if row["created_by"] == ctx.principal_id or ctx.principal_id in editors:
                     raise BusinessError(
                         "SEPARATION_REQUIRED", "建档人及本轮修订人员不能审核通过资料", 403
                     )
+                apply_pending(repo, ctx, kind, row, self.uow)
+                row = repo.rows(f"SELECT * FROM med.{table} WHERE id=:id", {"id": target})[0]
                 today = repo.rows(
                     "SELECT (clock_timestamp() AT TIME ZONE 'Asia/Shanghai')::date AS today", {}
                 )[0]["today"]
@@ -298,24 +322,65 @@ class CatalogService:
                         raise BusinessError(
                             "MASTER_VALIDATION", "；".join(i["message"] for i in issues[:10]), 422
                         )
-                if not modern and (
-                    not row["valid_from"]
-                    or not row["valid_until"]
-                    or not row["valid_from"] <= today <= row["valid_until"]
+                from medinv.modules.catalog.application.qualification_rules import settings
+                from medinv.modules.catalog.application.scoped_admission import uses_legacy_dates
+
+                qualification = settings(repo)
+                legacy_dates = (
+                    qualification["product_certificate_dates"]
+                    if kind == "product"
+                    else uses_legacy_dates(repo, target)
+                )
+                if (
+                    not modern
+                    and legacy_dates
+                    and (
+                        not row["valid_from"]
+                        or not row["valid_until"]
+                        or not row["valid_from"] <= today <= row["valid_until"]
+                    )
                 ):
                     raise BusinessError("QUALIFICATION_EXPIRED", "资质未生效、过期或未填写", 422)
                 if (
                     kind == "product"
                     and not modern
                     and (
-                        not row["specification"]
-                        or not row["approval_number"]
+                        (
+                            qualification["product_certificate_required"]
+                            and not row["approval_number"]
+                        )
                         or row["restricted_category"]
                     )
                 ):
                     raise BusinessError("PRODUCT_NOT_READY", "商品资料不完整或属于未开放类别", 422)
                 if kind == "product" and not modern:
                     rules_version = validate_product(repo, ctx, row, previous=row)
+                if kind == "party":
+                    from medinv.modules.catalog.application.scoped_admission import validate_profile
+
+                    profiles = repo.rows(
+                        "SELECT payload FROM med.party_scope_profile WHERE party_id=:p",
+                        {"p": target},
+                    )
+                    if profiles:
+                        validate_profile(repo, row, profiles[0]["payload"])
+                from medinv.modules.catalog.application.change_bundle import clear
+
+                if draft:
+                    audit(
+                        repo,
+                        ctx,
+                        kind,
+                        target,
+                        "catalog.change_approved",
+                        {
+                            "before": draft["before_snapshot"],
+                            "after": draft["payload"],
+                            "reason": body.reason,
+                            "evidence_ref": body.evidence_ref,
+                        },
+                    )
+                    clear(repo, kind, target)
             state = "APPROVED" if body.decision == "APPROVE" else "SUSPENDED"
             repo.execute(
                 f"""UPDATE med.{table} SET {state_column}=:state,version=version+1,

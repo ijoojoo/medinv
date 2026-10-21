@@ -41,6 +41,11 @@ const names: Record<string, string> = {
   retail_price: "建议零售价",
   note: "价格备注",
 };
+const changeActions: Record<string, string> = {
+  "catalog.change_staged": "保存主体待审核变更",
+  "catalog.change_approved": "主体变更统一审核通过",
+  "catalog.change_discarded": "撤回主体待审核变更",
+};
 function value(
   v: any,
   key?: string,
@@ -96,13 +101,17 @@ function changes(event: CatalogEvent) {
       <summary>
         {{ localTime(event.created_at) }} ·
         {{
-          event.action === "catalog.certificate_created"
+          changeActions[event.action] ||
+          (event.action === "catalog.certificate_created"
             ? "证照建档"
             : event.action === "catalog.certificate_revised"
-              ? "证照修订（待重新核验）"
+              ? "证照修订（随主体待审核）"
               : event.action === "catalog.certificate_reviewed"
-                ? event.detail.decision === "VERIFY"
-                  ? "证照核验通过"
+                ? event.detail.decision === "VERIFY" ||
+                  event.detail.source === "parent_review"
+                  ? event.detail.source === "parent_review"
+                    ? "证照随主体审核通过"
+                    : "证照核验通过"
                   : "证照停用"
                 : event.action === "catalog.prices_updated"
                   ? "参考价格更新（无需资质审核）"
@@ -114,7 +123,7 @@ function changes(event: CatalogEvent) {
                         ? event.detail.decision === "APPROVE"
                           ? "审核通过"
                           : "停用资料"
-                        : "资料建档"
+                        : "资料建档")
         }}
         · {{ event.created_by === session?.principal_id ? "本人" : "其他成员" }}
       </summary>
@@ -156,17 +165,17 @@ function changes(event: CatalogEvent) {
               <AttachmentLink
                 v-if="
                   key === 'attachment_id' &&
-                  event.detail.before[key] &&
+                  event.detail.before?.[key] &&
                   attachmentArea &&
                   attachmentParent
                 "
                 :area="attachmentArea"
                 :parent="attachmentParent"
-                :id="event.detail.before[key]"
+                :id="event.detail.before?.[key]"
               />
               {{
                 value(
-                  event.detail.before[key],
+                  event.detail.before?.[key],
                   key,
                   event.action.startsWith("catalog.certificate_"),
                   event.detail.certificate_domain === "party",

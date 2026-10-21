@@ -54,6 +54,8 @@ class SalesService(SalesQueries):
             raise BusinessError("ENTITY_UNAVAILABLE", "经营主体已停用", 409)
 
     def customer(self, repo: SqlSession, entity: UUID, customer: UUID) -> dict[str, Any]:
+        from medinv.modules.catalog.application.scoped_admission import uses_legacy_dates
+
         row = one(
             repo,
             "SELECT * FROM med.party WHERE id=:id AND entity_id=:e FOR SHARE",
@@ -63,7 +65,14 @@ class SalesService(SalesQueries):
         if (
             row["kind"] not in {"CUSTOMER", "BOTH"}
             or row["state"] != "APPROVED"
-            or not row["valid_from"] <= day <= row["valid_until"]
+            or (
+                uses_legacy_dates(repo, customer)
+                and (
+                    not row["valid_from"]
+                    or not row["valid_until"]
+                    or not row["valid_from"] <= day <= row["valid_until"]
+                )
+            )
         ):
             raise BusinessError("CUSTOMER_INELIGIBLE", "客户未审核、停用或资质不在有效期内", 422)
         return row
@@ -116,7 +125,8 @@ class SalesService(SalesQueries):
         if any(g["blocked"] for g in gates) or (require_stock_gate and len(gates) != len(set(ids))):
             raise BusinessError("SKU_BLOCKED", "商品已冻结或尚不具备库存作业条件", 409)
         project_business_identity(repo, rows)
-        enforce(repo, entity, "WHOLESALE", customer, rows)
+        if customer.get("id"):
+            enforce(repo, entity, "WHOLESALE", customer, rows)
         return {row["id"]: row for row in rows}
 
     def locked_order(
@@ -386,7 +396,13 @@ class SalesService(SalesQueries):
                 ):
                     raise BusinessError("CREDIT_LIMIT_EXCEEDED", "客户可用信用额度不足", 409)
                 customer = self.customer(repo, order["entity_id"], order["customer_id"])
-                until = datetime.combine(customer["valid_until"], time.max, ZONE)
+                from medinv.modules.catalog.application.scoped_admission import uses_legacy_dates
+
+                until = (
+                    datetime.combine(customer["valid_until"], time.max, ZONE)
+                    if uses_legacy_dates(repo, customer["id"])
+                    else datetime(9999, 12, 31, tzinfo=ZONE)
+                )
                 demand = repo.rows(
                     """INSERT INTO med.inventory_demand(tenant_id,id,entity_id,
                     warehouse_id,source_type,state,checks_completed,eligible_until)

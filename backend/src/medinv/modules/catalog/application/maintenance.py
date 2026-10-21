@@ -72,6 +72,15 @@ class CatalogMaintenance:
         with self.uow.open(ctx, readonly=True) as session:
             repo = SqlSession(session)
             row = self.record(repo, kind, target)
+            from medinv.modules.catalog.application.change_bundle import editable, pending
+
+            draft = pending(repo, kind, target)
+            active = dict(row)
+            row = editable(repo, kind, row)
+            row["has_changes"] = bool(draft)
+            row["revision_editors"] = list(
+                set(row["revision_editors"]) | set(draft["editors"] if draft else [])
+            )
             row["version"] = str(row["version"])
             if kind == "party" and row["organization_id"]:
                 organizations = repo.rows(
@@ -91,23 +100,32 @@ class CatalogMaintenance:
                 FROM med.audit_event WHERE resource_type=:kind AND resource_id=:id
                   AND action IN ('catalog.created','party.created',
                     'catalog.reviewed','catalog.revised','catalog.business_updated','catalog.prices_updated',
-                    'catalog.certificate_created','catalog.certificate_revised','catalog.certificate_reviewed')
+                    'catalog.certificate_created','catalog.certificate_revised','catalog.certificate_reviewed',
+                    'catalog.change_staged','catalog.change_discarded','catalog.change_approved')
                 ORDER BY created_at DESC,id LIMIT 50 OFFSET :offset""",
                 {"kind": kind, "id": target, "offset": offset},
             )
+            details = [json.loads(r["reason"]) for r in history]
+            if kind == "product":
+                from medinv.modules.catalog.application.change_bundle import visible_changes
+                from medinv.modules.catalog.application.master_config import current_schema
+
+                schema = current_schema(repo)["payload"]
+                details = [visible_changes(ctx, schema, d) for d in details]
             return dict(
                 jsonable_encoder(
                     {
                         "record": row,
+                        "active_record": active,
                         "field_policy": record_policy(repo, ctx, row)
                         if kind == "product" and row["category"] in {"DRUG", "DEVICE"}
                         else None,
                         "history": [
                             {
                                 **{k: r[k] for k in ("id", "created_by", "created_at", "action")},
-                                "detail": json.loads(r["reason"]),
+                                "detail": detail,
                             }
-                            for r in history
+                            for r, detail in zip(history, details, strict=True)
                         ],
                         "has_more": bool(history and offset + len(history) < history[0]["total"]),
                     }
@@ -138,6 +156,10 @@ class CatalogMaintenance:
                 ):
                     raise BusinessError("ENTITY_UNAVAILABLE", "经营主体不可用", 404)
             row = self.record(repo, kind, target, lock=True)
+            from medinv.modules.catalog.application.change_bundle import editable, pending, stage
+
+            active_row = dict(row)
+            row = editable(repo, kind, row)
             if kind == "product" and row.get("form_revision") is not None:
                 raise BusinessError(
                     "MASTER_FORM_REQUIRED",
@@ -232,6 +254,11 @@ class CatalogMaintenance:
             if before == after:
                 raise BusinessError("CATALOG_UNCHANGED", "资料内容没有变化", 422)
             state_column = "approval_state" if kind == "product" else "state"
+            if (active_row[state_column] == "APPROVED" and not business_only) or pending(
+                repo, kind, target
+            ):
+                changes = {k: v for k, v in after.items() if v != active_row[k]}
+                return stage(repo, ctx, kind, active_row, "record", changes, body.reason)
             if business_only:
                 repo.execute(
                     f"""UPDATE med.{kind} SET {",".join(f"{k}=:{k}" for k in fields)},

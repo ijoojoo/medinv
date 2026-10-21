@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from pydantic import ValidationError
+from qualification_helpers import review_parent
 from test_catalog_revisions import body, document, revise
 from test_procurement import flow as flow
 
@@ -82,7 +83,8 @@ def test_multiple_certificates_preserve_legacy_product_and_procurement(flow):
     assert service.save(f.maker, product, data, key) == first
     service.save(f.maker, product, request(number="TEST-SECOND"), str(uuid4()))
     assert len(service.list(f.maker, product)["items"]) == 2
-    assert document(f, "product")["record"] == before
+    assert document(f, "product")["record"]["approval_state"] == "APPROVED"
+    assert document(f, "product")["record"]["name"] == before["name"]
     f.order()  # supplemental certificate drafts do not silently replace the existing trade gate
     detail = service.detail(f.maker, product, UUID(first["id"]))
     assert detail["history"][0]["detail"]["after"]["number"] == "TEST-FILING"
@@ -94,9 +96,9 @@ def test_independent_review_revision_history_and_operations_keep_their_own_versi
     service, product = setup(f)
     row = service.save(f.maker, product, request(), str(uuid4()))
     target = UUID(row["id"])
-    with pytest.raises(BusinessError, match="不能核验"):
-        service.review(f.maker, product, target, verification(row), str(uuid4()))
-    verified = service.review(f.reviewer, product, target, verification(row), str(uuid4()))
+    with pytest.raises(BusinessError, match="不能审核"):
+        review_parent(service, f.maker, product, target, verification(row), str(uuid4()))
+    verified = review_parent(service, f.reviewer, product, target, verification(row), str(uuid4()))
     assert verified["state"] == "VERIFIED" and verified["validity"] == "NOT_STATED"
     parent = document(f, "product")["record"]
     CatalogOperations(f.world.uow).update(
@@ -117,9 +119,9 @@ def test_independent_review_revision_history_and_operations_keep_their_own_versi
         editor, product, revision(verified, covered_models="新增规格"), str(uuid4()), target
     )
     assert edited["state"] == "DRAFT" and edited["reviewed_by"] is None
-    with pytest.raises(BusinessError, match="不能核验"):
-        service.review(editor, product, target, verification(edited), str(uuid4()))
-    service.review(f.reviewer, product, target, verification(edited), str(uuid4()))
+    with pytest.raises(BusinessError, match="不能审核"):
+        review_parent(service, editor, product, target, verification(edited), str(uuid4()))
+    review_parent(service, f.reviewer, product, target, verification(edited), str(uuid4()))
     events = service.detail(f.maker, product, target)["history"]
     assert len(events) == 4
     assert events[1]["detail"]["before"]["state"] == "VERIFIED"
@@ -132,11 +134,11 @@ def test_category_and_device_class_revalidated_at_review_and_reported_after_chan
     row = service.save(f.maker, product, request(), str(uuid4()))
     target = UUID(row["id"])
     with pytest.raises(BusinessError, match="先核定"):
-        service.review(f.reviewer, product, target, verification(row), str(uuid4()))
+        review_parent(service, f.reviewer, product, target, verification(row), str(uuid4()))
     with pytest.raises(BusinessError, match="类型与"):
         service.save(f.maker, product, request(certificate_type="DRUG_APPROVAL"), str(uuid4()))
     revise(f, "product", request=body(f, "product", device_class="I"))
-    service.review(f.reviewer, product, target, verification(row), str(uuid4()))
+    review_parent(service, f.reviewer, product, target, verification(row), str(uuid4()))
     revise(f, "product", request=body(f, "product", device_class="II", approval_number="NEW-REG"))
     assert service.list(f.maker, product)["items"][0]["compatibility"] == "MISMATCH"
     with pytest.raises(BusinessError, match="类型与"):
@@ -151,7 +153,7 @@ def test_unconfirmed_period_and_registration_missing_dates_cannot_be_verified(fl
     )
     target = UUID(row["id"])
     with pytest.raises(BusinessError, match="有效期"):
-        service.review(f.reviewer, product, target, verification(row), str(uuid4()))
+        review_parent(service, f.reviewer, product, target, verification(row), str(uuid4()))
     revised = service.save(
         f.maker,
         product,
@@ -164,7 +166,9 @@ def test_unconfirmed_period_and_registration_missing_dates_cannot_be_verified(fl
         str(uuid4()),
         target,
     )
-    verified = service.review(f.reviewer, product, target, verification(revised), str(uuid4()))
+    verified = review_parent(
+        service, f.reviewer, product, target, verification(revised), str(uuid4())
+    )
     # Verification of historic evidence never means currently in force.
     assert verified["state"] == "VERIFIED" and verified["validity"] == "EXPIRED"
     row = service.save(
@@ -179,7 +183,9 @@ def test_unconfirmed_period_and_registration_missing_dates_cannot_be_verified(fl
         str(uuid4()),
     )
     with pytest.raises(BusinessError, match="补齐"):
-        service.review(f.reviewer, product, UUID(row["id"]), verification(row), str(uuid4()))
+        review_parent(
+            service, f.reviewer, product, UUID(row["id"]), verification(row), str(uuid4())
+        )
 
 
 def test_conflict_duplicate_and_cross_product_tenant_permissions(flow):
@@ -193,7 +199,7 @@ def test_conflict_duplicate_and_cross_product_tenant_permissions(flow):
         service.save(f.maker, product, revision(row), str(uuid4()), target)
     service.save(f.maker, product, revision(row, note="更新"), str(uuid4()), target)
     with pytest.raises(BusinessError, match="已变化"):
-        service.review(f.reviewer, product, target, verification(row), str(uuid4()))
+        service.save(f.reviewer, product, revision(row, note="旧版本"), str(uuid4()), target)
     other_product = f.world.scalar("SELECT product_id FROM med.sku WHERE id=:id", id=f.world.sku)
     for action in [
         lambda: service.list(replace(f.maker, tenant_id=uuid4()), product),
@@ -207,7 +213,8 @@ def test_conflict_duplicate_and_cross_product_tenant_permissions(flow):
             request(number="NO"),
             str(uuid4()),
         ),
-        lambda: service.review(
+        lambda: review_parent(
+            service,
             replace(f.maker, permissions=ROLE_PERMISSIONS["PURCHASER"]),
             product,
             target,
@@ -257,12 +264,12 @@ def test_inactive_needs_revision_before_reverification(flow):
     service, product = setup(f)
     row = service.save(f.maker, product, request(), str(uuid4()))
     target = UUID(row["id"])
-    row = service.review(f.reviewer, product, target, verification(row), str(uuid4()))
-    row = service.review(
-        f.reviewer, product, target, verification(row, decision="INACTIVATE"), str(uuid4())
+    row = review_parent(service, f.reviewer, product, target, verification(row), str(uuid4()))
+    row = review_parent(
+        service, f.reviewer, product, target, verification(row, decision="INACTIVATE"), str(uuid4())
     )
     assert row["state"] == "INACTIVE"
-    with pytest.raises(BusinessError, match="仅待核验"):
+    with pytest.raises(BusinessError, match="随主体"):
         service.review(f.reviewer, product, target, verification(row), str(uuid4()))
     row = service.save(
         f.maker, product, revision(row, note="补充重新启用依据"), str(uuid4()), target
@@ -291,7 +298,9 @@ def test_drug_certificate_types_and_row_security_are_independent(flow):
         ),
         str(uuid4()),
     )
-    verified = service.review(f.reviewer, product, UUID(row["id"]), verification(row), str(uuid4()))
+    verified = review_parent(
+        service, f.reviewer, product, UUID(row["id"]), verification(row), str(uuid4())
+    )
     assert verified["validity"] == "IN_PERIOD"
     from sqlalchemy import text
 

@@ -190,7 +190,7 @@ def test_extend_roles_requires_review_and_keeps_operations_direct(setup):
     )
     service = CatalogMaintenance(world.uow)
     result = service.revise(ctx, "party", UUID(created["id"]), revision, str(uuid4()))
-    assert result["state"] == "DRAFT"
+    assert result["state"] == "APPROVED" and result["has_changes"]
     assert catalog.parties(ctx, world.entity, "", 0, "CUSTOMER", "APPROVED")["items"] == []
     with pytest.raises(BusinessError):
         catalog.review(

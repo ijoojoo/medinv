@@ -8,6 +8,21 @@ import { randomUUID } from "node:crypto";
 import { login, headers, view } from "./helpers";
 import { navigationGroups } from "../src/navigation";
 export const origin = "http://127.0.0.1:5173";
+export async function approveCatalogParent(
+  context: BrowserContext,
+  current: any,
+  area: "products" | "parties",
+  id: string,
+) {
+  const root = `/api/v1/catalog/${area}/${id}`;
+  const { record } = await read(context, root);
+  return command(context, current, `${root}/review`, {
+    expected_version: record.version,
+    decision: "APPROVE",
+    evidence_ref: "TEST-PARENT-REVIEW",
+    reason: "统一核对主体资料及本次证件变更",
+  });
+}
 export async function chooseParty(
   input: Locator,
   value: string | { label: string },

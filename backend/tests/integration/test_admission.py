@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from pydantic import ValidationError
+from qualification_helpers import review_parent
 from sqlalchemy import text
 from test_api import api as api
 from test_party_certificates import request as certificate_request
@@ -41,7 +42,7 @@ def setup(f, channel="PURCHASE"):
         certificate_request(business_uses=["SUPPLY" if channel == "PURCHASE" else "PURCHASE"]),
         str(uuid4()),
     )
-    cert = certs.review(f.reviewer, party, UUID(row["id"]), verification(row), str(uuid4()))
+    cert = review_parent(certs, f.reviewer, party, UUID(row["id"]), verification(row), str(uuid4()))
     f.world.execute(
         """INSERT INTO med.catalog_dictionary(tenant_id,id,key,mode,items,created_by,updated_by)
         VALUES (:t,:id,'device_business_scope','STRICT',CAST(:items AS jsonb),:a,:a)

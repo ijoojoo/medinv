@@ -1,5 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
-import { wholesale, read, command, nav } from "./business-helpers";
+import {
+  wholesale,
+  read,
+  command,
+  nav,
+  approveCatalogParent,
+} from "./business-helpers";
 
 async function openProduct(page: Page, code: string) {
   await page.goto("/");
@@ -12,15 +18,15 @@ async function openProduct(page: Page, code: string) {
     .getByRole("button", { name: "维护", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "证件详情与核验", exact: true })
+    .getByRole("button", { name: "证件详情与维护", exact: true })
     .click();
   await page
-    .getByText("维护本商品发起的证件原件 / 核验", { exact: true })
+    .getByText("维护证件原件 / 续期（随商品审核）", { exact: true })
     .click();
   return page.getByRole("region", { name: "商品证照档案", exact: true });
 }
 
-test("certificate drafts, independent verification, retained edits and audit remain separate from product approval", async ({
+test("certificate drafts and renewals share parent approval while live product remains effective", async ({
   page,
   context,
   browser,
@@ -47,7 +53,7 @@ test("certificate drafts, independent verification, retained edits and audit rem
   page.on("pageerror", (e) => errors.push(e.message));
   try {
     const checker = await wholesale(reviewer, "demo.quality");
-    // Current admission requires the MDM identity and a verified business certificate.
+    // The certificate and MDM identity are approved together with the parent.
     // Keep that base certificate separate from the supplemental record exercised below.
     const schema = await read(context, "/api/v1/catalog/master/schema");
     const baseCertificate = await command(
@@ -64,17 +70,6 @@ test("certificate drafts, independent verification, retained edits and audit rem
         valid_until: `${year + 2}-12-31`,
         evidence_ref: "BASE-TEST",
         reason: "软件验收准入资料",
-      },
-    );
-    const verifiedBase = await command(
-      reviewer,
-      checker,
-      `/api/v1/catalog/products/${product.id}/certificates/${baseCertificate.id}/review`,
-      {
-        expected_version: baseCertificate.version,
-        decision: "VERIFY",
-        evidence_ref: "BASE-REVIEW",
-        reason: "软件验收独立核对",
       },
     );
     const current = (
@@ -103,7 +98,7 @@ test("certificate drafts, independent verification, retained edits and audit rem
           product_certificates: [
             {
               certificate_id: baseCertificate.id,
-              certificate_version: Number(verifiedBase.version),
+              certificate_version: Number(baseCertificate.version),
               business_use: true,
             },
           ],
@@ -211,17 +206,9 @@ test("certificate drafts, independent verification, retained edits and audit rem
       valid_from: "2026-01-01",
       valid_until: "2028-12-31",
     });
-    await card
-      .getByRole("button", { name: "核验 / 停用", exact: true })
-      .click();
     await expect(
-      form
-        .getByRole("combobox", { name: "证照处理", exact: true })
-        .locator('option[value="VERIFY"]'),
-    ).toHaveJSProperty("disabled", true);
-    await form
-      .getByRole("button", { name: "取消证照编辑", exact: true })
-      .click();
+      card.getByRole("button", { name: "提交证照核验" }),
+    ).toHaveCount(0);
 
     const qualityPage = await reviewer.newPage();
     qualityPage.on("pageerror", (e) => errors.push(e.message));
@@ -237,27 +224,12 @@ test("certificate drafts, independent verification, retained edits and audit rem
       .filter({ hasText: "TEST-" + suffix })
       .getByRole("button", { name: "查看证照", exact: true })
       .click();
-    await qualityCard
-      .getByRole("button", { name: "核验 / 停用", exact: true })
-      .click();
-    const qualityForm = qualityCard.getByRole("form", {
-      name: "证照编辑",
-      exact: true,
-    });
-    await qualityForm
-      .getByLabel("核验凭据编号", { exact: true })
-      .fill("REVIEW-TEST");
-    await qualityForm
-      .getByLabel("证照操作说明", { exact: true })
-      .fill("独立核对原件验收");
-    await qualityForm
-      .getByRole("button", { name: "提交证照核验", exact: true })
-      .click();
-    await expect(qualityForm).not.toBeVisible();
+    await approveCatalogParent(reviewer, checker, "products", product.id);
+    await openProduct(qualityPage, code);
     await expect(qualityCard.locator("tbody").first()).toContainText("已核验");
     await card.getByRole("button", { name: "刷新证照", exact: true }).click();
     await expect(card.getByRole("region", { name: "证照详情" })).toContainText(
-      "第 2 版",
+      "第 1 版",
     );
     await card.getByRole("button", { name: "修订证照", exact: true }).click();
     await form.getByLabel("覆盖规格型号", { exact: true }).fill("A1、A2、A3");
@@ -273,7 +245,7 @@ test("certificate drafts, independent verification, retained edits and audit rem
       .getByRole("button", { name: "保存证照草稿", exact: true })
       .click();
     await expect(form).not.toBeVisible();
-    await expect(card.locator("tbody").first()).toContainText("待核验");
+    await expect(card.locator("tbody").first()).toContainText("随主体待审核");
     await card.getByText("证照变更记录", { exact: true }).click();
     await card
       .getByTestId("catalog-history")
@@ -299,7 +271,8 @@ test("certificate drafts, independent verification, retained edits and audit rem
     const after = (
       await read(context, `/api/v1/catalog/products/${product.id}`)
     ).record;
-    expect(after.version).toBe(parent.version);
+    expect(Number(after.version)).toBeGreaterThan(Number(parent.version));
+    expect(after.has_changes).toBe(true);
     expect(after.approval_state).toBe("APPROVED");
     records = await read(
       context,

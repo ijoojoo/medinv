@@ -80,7 +80,7 @@ async function suggest(query: string, callback: (items: Candidate[]) => void) {
         ...e,
         value: isCertificate.value ? e.number : e.name,
         description: isCertificate.value
-          ? `${e.holder_name || "持有人待补充"} · ${e.state === "VERIFIED" ? "已核验" : "待核验"} · ${e.id.slice(0, 8)}`
+          ? `${e.holder_name || "持有人待补充"} · ${e.state === "VERIFIED" ? "已核验" : "随主体待审核"} · ${e.id.slice(0, 8)}`
           : `${e.legal_code || "标识待补充"} · ${e.id.slice(0, 8)}`,
       })),
     );
@@ -168,7 +168,7 @@ function choose(item: Entry) {
     <button
       type="button"
       class="master-reference-more"
-      :aria-label="isCertificate ? '证件详情与核验' : '更多组织关系'"
+      :aria-label="isCertificate ? '证件详情与维护' : '更多组织关系'"
       :disabled="detailsDisabled ?? disabled"
       @click="emit('manage')"
     >

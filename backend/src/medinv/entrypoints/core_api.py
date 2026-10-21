@@ -47,6 +47,7 @@ from medinv.modules.catalog.api.party_certificates import (
     PartyCertificateRevision,
 )
 from medinv.modules.catalog.api.prices import ReferencePricesUpdate
+from medinv.modules.catalog.api.qualification import BundleDiscard, RulesSave, ScopeSave
 from medinv.modules.catalog.api.schemas import (
     PartyCreate,
     PartyRevision,
@@ -57,6 +58,7 @@ from medinv.modules.catalog.api.schemas import (
 from medinv.modules.catalog.application.admission import AdmissionPolicies
 from medinv.modules.catalog.application.attachments import MAX_BYTES, CatalogAttachments
 from medinv.modules.catalog.application.certificates import ProductCertificates
+from medinv.modules.catalog.application.change_bundle import ChangeBundles
 from medinv.modules.catalog.application.code_rules import ProductCodeRules
 from medinv.modules.catalog.application.codes import CatalogCodes
 from medinv.modules.catalog.application.dictionaries import CatalogDictionaries
@@ -72,6 +74,8 @@ from medinv.modules.catalog.application.packaging import PackagingService
 from medinv.modules.catalog.application.party_certificates import PartyCertificates
 from medinv.modules.catalog.application.party_lookup import PartyLookup
 from medinv.modules.catalog.application.prices import ReferencePrices
+from medinv.modules.catalog.application.qualification_rules import QualificationRules
+from medinv.modules.catalog.application.scoped_admission import PartyScopes
 from medinv.modules.catalog.application.service import CatalogService
 from medinv.modules.inventory.api.counts import CountCreate, CountReview, CountSubmit
 from medinv.modules.inventory.api.location_moves import (
@@ -223,7 +227,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.29.1", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.30.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1056,9 +1060,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/v1/catalog/master/certificates")
     def master_certificates(
-        request: Request, search: str = Query(default="", max_length=200)
+        request: Request,
+        search: str = Query(default="", max_length=200),
+        product_id: UUID | None = None,
     ) -> dict[str, Any]:
-        return envelope(request, ProductMaster(catalog.uow).certificates(auth(request), search))
+        return envelope(
+            request, ProductMaster(catalog.uow).certificates(auth(request), search, product_id)
+        )
 
     @app.get("/api/v1/catalog/entry-parties")
     def entry_parties(
@@ -1132,6 +1140,37 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return envelope(
                 request, ProductFieldRules(catalog.uow).update(ctx, category, body, key(request))
             )
+
+    @app.get("/api/v1/catalog/qualification-rules")
+    def qualification_rules(request: Request) -> dict[str, Any]:
+        return envelope(request, QualificationRules(catalog.uow).get(auth(request)))
+
+    @app.post("/api/v1/catalog/qualification-rules")
+    def qualification_rules_save(request: Request, body: RulesSave) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(request, QualificationRules(catalog.uow).save(ctx, body, key(request)))
+
+    @app.get("/api/v1/catalog/changes/{kind}/{id}")
+    def catalog_changes(request: Request, kind: Kind, id: UUID) -> dict[str, Any]:
+        return envelope(request, ChangeBundles(catalog.uow).detail(auth(request), kind, id))
+
+    @app.post("/api/v1/catalog/changes/{kind}/{id}/discard")
+    def catalog_changes_discard(
+        request: Request, kind: Kind, id: UUID, body: BundleDiscard
+    ) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(
+                request, ChangeBundles(catalog.uow).discard(ctx, kind, id, body, key(request))
+            )
+
+    @app.get("/api/v1/catalog/parties/{id}/scopes")
+    def party_scopes(request: Request, id: UUID) -> dict[str, Any]:
+        return envelope(request, PartyScopes(catalog.uow).get(auth(request), id))
+
+    @app.post("/api/v1/catalog/parties/{id}/scopes")
+    def party_scopes_save(request: Request, id: UUID, body: ScopeSave) -> dict[str, Any]:
+        with guarded(request) as ctx:
+            return envelope(request, PartyScopes(catalog.uow).save(ctx, id, body, key(request)))
 
     @app.get("/api/v1/catalog/admission/{entity_id}/{channel}")
     def admission_detail(

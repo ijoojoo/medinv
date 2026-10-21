@@ -71,9 +71,7 @@ const dictionaryChecks = computed(() =>
             name: dictionary.name,
             ...checkDictionary(dictionary, {
               ...rule,
-              required:
-                rule.required ||
-                (f.required && f.profiles.includes(profile.value)),
+              required: rule.required,
               required_when: rule.required_when ? [rule.required_when] : [],
               min_length: rule.min_length || 0,
               max_length: Math.min(rule.max_length || 500, dictionary.capacity),
@@ -96,7 +94,8 @@ async function load() {
     draft.value = JSON.parse(JSON.stringify(data.value.payload));
     for (const f of draft.value!.fields)
       for (const p of f.profiles) {
-        if (f.required) draft.value!.rules[p][f.key].required = true;
+        if (["name", "base_unit"].includes(f.key))
+          draft.value!.rules[p][f.key].required = true;
       }
     base.value = data.value.revision;
     baseline.value = JSON.stringify(draft.value);
@@ -188,7 +187,8 @@ async function inspect(id: string, restore = false) {
         }
       for (const f of draft.value.fields)
         for (const p of f.profiles)
-          if (f.required) draft.value.rules[p][f.key].required = true;
+          if (["name", "base_unit"].includes(f.key))
+            draft.value.rules[p][f.key].required = true;
     }
     draftId.value = copyToCurrent ? null : r.id;
     version.value = draftId.value ? r.version : 0;
@@ -383,7 +383,7 @@ function condition(key: string, selector: string) {
                 v-model="draft.rules[profile][f.key].applicable"
                 :disabled="
                   !f.profiles.includes(profile) ||
-                  f.required ||
+                  ['name', 'base_unit'].includes(f.key) ||
                   !can('catalog.configure')
                 "
               />
@@ -394,7 +394,7 @@ function condition(key: string, selector: string) {
                 v-model="draft.rules[profile][f.key].required"
                 :disabled="
                   !draft.rules[profile][f.key].applicable ||
-                  f.required ||
+                  ['name', 'base_unit'].includes(f.key) ||
                   !can('catalog.configure')
                 "
               />

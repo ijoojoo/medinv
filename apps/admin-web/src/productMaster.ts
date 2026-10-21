@@ -83,6 +83,7 @@ export interface MasterIssue {
 export type MasterValues = Record<string, unknown>;
 export interface MasterRecord {
   id: string;
+  has_changes?: boolean;
   version: number;
   data_version: number;
   form_revision: number;
@@ -102,6 +103,7 @@ export interface MasterRecord {
 }
 export interface MasterRow {
   id: string;
+  has_changes?: boolean;
   values: MasterValues;
   category_path: string[];
   approval_state: string;
@@ -173,7 +175,7 @@ export function fieldsFor(
     const field = {
       ...f,
       ...r,
-      required: r.required || (f.required && f.profiles.includes(profile)),
+      required: r.required,
       label: r.label || f.default_label,
       unconfirmed: false,
     };

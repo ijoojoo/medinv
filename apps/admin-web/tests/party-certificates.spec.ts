@@ -1,6 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
-import { command, nav, read, wholesale } from "./business-helpers";
+import {
+  command,
+  nav,
+  read,
+  wholesale,
+  approveCatalogParent,
+} from "./business-helpers";
 import { headers } from "./helpers";
 
 async function openParty(page: Page, id: string, code: string) {
@@ -140,17 +146,9 @@ test("party multi-certificate and authorization lifecycle preserves admission an
     expect(rows).toHaveLength(2);
     const auth = rows.find((r: any) => r.certificate_type === "AUTHORIZATION");
     expect(auth.business_uses).toEqual(["SUPPLY"]);
-    await card
-      .getByRole("button", { name: "核验 / 停用", exact: true })
-      .click();
     await expect(
-      form
-        .getByRole("combobox", { name: "证照处理", exact: true })
-        .locator('option[value="VERIFY"]'),
-    ).toHaveJSProperty("disabled", true);
-    await form
-      .getByRole("button", { name: "取消证照编辑", exact: true })
-      .click();
+      card.getByRole("button", { name: "提交证照核验" }),
+    ).toHaveCount(0);
     const qualityPage = await reviewer.newPage();
     qualityPage.on("pageerror", (e) => errors.push(e.message));
     const qualityCard = await openParty(qualityPage, item.id, code);
@@ -164,27 +162,12 @@ test("party multi-certificate and authorization lifecycle preserves admission an
       .filter({ hasText: "AUTH-" + suffix })
       .getByRole("button", { name: "查看证照", exact: true })
       .click();
-    await qualityCard
-      .getByRole("button", { name: "核验 / 停用", exact: true })
-      .click();
-    const qualityForm = qualityCard.getByRole("form", {
-      name: "证照编辑",
-      exact: true,
-    });
-    await qualityForm
-      .getByLabel("核验凭据编号", { exact: true })
-      .fill("REVIEW-TEST");
-    await qualityForm
-      .getByLabel("证照操作说明", { exact: true })
-      .fill("独立核对授权原件");
-    await qualityForm
-      .getByRole("button", { name: "提交证照核验", exact: true })
-      .click();
-    await expect(qualityForm).not.toBeVisible();
+    await approveCatalogParent(reviewer, quality, "parties", item.id);
+    await openParty(qualityPage, item.id, code);
     await expect(qualityCard.locator("tbody").first()).toContainText("已核验");
     await card.getByRole("button", { name: "刷新证照", exact: true }).click();
     await expect(card.getByRole("region", { name: "证照详情" })).toContainText(
-      "第 2 版",
+      "第 1 版",
     );
     await card.getByRole("button", { name: "修订证照", exact: true }).click();
     await form.getByLabel("授权事项", { exact: true }).fill("仅供货");
@@ -203,9 +186,13 @@ test("party multi-certificate and authorization lifecycle preserves admission an
     expect(history.history[0].detail.after.authorization_duties).toBe("仅供货");
     expect(
       (await read(context, `/api/v1/catalog/parties/${item.id}`)).record,
-    ).toEqual(before);
+    ).toMatchObject({
+      state: "APPROVED",
+      has_changes: true,
+      contact_name: before.contact_name,
+    });
     await card.getByText("证照变更记录", { exact: true }).click();
-    await card.getByText(/证照修订（待重新核验）/).click();
+    await card.getByText(/证照修订（随主体待审核）/).click();
     await expect(card.locator(".catalog-history table").first()).toContainText(
       "授权事项",
     );
@@ -218,14 +205,16 @@ test("party multi-certificate and authorization lifecycle preserves admission an
       owner,
       `/api/v1/catalog/parties/${item.id}/operations`,
       {
-        expected_version: before.version,
+        expected_version: (
+          await read(context, `/api/v1/catalog/parties/${item.id}`)
+        ).record.version,
         values: { contact_name: "新日常联系人" },
         reason: "更新日常联系方式",
       },
     );
     expect(
       (await read(context, root)).items.find((r: any) => r.id === auth.id),
-    ).toMatchObject({ authorized_name: "授权张女士", version: "3" });
+    ).toMatchObject({ authorized_name: "授权张女士", version: "2" });
     const after = (await read(context, `/api/v1/catalog/parties/${item.id}`))
       .record;
     expect(after.state).toBe("APPROVED");
@@ -273,17 +262,7 @@ test("viewer reads expired verified evidence but cannot write; stopped records r
   const viewerContext = await browser.newContext();
   try {
     const quality = await wholesale(qualityContext, "demo.quality");
-    record = await command(
-      qualityContext,
-      quality,
-      `${root}/${record.id}/review`,
-      {
-        expected_version: record.version,
-        decision: "VERIFY",
-        evidence_ref: "TEST-REVIEW",
-        reason: "历史资料与原件一致",
-      },
-    );
+    await approveCatalogParent(qualityContext, quality, "parties", item.id);
     const viewer = await wholesale(viewerContext, "demo.viewer");
     const viewerPage = await viewerContext.newPage();
     const card = await openParty(viewerPage, item.id, code);
@@ -297,7 +276,7 @@ test("viewer reads expired verified evidence but cannot write; stopped records r
       card.getByRole("button", { name: "修订证照", exact: true }),
     ).toHaveCount(0);
     await expect(
-      card.getByRole("button", { name: "核验 / 停用", exact: true }),
+      card.getByRole("button", { name: "申请停用", exact: true }),
     ).toHaveCount(0);
     const denied = await viewerContext.request.post(root, {
       headers: { ...headers(viewer), "Idempotency-Key": randomUUID() },
@@ -309,7 +288,7 @@ test("viewer reads expired verified evidence but cannot write; stopped records r
       .getByRole("button", { name: "查看证照", exact: true })
       .click();
     await ownerCard
-      .getByRole("button", { name: "核验 / 停用", exact: true })
+      .getByRole("button", { name: "申请停用", exact: true })
       .click();
     const form = ownerCard.getByRole("form", { name: "证照编辑", exact: true });
     await form
@@ -318,7 +297,7 @@ test("viewer reads expired verified evidence but cannot write; stopped records r
     await form.getByLabel("核验凭据编号", { exact: true }).fill("STOP-TEST");
     await form.getByLabel("证照操作说明", { exact: true }).fill("旧证停用留档");
     await form
-      .getByRole("button", { name: "提交证照核验", exact: true })
+      .getByRole("button", { name: "保存停用变更", exact: true })
       .click();
     await expect(form).not.toBeVisible();
     await expect(ownerCard.locator("tbody").first()).toContainText("已停用");
@@ -327,7 +306,13 @@ test("viewer reads expired verified evidence but cannot write; stopped records r
     );
     expect(
       (await read(context, `/api/v1/catalog/parties/${item.id}`)).record.state,
-    ).toBe("DRAFT");
+    ).toBe("APPROVED");
+    expect(
+      (await read(context, `/api/v1/catalog/parties/${item.id}`)).record
+        .has_changes,
+    ).toBe(true);
+    await approveCatalogParent(qualityContext, quality, "parties", item.id);
+    expect((await read(context, root)).items[0].state).toBe("INACTIVE");
   } finally {
     await qualityContext.close();
     await viewerContext.close();
