@@ -1,5 +1,9 @@
 # 药械行业 AI 智能进销存 SaaS
 
+**MedInv / 药械云** — An early-stage, MIT-licensed inventory system for medicine and medical-device businesses. Built with Python/FastAPI, PostgreSQL, Vue/TypeScript and Keycloak. Current work covers purchasing, sales, batch/expiry tracking, quality workflows, tenant isolation and document reporting. AI recognition, external marketplace connectors and mobile/HIS clients remain on the roadmap.
+
+项目主页：[ijoojoo/medinv](https://github.com/ijoojoo/medinv) · 开源许可：[MIT](LICENSE)。第三方依赖保留各自许可。当前版本用于开发和内部验证，功能状态与边界见下方交付记录及开发计划。
+
 当前交付（2026-10-21）**0.37.0：核心按钮归位与折叠扩展菜单**。基础资料新增、修订、主体审核回到主工具栏，字典新增无需先展开菜单；业务和报表统一右侧默认折叠扩展入口，字段配置、显示设置、使用说明等辅助功能按页呈现。查询、导出及业务办理保留在主区域；窄屏使用抽屉并保留焦点、筛选和未保存内容。b0054/c0017、102张强制RLS表、195条API，无迁移。见[实施与验收](docs/development/核心按钮与折叠扩展菜单实施与验收.md)。后续三阶段：N07日期与正式备注、N08往来单位导入、N09更多记录类型与固定打印。
 
 上一增量（2026-10-21）**0.36.0：业务办理与记录查询分离**。采购订单／收货／验收／入库、销售订单／出库和质量验收使用独立“单据汇总／单据明细／图形化报表”三页签；汇总单号下钻、只读关联查询、独立字段配置及全量筛选CSV导出已接入。图表按全部筛选明细统计，金额区分参考折算与真实过账，数量按单位分组。b0054/c0017、102张强制RLS表、195条API路径，无迁移。见[实施与验收](docs/development/记录查询三视图实施与验收.md)。后续三阶段：N07日期与正式备注、N08往来导入、N09更多记录类型与固定打印。
