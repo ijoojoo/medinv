@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import timedelta
+from decimal import Decimal
 from uuid import UUID, uuid4
 
 import pytest
@@ -222,7 +223,7 @@ def test_maintenance_immutable_no_stock_effect_and_readonly_inspection_records(f
     assert svc.detail(f.maker, "maintenance", f.world.entity, target)["payload"]["state"] == "VOID"
     f.inspect(f.receive("2")["id"], "1", "1")
     records = svc.quality_records(f.maker, f.world.entity, "", 0)["items"]
-    assert len(records) == 1 and str(records[0]["qualified_qty"]) in {"1", "1.0"}
+    assert len(records) == 1 and Decimal(records[0]["qualified_qty"]) == 1
     assert records[0]["product_name"] == "采购测试商品" and records[0]["base_unit"] == "个"
 
 

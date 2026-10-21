@@ -180,6 +180,7 @@ from medinv.modules.workspace.drafts import (
 )
 from medinv.modules.workspace.management import Kind as ManagementKind
 from medinv.modules.workspace.management import Management, ManagementSave, MessageRead
+from medinv.modules.workspace.quality_records import QualityRecordQuery, QualityRecords
 from medinv.modules.workspace.reminder_sources import Source as ReminderSource
 from medinv.modules.workspace.reminders import ReminderAction, Reminders
 from medinv.modules.workspace.templates import EntryTemplates, TemplateSave
@@ -230,7 +231,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.32.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.33.0", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
@@ -1296,13 +1297,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/v1/quality-records")
     def quality_records(
         request: Request,
-        entity_id: UUID,
-        search: str = Query(default="", max_length=100),
-        offset: int = Query(default=0, ge=0, le=100000),
+        filters: Annotated[QualityRecordQuery, Query()],
     ) -> dict[str, Any]:
         return envelope(
             request,
-            Management(catalog.uow).quality_records(auth(request), entity_id, search, offset),
+            QualityRecords(catalog.uow).listing(auth(request), filters),
+        )
+
+    @app.get(
+        "/api/v1/quality-records/export",
+        response_class=Response,
+        responses={200: {"content": {"text/csv": {"schema": {"type": "string"}}}}},
+    )
+    def export_quality_records(
+        request: Request, filters: Annotated[QualityRecordQuery, Query()]
+    ) -> Response:
+        content, filename, count = QualityRecords(catalog.uow).export(auth(request), filters)
+        return Response(
+            content=content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": "attachment; filename*=UTF-8''" + quote(filename, safe=""),
+                "Cache-Control": "no-store",
+                "X-Export-Rows": str(count),
+            },
         )
 
     @app.get("/api/v1/messages")

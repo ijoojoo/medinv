@@ -1,12 +1,12 @@
 {
-  "version": "0.32.0",
+  "version": "0.33.0",
   "project": "medinv-dev",
   "public_origin": "http://127.0.0.1:5173",
   "business_revision": "b0054",
   "control_revision": "c0017",
   "business_rls_tables": 102,
   "images": {
-    "core": "medinv-core:0.32.0",
-    "web": "medinv-web:0.32.0"
+    "core": "medinv-core:0.33.0",
+    "web": "medinv-web:0.33.0"
   }
 }

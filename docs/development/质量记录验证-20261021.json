@@ -1,0 +1,56 @@
+{
+  "version": "0.33.0",
+  "date": "2026-10-21",
+  "business_revision": "b0054",
+  "control_revision": "c0017",
+  "rls_tables": 102,
+  "api_paths": 191,
+  "backend_full": {
+    "passed": 1090,
+    "seconds": 544.16,
+    "log": "artifacts/quality-records/backend-regression.log"
+  },
+  "additional_quality_boundary_suite": {
+    "passed": 9,
+    "seconds": 6.27,
+    "log": "artifacts/quality-records/backend-boundary.log"
+  },
+  "browser": {
+    "passed": 1,
+    "seconds": 11.5,
+    "report": "artifacts/quality-records/browser.json"
+  },
+  "ui_evidence": {
+    "tenant_id": "b1b20346-4b54-5f8f-b9f7-7a2be38bdf47",
+    "entity_id": "1c1d1e5d-5199-5916-9b6c-2ee5082e6470",
+    "order_id": "f311eb5b-9473-46e4-b539-03888e989d5d",
+    "receipt_id": "f49ba863-bde7-4a44-b65c-9604479a2e9c",
+    "lot": "REPORT-6e5b28d7",
+    "inspections": 4,
+    "filtered_inspections": 3,
+    "qualified_qty": "3",
+    "rejected_qty": "3",
+    "mixed_export_rows": 1,
+    "browser_errors": [],
+    "narrow_width": 768
+  },
+  "checks": [
+    "Ruff",
+    "mypy strict 173 source files",
+    "Vue TypeScript",
+    "Prettier",
+    "trial build/start/check",
+    "Linux non-root, both databases, API and expiry smoke"
+  ],
+  "schema_migration": false,
+  "boundaries": [
+    "purchase inspection records only",
+    "CSV all matched rows up to 10000; no silent truncation",
+    "historical missing information marked",
+    "inspector stable account identifier; no historical human signature"
+  ],
+  "screenshots": {
+    "outputs/quality-records/质量记录-窄屏.png": "c801d121e69dac72bd2baf769c542691fe5c17f5d1fd6e389362390ea0ed25cb",
+    "outputs/quality-records/质量记录-筛选导出.png": "2c0aaee704ac0bb8755c19496ec81f33ae13824fa616b5ded9cdeaee0be86494"
+  }
+}

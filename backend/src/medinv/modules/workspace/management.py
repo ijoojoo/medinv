@@ -318,29 +318,11 @@ med.management_record(tenant_id,id,entity_id,kind,record_key,payload,created_by,
     def quality_records(
         self, ctx: TenantContext, entity: UUID, search: str, offset: int
     ) -> dict[str, Any]:
-        ctx.require("quality.read", entity)
-        with self.uow.open(ctx, readonly=True) as session:
-            repo = SqlSession(session)
-            require_entity(repo, entity)
-            rows = repo.rows(
-                """SELECT l.id,i.id AS inspection_id,i.inspected_at,i.created_by,i.note,
-                r.number AS receipt_number,o.number AS order_number,p.name AS party_name,
-                l.qualified_qty,l.rejected_qty,pr.name AS product_name,s.base_unit,lot.lot_no
-                FROM med.inspection i JOIN med.receipt r ON
-                (r.tenant_id,r.id)=(i.tenant_id,i.receipt_id)
-                JOIN med.purchase_order o ON (o.tenant_id,o.id)=(r.tenant_id,r.order_id)
-                JOIN med.party p ON (p.tenant_id,p.id)=(o.tenant_id,o.supplier_id)
-                JOIN med.inspection_line l ON (l.tenant_id,l.inspection_id)=(i.tenant_id,i.id)
-                JOIN med.receipt_line rl ON (rl.tenant_id,rl.id)=(l.tenant_id,l.receipt_line_id)
-                JOIN med.sku s ON (s.tenant_id,s.id)=(rl.tenant_id,rl.sku_id)
-                JOIN med.product pr ON (pr.tenant_id,pr.id)=(s.tenant_id,s.product_id)
-                JOIN med.lot lot ON (lot.tenant_id,lot.id)=(rl.tenant_id,rl.lot_id)
-                WHERE o.entity_id=:e AND (:q='' OR
-                strpos(lower(p.name||' '||o.number||' '||r.number),lower(:q))>0)
-                ORDER BY i.inspected_at DESC,l.id LIMIT 51 OFFSET :o""",
-                {"e": entity, "q": search, "o": offset},
-            )
-            return dict(jsonable_encoder({"items": rows[:50], "has_more": len(rows) > 50}))
+        from medinv.modules.workspace.quality_records import QualityRecordQuery, QualityRecords
+
+        return QualityRecords(self.uow).listing(
+            ctx, QualityRecordQuery(entity_id=entity, search=search, offset=offset)
+        )
 
     def messages(
         self, ctx: TenantContext, entity: UUID, source: str, offset: int, target: str = ""
