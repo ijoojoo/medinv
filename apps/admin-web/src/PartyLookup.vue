@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onUnmounted, ref, useId, watch } from "vue";
+import { computed, nextTick, onUnmounted, ref, useId, watch } from "vue";
 import { ElPopover } from "element-plus";
 import { request } from "./api";
 type Party = {
@@ -35,6 +35,7 @@ const text = ref(""),
   rows = ref<Party[]>([]),
   opened = ref(false),
   loading = ref(false),
+  labelLoading = ref(false),
   error = ref(""),
   offset = ref(0),
   more = ref(false),
@@ -110,6 +111,7 @@ function show() {
 }
 function edit(event: Event) {
   labelEpoch++;
+  labelLoading.value = false;
   text.value = (event.target as HTMLInputElement).value;
   chosen.value = null;
   emit("update:modelValue", "");
@@ -128,6 +130,7 @@ function edit(event: Event) {
 function choose(row: Party) {
   if (props.disabled || (props.qualifiedOnly && !row.eligible)) return;
   labelEpoch++;
+  labelLoading.value = false;
   chosen.value = row;
   text.value = row.name;
   emit("update:modelValue", row.id);
@@ -142,6 +145,7 @@ function choose(row: Party) {
 }
 function clear() {
   labelEpoch++;
+  labelLoading.value = false;
   text.value = "";
   chosen.value = null;
   close();
@@ -234,6 +238,7 @@ watch(
       text.value = "";
     }
     if (!id) {
+      labelLoading.value = false;
       if (chosen.value) text.value = "";
       chosen.value = null;
       await nextTick();
@@ -241,9 +246,11 @@ watch(
       return;
     }
     if (chosen.value?.id === id) {
+      labelLoading.value = false;
       validity();
       return;
     }
+    labelLoading.value = true;
     try {
       const result = await request<{ items: Party[] }>(
         `/api/v1/catalog/entry-parties?${new URLSearchParams({ entity_id: entity, channel, party_id: id })}`,
@@ -259,6 +266,8 @@ watch(
         text.value = "所选单位读取失败，请重试";
         input.value?.setCustomValidity("请重新检索并选择单位");
       }
+    } finally {
+      if (token === labelEpoch) labelLoading.value = false;
     }
   },
   { immediate: true },
@@ -274,6 +283,8 @@ onUnmounted(() => {
   labelEpoch++;
   document.removeEventListener("pointerdown", outside);
 });
+const ready = computed(() => !labelLoading.value);
+defineExpose({ ready });
 </script>
 <template>
   <span

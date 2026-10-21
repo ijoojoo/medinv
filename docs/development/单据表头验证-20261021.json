@@ -1,0 +1,45 @@
+{
+  "version": "0.33.1",
+  "date": "2026-10-21",
+  "business_revision": "b0054",
+  "control_revision": "c0017",
+  "rls_tables": 102,
+  "api_paths": 191,
+  "backend_targeted": {
+    "passed": 11,
+    "seconds": 6.13,
+    "log": "artifacts/entry-header/backend-regression.log"
+  },
+  "frontend_checks": {
+    "passed": 14,
+    "browser_scenarios": 13,
+    "arithmetic_check": 1,
+    "seconds": 101.56,
+    "report": "artifacts/entry-header/browser-final.json"
+  },
+  "prior_full_backend": {
+    "version": "0.33.0",
+    "passed": 1090,
+    "record": "docs/development/质量记录验证-20261021.json"
+  },
+  "repaired_validation": "Initial 10 passed / 1 failed exposed continuation focus before party label hydration. Added readiness guard and delayed-response regression; final 14 passed.",
+  "initial_report": "artifacts/entry-header/browser-before-focus-fix.json",
+  "checks": [
+    "Vue TypeScript",
+    "Prettier",
+    "trial build/start/check",
+    "Linux non-root two-database/API and expiry smoke"
+  ],
+  "screenshots": {
+    "outputs/entry-header/采购-窄屏.png": "165ae94587b5b2d153e6577dcab9c5dc609de1dfe4a33c6d33ee58283efa3f6a",
+    "outputs/entry-header/采购-表头与维护入口.png": "1fd04e0ca0b12fea3ca5556b11fff143074d78a8c3c504fc714731cfb1ceae3b",
+    "outputs/entry-header/销售-窄屏.png": "eee6a77edf900718210b696c0ee854cdbe6581e85994b3b77cb517ca90452997",
+    "outputs/entry-header/销售-表头与维护入口.png": "fcec0e1f31eaaf4b8bcc751a3cc4285796acb3d8f0638f9a1252616db1a4e21a"
+  },
+  "schema_migration": false,
+  "boundaries": [
+    "N07 first increment only; warehouse lookup and date/business-note semantics remain",
+    "draft note is not a formal business document note",
+    "existing master review and admission rules unchanged"
+  ]
+}

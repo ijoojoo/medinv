@@ -52,7 +52,8 @@ for (const purchase of [true, false]) {
     test.setTimeout(120000);
     const owner = await wholesale(context, "demo.owner"),
       reviewer = await browser.newContext();
-    let release = () => {};
+    let release = () => {},
+      releaseParty = () => {};
     try {
       const checker = await wholesale(reviewer, "demo.quality");
       const f = await stockedCustomer(context, owner, reviewer, checker);
@@ -66,7 +67,12 @@ for (const purchase of [true, false]) {
       await page.setViewportSize({ width: 1366, height: 768 });
       await page.goto("/");
       await nav(page, purchase ? "采购入库" : "批发销售");
-      await page.getByRole("button", { name: action === "新建采购单" ? "新建采购订单" : action, exact: true }).click();
+      await page
+        .getByRole("button", {
+          name: action === "新建采购单" ? "新建采购订单" : action,
+          exact: true,
+        })
+        .click();
       const editor = await fill(page, f, purchase);
       const originalId = draftId(page),
         originalUrl = page.url();
@@ -91,6 +97,22 @@ for (const purchase of [true, false]) {
         if (attempts.length === 1) await hold;
         return route.continue();
       });
+      // Hold the carried party label until the new editor is otherwise ready.
+      // Empty display text during hydration must not count as a missing party.
+      let partyLoads = 0;
+      const partyHold = new Promise<void>((resolve) => {
+        releaseParty = resolve;
+      });
+      await page.route("**/api/v1/catalog/entry-parties?**", async (route) => {
+        if (
+          new URL(route.request().url()).searchParams.get("party_id") ===
+          f.party.id
+        ) {
+          partyLoads++;
+          if (partyLoads === 1) await partyHold;
+        }
+        await route.continue();
+      });
       await nextButton(editor).click();
       await expect.poll(() => attempts.length).toBe(1);
       await expect(nextButton(editor)).toBeDisabled();
@@ -105,6 +127,8 @@ for (const purchase of [true, false]) {
         "草稿已保存",
       );
       await expect(nextButton(editor)).toBeEnabled();
+      await expect.poll(() => partyLoads).toBeGreaterThan(0);
+      releaseParty();
       const nextId = draftId(page);
       expect(nextId).not.toBe(originalId);
       await expect(
@@ -247,6 +271,7 @@ for (const purchase of [true, false]) {
       expect(faults).toEqual([]);
     } finally {
       release();
+      releaseParty();
       await reviewer.close();
     }
   });
@@ -265,7 +290,9 @@ test("save rejection keeps input; a failed next draft is recoverable without res
     const f = await stockedCustomer(context, owner, reviewer, checker);
     await page.goto("/");
     await nav(page, "采购入库");
-    await page.getByRole("button", { name: "新建采购订单", exact: true }).click();
+    await page
+      .getByRole("button", { name: "新建采购订单", exact: true })
+      .click();
     const editor = await fill(page, f);
     const originalId = draftId(page),
       originalUrl = page.url();
@@ -358,7 +385,9 @@ test("an uncertain save and new never starts another draft and recovery confirms
     const f = await stockedCustomer(context, owner, reviewer, checker);
     await page.goto("/");
     await nav(page, "采购入库");
-    await page.getByRole("button", { name: "新建采购订单", exact: true }).click();
+    await page
+      .getByRole("button", { name: "新建采购订单", exact: true })
+      .click();
     const editor = await fill(page, f);
     const originalUrl = page.url(),
       id = draftId(page);

@@ -50,6 +50,7 @@ const entityName = computed(
       ?.name || "",
 );
 const entry = ref<InstanceType<typeof DocumentEntryGrid>>();
+const partyInput = ref<InstanceType<typeof PartyLookup>>();
 const choices = ref<PurchaseOptions & SalesOptions>({
   suppliers: [],
   customers: [],
@@ -58,9 +59,11 @@ const choices = ref<PurchaseOptions & SalesOptions>({
   locations: [],
 });
 const loading = ref(true),
-  optionsError = ref("");
+  optionsError = ref(""),
+  maintaining = ref(false);
 const blocked = computed(
   () =>
+    maintaining.value ||
     state.value.submitting ||
     !!unresolved.value ||
     state.value.record.state !== "EDITING",
@@ -81,6 +84,12 @@ function rememberPosition(event: FocusEvent) {
     target instanceof HTMLInputElement || target instanceof HTMLSelectElement
   ))
     return;
+  if (
+    target instanceof HTMLInputElement &&
+    target.type === "number" &&
+    target.closest(".editor-header-fields")
+  )
+    target.select();
   const row = target.closest<HTMLElement>("[data-row-key]");
   const column = target.closest<HTMLElement>("[data-col]")?.dataset.col;
   const field =
@@ -107,9 +116,15 @@ watch(
   { flush: "sync" },
 );
 watch(
-  () => [props.active, loading.value, entry.value?.ready] as const,
-  async ([active, busy, ready]) => {
-    if (!active || busy || !ready || !resumePending) return;
+  () =>
+    [
+      props.active,
+      loading.value,
+      entry.value?.ready,
+      partyInput.value?.ready,
+    ] as const,
+  async ([active, busy, ready, partyReady]) => {
+    if (!active || busy || !ready || !partyReady || !resumePending) return;
     resumePending = false;
     await nextTick();
     const focused = document.activeElement;
@@ -174,6 +189,20 @@ async function storeDraft() {
     if (alive) ElMessage.success("编辑草稿已保存");
   } catch (e) {
     emit("failure", e);
+  }
+}
+async function maintain(page: "products" | "parties") {
+  if (blocked.value || state.value.conflict) return;
+  maintaining.value = true;
+  try {
+    await saveDraft(props.id);
+    if (!alive || !props.active) return;
+    goPage(page);
+    ElMessage.info("草稿已保存；维护完成后，点击原单据页签继续录入。");
+  } catch (error) {
+    emit("failure", error);
+  } finally {
+    maintaining.value = false;
   }
 }
 async function resolveConflict(copy = false) {
@@ -259,8 +288,11 @@ async function save(event: SubmitEvent) {
   }
 }
 function keys(e: KeyboardEvent) {
-  if (!props.active || e.defaultPrevented || e.isComposing || e.keyCode === 229)
+  if (!props.active || e.defaultPrevented) return;
+  if (e.isComposing || e.keyCode === 229) {
+    if (e.key === "Enter") e.preventDefault();
     return;
+  }
   if ((e.target as HTMLElement).closest(".el-dialog")) return;
   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
     e.preventDefault();
@@ -276,7 +308,34 @@ function keys(e: KeyboardEvent) {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
     e.preventDefault();
     if (!blocked.value) void storeDraft();
+    return;
   }
+  const target = e.target;
+  if (
+    e.key !== "Enter" ||
+    e.ctrlKey ||
+    e.metaKey ||
+    e.altKey ||
+    !(
+      target instanceof HTMLInputElement || target instanceof HTMLSelectElement
+    ) ||
+    !target.closest(".editor-header-fields")
+  )
+    return;
+  // Plain Enter advances the header. Formal submission remains an explicit
+  // button or Ctrl+Enter action, never a native implicit form submit.
+  e.preventDefault();
+  if (blocked.value || loading.value || optionsError.value) return;
+  const fields = Array.from(
+    root.value!.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+      ".editor-header-fields input:not(:disabled),.editor-header-fields select:not(:disabled)",
+    ),
+  );
+  const index = fields.indexOf(target);
+  if (index < 0 || (!e.shiftKey && !target.reportValidity())) return;
+  const next = fields[index + (e.shiftKey ? -1 : 1)];
+  if (next) next.focus();
+  else if (!e.shiftKey) entry.value?.focusFirstProduct();
 }
 </script>
 <template>
@@ -296,9 +355,25 @@ function keys(e: KeyboardEvent) {
           revision ? "改单草稿" : "编辑草稿"
         }}</el-tag>
       </div>
-      <el-button @click="goPage(moduleFor(state.record.channel))"
-        >返回{{ purchase ? "采购" : "销售" }}记录</el-button
-      >
+      <div class="editor-heading-actions">
+        <template v-if="session?.permissions.includes('catalog.read')">
+          <el-button
+            :disabled="blocked || state.conflict"
+            @click="maintain('parties')"
+            >维护往来单位</el-button
+          >
+          <el-button
+            :disabled="blocked || state.conflict"
+            @click="maintain('products')"
+            >维护商品资料</el-button
+          >
+        </template>
+        <el-button
+          :disabled="maintaining"
+          @click="goPage(moduleFor(state.record.channel))"
+          >返回{{ purchase ? "采购" : "销售" }}记录</el-button
+        >
+      </div>
     </header>
     <div v-if="state.continuation" class="editor-continuation" role="status">
       <span>{{
@@ -361,6 +436,7 @@ function keys(e: KeyboardEvent) {
         <div class="editor-header-fields">
           <label v-if="purchase" data-entry-field="party"
             >供应商<PartyLookup
+              ref="partyInput"
               v-model="state.content.supplier_id"
               :entity="state.record.entity_id"
               channel="purchase"
@@ -370,6 +446,7 @@ function keys(e: KeyboardEvent) {
           /></label>
           <label v-else data-entry-field="party"
             >客户<PartyLookup
+              ref="partyInput"
               v-model="state.content.customer_id"
               :entity="state.record.entity_id"
               channel="sale"
@@ -465,7 +542,8 @@ function keys(e: KeyboardEvent) {
                     ? "有未保存修改"
                     : "草稿已保存"
           }}<small
-            >Ctrl + S 草稿 · Ctrl + Enter 保存<span v-if="!revision">
+            >表头 Enter 下一项 · Shift + Enter 上一项 · Ctrl + S 草稿 · Ctrl +
+            Enter 保存<span v-if="!revision">
               · Ctrl + Shift + Enter 保存并新建</span
             ></small
           ></span
@@ -535,12 +613,19 @@ function keys(e: KeyboardEvent) {
   padding: 8px 14px;
   border-bottom: 1px solid var(--ui-border);
   gap: 12px;
+  flex-wrap: wrap;
 }
 .editor-heading > div {
   display: flex;
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+}
+.editor-heading > .editor-heading-actions {
+  gap: 6px;
+}
+.editor-heading-actions .el-button + .el-button {
+  margin-left: 0;
 }
 .editor-heading h1 {
   font-size: 16px;

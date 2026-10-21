@@ -231,7 +231,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             business.dispose()
             control.dispose()
 
-    app = FastAPI(title="药械进销存 · 核心 API", version="0.33.0", lifespan=lifespan)
+    app = FastAPI(title="药械进销存 · 核心 API", version="0.33.1", lifespan=lifespan)
 
     @app.middleware("http")
     async def request_context(
